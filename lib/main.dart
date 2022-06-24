@@ -1,11 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 import 'package:streetcams_flutter/neighbourhood.dart';
-import 'dart:convert';
+
 import 'camera.dart';
 
 void main() {
@@ -64,14 +65,25 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-List<Camera> parseCameraJson(String jsonString) {
+List<Camera> _parseCameraJson(String jsonString) {
   List<dynamic> jsonArray = json.decode(jsonString);
-  return jsonArray.map((e) => Camera(e)) as List<Camera>;
+  return jsonArray.map((e) => Camera.fromJson(e)).toList();
 }
 
-List<Neighbourhood> parseNeighbourhoodJson(String jsonString) {
+List<Neighbourhood> _parseNeighbourhoodJson(String jsonString) {
   List<dynamic> jsonArray = json.decode(jsonString)['features'];
-  return jsonArray.map((e) => Neighbourhood(e)) as List<Neighbourhood>;
+  return jsonArray.map((e) => Neighbourhood.fromJson(e)).toList();
+}
+
+Future<List<Camera>> _downloadCameraList() async {
+  var url = Uri.parse('https://traffic.ottawa.ca/beta/camera_list');
+  return compute(_parseCameraJson, await http.read(url));
+}
+
+Future<List<Neighbourhood>> _downloadNeighbourhoodList() async {
+  var url = Uri.parse(
+      'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson');
+  return compute(_parseNeighbourhoodJson, await http.read(url));
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -80,22 +92,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    _download().then((value) {
+    _downloadCameraList().then((value) {
+      neighbourhoods.sort((a, b) => a.getSortableName().compareTo(b.getSortableName()));
       setState(() {});
     });
     super.initState();
   }
 
-  Future<void> _download() async {
-    var url = Uri.parse('https://traffic.ottawa.ca/beta/camera_list');
-    compute(parseCameraJson, await http.read(url));
-    cameras.sort((a, b) => a.getSortableName().compareTo(b.getSortableName()));
-
-    url = Uri.parse(
-        'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson');
-    compute(parseNeighbourhoodJson, await http.read(url));
-    neighbourhoods.sort((a, b) => a.getSortableName().compareTo(b.getSortableName()));
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,23 +114,40 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16.0),
-        itemCount: cameras.length,
-        itemBuilder: (context, i) {
-          return ListTile(
-            title: Text(cameras[i].getName()),
-            onTap: () {
-              setState(() {
-                _showCameras([cameras[i]]);
-              });
-            },
-            onLongPress: () {
-              print('long press');
-            },
-          );
+      body: FutureBuilder<List<Camera>>(
+        future: _downloadCameraList(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('An error has occurred!'),
+            );
+          } else if (snapshot.hasData) {
+            cameras = snapshot.data ?? cameras;
+            cameras.sort((a, b) => a.getSortableName().compareTo(b.getSortableName()));
+            return ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: cameras.length,
+              itemBuilder: (context, i) {
+                return ListTile(
+                  title: Text(cameras[i].getName()),
+                  onTap: () {
+                    setState(() {
+                      _showCameras([cameras[i]]);
+                    });
+                  },
+                  onLongPress: () {
+                    print('long press');
+                  },
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
         },
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 
