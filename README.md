@@ -1,6 +1,6 @@
 # streetcams_flutter
 
-StreetCams
+Flutter version of StreetCams
 
 ## Getting Started
 
@@ -14,4 +14,3 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
->>>>>>> 21543d27f1cbeb8e5a4ebd6595decbd5f7d37067
