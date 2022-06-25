@@ -1,4 +1,4 @@
-import 'package:streetcams_flutter/bilingual_object.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import 'location.dart';
 
@@ -19,7 +19,8 @@ class Neighbourhood extends BilingualObject {
     List<List<Location>> tempLocations = [];
 
     for (int i = 0; i < areas.length; i++) {
-      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0]) as List<dynamic>;
+      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
+          as List<dynamic>;
       List<Location> locationList = [];
 
       for (var jsonArray in geometry) {

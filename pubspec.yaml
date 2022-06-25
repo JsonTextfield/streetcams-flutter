@@ -27,7 +27,10 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
-  google_maps_flutter: ^2.1.8
+  # google_maps_flutter: ^2.1.8
+
+  dynamic_color: ^1.1.2
+  geolocator: ^9.0.0
   http: ^0.13.4
   flutter:
     sdk: flutter

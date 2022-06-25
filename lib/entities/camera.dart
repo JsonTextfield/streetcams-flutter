@@ -1,13 +1,15 @@
-import 'package:streetcams_flutter/bilingual_object.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import 'location.dart';
 
 class Camera extends BilingualObject {
+  bool isHidden = false;
+  bool isFavourite = false;
   final int num;
   final Location location;
   final String type;
 
-  const Camera({
+  Camera({
     required this.num,
     required this.location,
     required this.type,

@@ -13,11 +13,11 @@ class Location {
       lon: json['longitude'],
     );
   }
+
   factory Location.createFromJsonArray(List<dynamic> json) {
     return Location(
       lat: json[0],
       lon: json[1],
     );
   }
-
 }
