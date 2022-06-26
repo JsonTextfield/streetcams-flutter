@@ -9,6 +9,7 @@ import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import 'camera_page.dart';
 import 'entities/camera.dart';
+import 'entities/location.dart';
 import 'entities/neighbourhood.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -51,29 +52,51 @@ Future<List<Neighbourhood>> _downloadNeighbourhoodList() async {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  bool sortByDistance = false;
   List<Camera> cameras = [];
   List<Neighbourhood> neighbourhoods = [];
 
-  @override
-  void initState() {
-    _downloadCameraList().then((value) {
-      setState(() {});
-    });
-    super.initState();
-  }
+  Future<void> sortCameras() async {
+    sortByDistance = !sortByDistance;
+    if (sortByDistance) {
+      // Test if location services are enabled.
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Location services are not enabled don't continue
+        // accessing the position and request users of the
+        // App to enable the location services.
+        return Future.error('Location services are disabled.');
+      }
 
-  void sortCameras() {
-    double lat = 45.454545;
-    double lon = -75.696969;
-    cameras.sort((a, b) =>
-        Geolocator.distanceBetween(lat, lon, a.location.lat, a.location.lon)
-            .compareTo(Geolocator.distanceBetween(
-                lat, lon, b.location.lat, b.location.lon)));
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          // Permissions are denied, next time you could try
+          // requesting permissions again (this is also where
+          // Android's shouldShowRequestPermissionRationale
+          // returned true. According to Android guidelines
+          // your App should show an explanatory UI now.
+          return Future.error('Location permissions are denied');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        // Permissions are denied forever, handle appropriately.
+        return Future.error(
+            'Location permissions are permanently denied, we cannot request permissions.');
+      }
+      Position position = await Geolocator.getLastKnownPosition() ??
+          await Geolocator.getCurrentPosition();
+      var location = Location(lat: position.latitude, lon: position.longitude);
+      cameras.sort((a, b) => location
+          .distanceTo(a.location)
+          .compareTo(location.distanceTo(b.location)));
+    } else {
+      cameras
+          .sort((a, b) => a.getSortableName().compareTo(b.getSortableName()));
+    }
     setState(() {});
-  }
-
-  void showRandomCamera() {
-    _showCameras([cameras[Random().nextInt(cameras.length)]]);
   }
 
   @override
@@ -83,39 +106,36 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(BilingualObject.getAppName()),
         actions: [
           IconButton(
-            onPressed: sortCameras,
+            onPressed: () {},
             icon: const Icon(Icons.swap_horiz),
             tooltip: 'Switch to map view',
           ),
           IconButton(
             onPressed: sortCameras,
             icon: const Icon(Icons.sort),
-            tooltip: 'Sort by distance',
+            tooltip: 'Sort by ${sortByDistance ? 'name' : 'distance'}',
           ),
           IconButton(
-            onPressed: sortCameras,
+            onPressed: () {},
             icon: const Icon(Icons.favorite),
             tooltip: 'View favourites',
           ),
           IconButton(
-            onPressed: sortCameras,
+            onPressed: () {},
             icon: const Icon(Icons.visibility_off),
             tooltip: 'View hidden',
           ),
           IconButton(
-            onPressed: showRandomCamera,
+            onPressed: () {
+              _showCameras([cameras[Random().nextInt(cameras.length)]]);
+            },
             icon: const Icon(Icons.casino),
             tooltip: 'Random camera',
           ),
           IconButton(
-            onPressed: sortCameras,
+            onPressed: () {},
             icon: const Icon(Icons.shuffle),
             tooltip: 'Shuffle',
-          ),
-          IconButton(
-            onPressed: sortCameras,
-            icon: const Icon(Icons.dark_mode),
-            tooltip: 'Dark mode',
           ),
         ],
       ),
@@ -137,8 +157,22 @@ class _MyHomePageState extends State<MyHomePage> {
               itemBuilder: (context, i) {
                 return ListTile(
                   title: Text(cameras[i].getName()),
+                  trailing: IconButton(
+                    // NEW from here ...
+                    icon: Icon(cameras[i].isFavourite
+                        ? Icons.favorite
+                        : Icons.favorite_border),
+                    color: cameras[i].isFavourite ? Colors.red : null,
+                    onPressed: () {
+                      setState(() {
+                        cameras[i].isFavourite = !cameras[i].isFavourite;
+                      });
+                    },
+                  ),
                   onTap: () {
-                    _showCameras([cameras[i]]);
+                    _showCameras([
+                      cameras[i],
+                    ]);
                   },
                   onLongPress: () {
                     print('long press');
