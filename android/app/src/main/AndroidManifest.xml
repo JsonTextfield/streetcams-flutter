@@ -7,7 +7,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="streetcams_flutter">
+        android:label="StreetCams">
 
         <activity
             android:name=".MainActivity"

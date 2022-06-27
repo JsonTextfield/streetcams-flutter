@@ -52,8 +52,11 @@ Future<List<Neighbourhood>> _downloadNeighbourhoodList() async {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  bool sortByDistance = false;
-  List<Camera> cameras = [];
+  var showList = true;
+  var sortByDistance = false;
+  List<Camera> allCameras = [];
+  List<Camera> displayedCameras = [];
+  List<Camera> selectedCameras = [];
   List<Neighbourhood> neighbourhoods = [];
 
   Future<void> sortCameras() async {
@@ -89,14 +92,140 @@ class _MyHomePageState extends State<MyHomePage> {
       Position position = await Geolocator.getLastKnownPosition() ??
           await Geolocator.getCurrentPosition();
       var location = Location(lat: position.latitude, lon: position.longitude);
-      cameras.sort((a, b) => location
+      displayedCameras.sort((a, b) => location
           .distanceTo(a.location)
           .compareTo(location.distanceTo(b.location)));
     } else {
-      cameras
+      displayedCameras
           .sort((a, b) => a.getSortableName().compareTo(b.getSortableName()));
     }
     setState(() {});
+  }
+
+  List<Widget> getAppBarActions() {
+    return [
+      Visibility(
+          visible: selectedCameras.isNotEmpty,
+          child: Center(
+            child: Text(
+                '${selectedCameras.length} camera${selectedCameras.length != 1 ? 's' : ''} selected'),
+          )),
+      Visibility(
+        visible: selectedCameras.isNotEmpty,
+        child: IconButton(
+            tooltip: 'Clear',
+            onPressed: () {
+              setState(() {
+                selectedCameras.clear();
+              });
+            },
+            icon: const Icon(Icons.close)),
+      ),
+      Visibility(
+        visible: selectedCameras.isNotEmpty && selectedCameras.length < 5,
+        child: IconButton(
+            tooltip: 'Show',
+            onPressed: () {
+              _showCameras(selectedCameras);
+            },
+            icon: const Icon(Icons.camera_alt)),
+      ),
+      Visibility(
+          child: IconButton(
+        onPressed: (() {
+          setState(() {
+            showList = !showList;
+          });
+        }),
+        icon: const Icon(Icons.swap_horiz),
+        tooltip: showList ? 'Map' : 'List',
+      )),
+      Visibility(
+          visible: selectedCameras.isEmpty,
+          child: IconButton(
+            onPressed: sortCameras,
+            icon: const Icon(Icons.sort),
+            tooltip: 'Sort by ${sortByDistance ? 'name' : 'distance'}',
+          )),
+      Visibility(
+          child: IconButton(
+        onPressed: favouriteOptionClicked,
+        icon: const Icon(Icons.favorite),
+        tooltip: 'Favourites',
+      )),
+      Visibility(
+          child: IconButton(
+        onPressed: hideOptionClicked,
+        icon: const Icon(Icons.visibility_off),
+        tooltip: 'Hidden',
+      )),
+      Visibility(
+          visible: selectedCameras.isEmpty,
+          child: IconButton(
+            onPressed: () {
+              _showCameras([
+                displayedCameras[Random().nextInt(displayedCameras.length)]
+              ]);
+            },
+            icon: const Icon(Icons.casino),
+            tooltip: 'Random',
+          )),
+      Visibility(
+          visible: selectedCameras.isEmpty,
+          child: IconButton(
+            onPressed: () {
+              _showCameras(
+                  allCameras.where((element) => !element.isHidden).toList(),
+                  shuffle: true);
+            },
+            icon: const Icon(Icons.shuffle),
+            tooltip: 'Shuffle',
+          )),
+    ];
+  }
+
+  ListView getListView() {
+    return ListView.builder(
+      itemCount: displayedCameras.length,
+      itemBuilder: (context, i) {
+        return Container(
+          color: selectedCameras.contains(displayedCameras[i])
+              ? Colors.blue
+              : Colors.transparent,
+          child: ListTile(
+            title: Text(displayedCameras[i].getName()),
+            trailing: IconButton(
+              icon: Icon(displayedCameras[i].isFavourite
+                  ? Icons.favorite
+                  : Icons.favorite_border),
+              color: displayedCameras[i].isFavourite ? Colors.red : null,
+              onPressed: () {
+                setState(() {
+                  displayedCameras[i].isFavourite =
+                      !displayedCameras[i].isFavourite;
+                });
+              },
+            ),
+            onTap: () {
+              if (selectedCameras.isEmpty) {
+                _showCameras([
+                  displayedCameras[i],
+                ]);
+              } else {
+                setState(() {
+                  selectCamera(displayedCameras[i]);
+                });
+              }
+            },
+            onLongPress: () {
+              setState(() {
+                selectCamera(displayedCameras[i]);
+              });
+            },
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -104,81 +233,30 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(BilingualObject.getAppName()),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.swap_horiz),
-            tooltip: 'Switch to map view',
-          ),
-          IconButton(
-            onPressed: sortCameras,
-            icon: const Icon(Icons.sort),
-            tooltip: 'Sort by ${sortByDistance ? 'name' : 'distance'}',
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.favorite),
-            tooltip: 'View favourites',
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.visibility_off),
-            tooltip: 'View hidden',
-          ),
-          IconButton(
-            onPressed: () {
-              _showCameras([cameras[Random().nextInt(cameras.length)]]);
-            },
-            icon: const Icon(Icons.casino),
-            tooltip: 'Random camera',
-          ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.shuffle),
-            tooltip: 'Shuffle',
-          ),
-        ],
+        actions: getAppBarActions(),
       ),
       body: FutureBuilder<List<Camera>>(
         future: _downloadCameraList(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('An error has occurred!'),
+              child: Text('An error has occurred.'),
             );
           } else if (snapshot.hasData) {
-            if (cameras.isEmpty) {
-              cameras = snapshot.data ?? cameras;
-              cameras.sort(
+            if (allCameras.isEmpty) {
+              allCameras = snapshot.data ?? displayedCameras;
+              allCameras.sort(
                   (a, b) => a.getSortableName().compareTo(b.getSortableName()));
+              resetDisplayedCameras();
             }
-            return ListView.builder(
-              itemCount: cameras.length,
-              itemBuilder: (context, i) {
-                return ListTile(
-                  title: Text(cameras[i].getName()),
-                  trailing: IconButton(
-                    // NEW from here ...
-                    icon: Icon(cameras[i].isFavourite
-                        ? Icons.favorite
-                        : Icons.favorite_border),
-                    color: cameras[i].isFavourite ? Colors.red : null,
-                    onPressed: () {
-                      setState(() {
-                        cameras[i].isFavourite = !cameras[i].isFavourite;
-                      });
-                    },
-                  ),
-                  onTap: () {
-                    _showCameras([
-                      cameras[i],
-                    ]);
-                  },
-                  onLongPress: () {
-                    print('long press');
-                  },
-                );
-              },
+            return Stack(
+              children: [
+                Visibility(visible: showList, child: getListView()),
+                Visibility(
+                  visible: !showList,
+                  child: const Center(child: Text('Map will go here!')),
+                ),
+              ],
             );
           } else {
             return const Center(
@@ -190,11 +268,92 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void _showCameras(List<Camera> cameras) {
+  void favouriteOptionClicked() {
+    if (selectedCameras.isEmpty) {
+      filterDisplayedCameras((p0) => p0.isFavourite);
+    } else {
+      favouriteSelectedCameras();
+    }
+
+    setState(() {});
+  }
+
+  void favouriteSelectedCameras() {
+    var allFavourited =
+        selectedCameras.map((e) => e.isFavourite).reduce((value, element) {
+      return value && element;
+    });
+    if (allFavourited) {
+      for (var element in selectedCameras) {
+        element.isFavourite = !element.isFavourite;
+      }
+    } else {
+      for (var element in selectedCameras) {
+        element.isFavourite = true;
+      }
+    }
+  }
+
+  void hideOptionClicked() {
+    if (selectedCameras.isEmpty) {
+      filterDisplayedCameras((p0) => p0.isHidden);
+    } else {
+      hideSelectedCameras();
+    }
+    setState(() {});
+  }
+
+  void filterDisplayedCameras(bool Function(Camera) function) {
+    if (displayedCameras.isEmpty) {
+      resetDisplayedCameras();
+      return;
+    }
+    var allHidden = displayedCameras.map(function).reduce((value, element) {
+      return value && element;
+    });
+    if (allHidden) {
+      resetDisplayedCameras();
+      return;
+    }
+    displayedCameras = allCameras.where(function).toList();
+  }
+
+  void resetDisplayedCameras() {
+    displayedCameras =
+        allCameras.where((element) => !element.isHidden).toList();
+  }
+
+  void hideSelectedCameras() {
+    var allHidden =
+        selectedCameras.map((e) => e.isHidden).reduce((value, element) {
+      return value && element;
+    });
+    if (allHidden) {
+      for (var element in selectedCameras) {
+        element.isHidden = !element.isHidden;
+      }
+    } else {
+      for (var element in selectedCameras) {
+        element.isHidden = true;
+      }
+    }
+  }
+
+  void _showCameras(List<Camera> cameras, {shuffle = false}) {
+    if (cameras.isEmpty) return;
     Navigator.pushNamed(
       context,
       CameraPage.routeName,
-      arguments: cameras,
+      arguments: [cameras, shuffle],
     );
+  }
+
+  bool selectCamera(Camera camera) {
+    if (selectedCameras.contains(camera)) {
+      selectedCameras.remove(camera);
+      return false;
+    }
+    selectedCameras.add(camera);
+    return true;
   }
 }
