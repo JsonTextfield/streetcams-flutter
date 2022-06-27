@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-import 'entities/camera.dart';
+import '../entities/camera.dart';
 
 class CameraPage extends StatefulWidget {
   static const routeName = '/cameraPage';
@@ -53,7 +53,7 @@ class _CameraState extends State<CameraPage> {
                 icon: const Icon(Icons.arrow_back),
                 tooltip: 'Back',
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -63,7 +63,6 @@ class _CameraState extends State<CameraPage> {
   List<CameraImage> getCameraImages() {
     if (shuffle) {
       var camera = cameras[Random().nextInt(cameras.length)];
-      print(camera.getName());
       return [CameraImage(camera: camera, shuffle: true)];
     }
     return cameras.map((e) => CameraImage(camera: e)).toList();
@@ -71,6 +70,7 @@ class _CameraState extends State<CameraPage> {
 }
 
 class CameraImage extends StatefulWidget {
+  // Widget for an individual camera feed
   const CameraImage({Key? key, required this.camera, this.shuffle = false})
       : super(key: key);
 
@@ -84,36 +84,31 @@ class CameraImage extends StatefulWidget {
 class _CameraImageState extends State<CameraImage> {
   Timer? timer;
   MemoryImage? image;
-
-  @override
-  void initState() {
-    initializeCameraImage().then((value) => setState);
-    if (!widget.shuffle) {
-      timer = Timer.periodic(const Duration(seconds: 6), (t) {
-        setState(() {
-          initializeCameraImage();
-        });
-      });
-    }
-    super.initState();
-  }
+  String url = '';
 
   Future<void> initializeCameraImage() async {
     await http
-        .get(Uri.parse(
-            'https://traffic.ottawa.ca/beta/camera?id=${widget.camera.num}&timems=${DateTime.now().millisecondsSinceEpoch}'))
+        .get(Uri.parse(url))
         .then((resp) => {image = MemoryImage(resp.bodyBytes)});
   }
 
   @override
   Widget build(BuildContext context) {
+    url =
+        'https://traffic.ottawa.ca/beta/camera?id=${widget.camera.num}&timems=${DateTime.now().millisecondsSinceEpoch}';
+    if (!widget.shuffle && timer == null) {
+      timer = Timer.periodic(const Duration(seconds: 6), (t) {
+        initializeCameraImage().then((value) => setState(() {}));
+      });
+    }
+
     ImageProvider imageProvider;
     if (image != null && !widget.shuffle) {
       imageProvider = image!;
     } else {
-      imageProvider = NetworkImage(
-          'https://traffic.ottawa.ca/beta/camera?id=${widget.camera.num}&timems=${DateTime.now().millisecondsSinceEpoch}');
+      imageProvider = NetworkImage(url);
     }
+
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height,
@@ -122,7 +117,7 @@ class _CameraImageState extends State<CameraImage> {
         children: [
           Image(
             image: imageProvider,
-            semanticLabel: widget.camera.getName(),
+            semanticLabel: widget.camera.name,
             fit: BoxFit.contain,
             width: MediaQuery.of(context).size.width,
           ),
@@ -132,14 +127,14 @@ class _CameraImageState extends State<CameraImage> {
               child: Container(
                 color: const Color.fromARGB(128, 0, 0, 0),
                 child: Text(
-                  widget.camera.getName(),
+                  widget.camera.name,
                   style: const TextStyle(
                     color: Colors.white,
                   ),
                 ),
               ),
             ),
-          )
+          ),
         ],
       ),
     );

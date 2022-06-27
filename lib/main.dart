@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:streetcams_flutter/camera_page.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
+import 'package:streetcams_flutter/pages/camera_page.dart';
 
-import 'home_page.dart';
+import 'pages/home_page.dart';
 
 void main() {
   runApp(const StreetCamsApp());
@@ -16,8 +16,8 @@ class StreetCamsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: BilingualObject.getAppName(),
-      home: const MyHomePage(),
+      title: BilingualObject.appName,
+      home: const HomePage(),
       routes: {
         CameraPage.routeName: (context) => const CameraPage(),
       },

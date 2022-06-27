@@ -11,15 +11,11 @@ class BilingualObject {
     required this.nameFr,
   });
 
-  String getSortableName() {
-    return nameEn.replaceAll(RegExp('[^A-Za-z0-9]'), '').toUpperCase();
-  }
+  String get sortableName =>
+      nameEn.replaceAll(RegExp('[^A-Za-z0-9]'), '').toUpperCase();
 
-  String getName() {
-    return Intl.getCurrentLocale().contains('fr') ? nameFr : nameEn;
-  }
+  String get name => Intl.getCurrentLocale().contains('fr') ? nameFr : nameEn;
 
-  static String getAppName() {
-    return Intl.getCurrentLocale().contains('fr') ? 'RueCams' : 'StreetCams';
-  }
+  static String get appName =>
+      Intl.getCurrentLocale().contains('fr') ? 'RueCams' : 'StreetCams';
 }
