@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../entities/camera.dart';
 
@@ -84,31 +83,18 @@ class CameraImage extends StatefulWidget {
 
 class _CameraImageState extends State<CameraImage> {
   Timer? timer;
-  MemoryImage? image;
-  String url = '';
-
-  Future<void> initializeCameraImage() async {
-    await http
-        .get(Uri.parse(url))
-        .then((resp) => {image = MemoryImage(resp.bodyBytes)});
-  }
 
   @override
   Widget build(BuildContext context) {
-    url =
+    String url =
         'https://traffic.ottawa.ca/beta/camera?id=${widget.camera.num}&timems=${DateTime.now().millisecondsSinceEpoch}';
     if (!widget.shuffle && timer == null) {
       timer = Timer.periodic(const Duration(seconds: 6), (t) {
-        initializeCameraImage().then((value) => setState(() {}));
+        setState(() {});
       });
     }
 
     ImageProvider imageProvider;
-    if (image != null && !widget.shuffle) {
-      imageProvider = image!;
-    } else {
-      imageProvider = NetworkImage(url);
-    }
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height -
@@ -116,11 +102,12 @@ class _CameraImageState extends State<CameraImage> {
       ),
       child: Stack(
         children: [
-          Image(
-            image: imageProvider,
+          Image.network(
+            url,
             semanticLabel: widget.camera.name,
             fit: BoxFit.contain,
             width: MediaQuery.of(context).size.width,
+            gaplessPlayback: true,
           ),
           Positioned.fill(
             child: Align(
