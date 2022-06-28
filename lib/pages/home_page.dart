@@ -118,7 +118,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       Visibility(
-        visible: selectedCameras.isEmpty,
+        visible: selectedCameras.isEmpty && showList,
         child: IconButton(
           onPressed: () {
             _sortCameras().then((value) => setState(() {}));
@@ -217,17 +217,32 @@ class _HomePageState extends State<HomePage> {
     Completer<GoogleMapController> completer = Completer();
     const CameraPosition cameraPosition = CameraPosition(
       target: LatLng(45.4, -75.7),
-      zoom: 13,
     );
+
+    LatLngBounds? bounds;
+    if (displayedCameras.isNotEmpty) {
+      var minLat = displayedCameras[0].location.lat;
+      var maxLat = displayedCameras[0].location.lat;
+      var minLon = displayedCameras[0].location.lon;
+      var maxLon = displayedCameras[0].location.lon;
+      for (var camera in displayedCameras) {
+        minLat = min(minLat, camera.location.lat);
+        maxLat = max(maxLat, camera.location.lat);
+        minLon = min(minLon, camera.location.lon);
+        maxLon = max(maxLon, camera.location.lon);
+      }
+      bounds = LatLngBounds(
+          southwest: LatLng(minLat, minLon), northeast: LatLng(maxLat, maxLon));
+    }
 
     return Center(
       child: GoogleMap(
-        mapType: MapType.normal,
-        compassEnabled: true,
+        cameraTargetBounds: CameraTargetBounds(bounds),
         initialCameraPosition: cameraPosition,
+        minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
         markers: displayedCameras
             .map((camera) => Marker(
-                markerId: MarkerId(camera.name),
+                markerId: MarkerId(camera.sortableName),
                 position: LatLng(camera.location.lat, camera.location.lon),
                 infoWindow: InfoWindow(
                   title: camera.name,
@@ -246,23 +261,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> _sortCameras() async {
     sortByDistance = !sortByDistance;
     if (sortByDistance) {
-      // Test if location services are enabled.
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        return Future.error('Location services are disabled.');
-      }
-
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) {
-          return Future.error('Location permissions are denied');
-        }
-      }
-
-      Position position = await Geolocator.getLastKnownPosition() ??
-          await Geolocator.getCurrentPosition();
+      var position = await _getCurrentLocation();
       var location = Location(lat: position.latitude, lon: position.longitude);
       displayedCameras.sort((a, b) => location
           .distanceTo(a.location)
@@ -338,6 +337,26 @@ class _HomePageState extends State<HomePage> {
     selectedCameras.add(camera);
     return true;
   }
+}
+
+Future<Position> _getCurrentLocation() async {
+  // Test if location services are enabled.
+  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!serviceEnabled) {
+    return Future.error('Location services are disabled.');
+  }
+
+  LocationPermission permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      return Future.error('Location permissions are denied');
+    }
+  }
+
+  return await Geolocator.getLastKnownPosition() ??
+      await Geolocator.getCurrentPosition();
 }
 
 List<Camera> _parseCameraJson(String jsonString) {
