@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -108,10 +109,10 @@ class _CameraImageState extends State<CameraImage> {
     } else {
       imageProvider = NetworkImage(url);
     }
-
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height,
+        maxHeight: MediaQuery.of(context).size.height -
+            MediaQueryData.fromWindow(window).padding.top,
       ),
       child: Stack(
         children: [
