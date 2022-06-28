@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
@@ -212,7 +214,33 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget getMapView() {
-    return const Center(child: Text('Map will go here!'));
+    Completer<GoogleMapController> completer = Completer();
+    const CameraPosition cameraPosition = CameraPosition(
+      target: LatLng(45.4, -75.7),
+      zoom: 13,
+    );
+
+    return Center(
+      child: GoogleMap(
+        mapType: MapType.normal,
+        compassEnabled: true,
+        initialCameraPosition: cameraPosition,
+        markers: displayedCameras
+            .map((camera) => Marker(
+                markerId: MarkerId(camera.name),
+                position: LatLng(camera.location.lat, camera.location.lon),
+                infoWindow: InfoWindow(
+                  title: camera.name,
+                  onTap: () {
+                    _showCameras([camera]);
+                  },
+                )))
+            .toSet(),
+        onMapCreated: (GoogleMapController controller) {
+          completer.complete(controller);
+        },
+      ),
+    );
   }
 
   Future<void> _sortCameras() async {
