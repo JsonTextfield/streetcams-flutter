@@ -45,11 +45,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     if (prefs == null) {
-      getSharedPrefs().then((value) => {
-            setState(() {
-              accessSharedPrefs();
-            })
-          });
+      getSharedPrefs().then((value) => setState(() {}));
     }
     _downloadNeighbourhoodList();
     return Scaffold(
@@ -67,8 +63,8 @@ class _HomePageState extends State<HomePage> {
               allCameras = snapshot.data ?? displayedCameras;
               allCameras
                   .sort((a, b) => a.sortableName.compareTo(b.sortableName));
-              _resetDisplayedCameras();
               accessSharedPrefs();
+              _resetDisplayedCameras();
             }
             return Stack(
               children: [
@@ -89,8 +85,7 @@ class _HomePageState extends State<HomePage> {
       Visibility(
         visible: selectedCameras.isNotEmpty,
         child: Center(
-          child: Text(
-              '${selectedCameras.length} camera${selectedCameras.length != 1 ? 's' : ''} selected'),
+          child: Text('${selectedCameras.length}'),
         ),
       ),
       Visibility(
@@ -160,7 +155,7 @@ class _HomePageState extends State<HomePage> {
         child: IconButton(
           onPressed: () {
             setState(() {
-              selectedCameras = displayedCameras;
+              selectedCameras = List.from(displayedCameras);
             });
           },
           icon: const Icon(Icons.select_all),
@@ -332,7 +327,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void accessSharedPrefs() {
-    for (var camera in displayedCameras) {
+    for (var camera in allCameras) {
       camera.isFavourite =
           prefs?.getBool('${camera.sortableName}.isFavourite') ?? false;
       camera.isHidden =

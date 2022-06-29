@@ -11,8 +11,7 @@ class BilingualObject {
     required this.nameFr,
   });
 
-  String get sortableName =>
-      nameEn.replaceAll(RegExp('[^A-Za-z0-9]'), '').toUpperCase();
+  String get sortableName => nameEn.replaceAll(RegExp('[\(\)]'), '').toUpperCase();
 
   String get name => Intl.getCurrentLocale().contains('fr') ? nameFr : nameEn;
 
