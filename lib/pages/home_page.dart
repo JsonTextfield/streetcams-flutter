@@ -175,39 +175,37 @@ class _HomePageState extends State<HomePage> {
     return ListView.builder(
       itemCount: displayedCameras.length,
       itemBuilder: (context, i) {
-        return Container(
-          color: selectedCameras.contains(displayedCameras[i])
+        return ListTile(
+          tileColor: selectedCameras.contains(displayedCameras[i])
               ? Colors.blue
               : Colors.transparent,
-          child: ListTile(
-            title: Text(displayedCameras[i].name),
-            trailing: IconButton(
-              icon: Icon(displayedCameras[i].isFavourite
-                  ? Icons.favorite
-                  : Icons.favorite_border),
-              color: displayedCameras[i].isFavourite ? Colors.red : null,
-              onPressed: () {
-                setState(() {
-                  displayedCameras[i].isFavourite =
-                      !displayedCameras[i].isFavourite;
-                });
-              },
-            ),
-            onTap: () {
-              if (selectedCameras.isEmpty) {
-                _showCameras([displayedCameras[i]]);
-              } else {
-                setState(() {
-                  _selectCamera(displayedCameras[i]);
-                });
-              }
-            },
-            onLongPress: () {
+          title: Text(displayedCameras[i].name),
+          trailing: IconButton(
+            icon: Icon(displayedCameras[i].isFavourite
+                ? Icons.favorite
+                : Icons.favorite_border),
+            color: displayedCameras[i].isFavourite ? Colors.red : null,
+            onPressed: () {
               setState(() {
-                _selectCamera(displayedCameras[i]);
+                displayedCameras[i].isFavourite =
+                    !displayedCameras[i].isFavourite;
               });
             },
           ),
+          onTap: () {
+            if (selectedCameras.isEmpty) {
+              _showCameras([displayedCameras[i]]);
+            } else {
+              setState(() {
+                _selectCamera(displayedCameras[i]);
+              });
+            }
+          },
+          onLongPress: () {
+            setState(() {
+              _selectCamera(displayedCameras[i]);
+            });
+          },
         );
       },
     );

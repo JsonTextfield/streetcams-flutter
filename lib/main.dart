@@ -22,7 +22,11 @@ class StreetCamsApp extends StatelessWidget {
         CameraPage.routeName: (context) => const CameraPage(),
       },
       theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        appBarTheme: const AppBarTheme(color: Colors.black),
+        scaffoldBackgroundColor: Colors.black,
+      ),
       localizationsDelegates: const [
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,

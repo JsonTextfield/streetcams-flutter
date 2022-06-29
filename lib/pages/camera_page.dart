@@ -94,7 +94,6 @@ class _CameraImageState extends State<CameraImage> {
       });
     }
 
-    ImageProvider imageProvider;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height -
