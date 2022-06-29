@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import '../entities/camera.dart';
@@ -35,6 +36,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   var showList = true;
   var sortByDistance = false;
+  SharedPreferences? prefs;
   List<Camera> allCameras = [];
   List<Camera> displayedCameras = [];
   List<Camera> selectedCameras = [];
@@ -42,6 +44,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (prefs == null) {
+      getSharedPrefs().then((value) => {
+            setState(() {
+              accessSharedPrefs();
+            })
+          });
+    }
     _downloadNeighbourhoodList();
     return Scaffold(
       appBar: AppBar(
@@ -59,6 +68,7 @@ class _HomePageState extends State<HomePage> {
               allCameras
                   .sort((a, b) => a.sortableName.compareTo(b.sortableName));
               _resetDisplayedCameras();
+              accessSharedPrefs();
             }
             return Stack(
               children: [
@@ -146,6 +156,18 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       Visibility(
+        visible: selectedCameras.length < displayedCameras.length,
+        child: IconButton(
+          onPressed: () {
+            setState(() {
+              selectedCameras = displayedCameras;
+            });
+          },
+          icon: const Icon(Icons.select_all),
+          tooltip: 'Select all',
+        ),
+      ),
+      Visibility(
         visible: selectedCameras.isEmpty,
         child: IconButton(
           onPressed: () {
@@ -189,6 +211,7 @@ class _HomePageState extends State<HomePage> {
               setState(() {
                 displayedCameras[i].isFavourite =
                     !displayedCameras[i].isFavourite;
+                modifySharedPrefs();
               });
             },
           ),
@@ -282,6 +305,7 @@ class _HomePageState extends State<HomePage> {
     for (var element in selectedCameras) {
       element.isFavourite = allFave ? !element.isFavourite : true;
     }
+    modifySharedPrefs();
   }
 
   void _hideOptionClicked() {
@@ -297,6 +321,27 @@ class _HomePageState extends State<HomePage> {
     for (var camera in selectedCameras) {
       camera.isHidden = allHidden ? !camera.isHidden : true;
     }
+    modifySharedPrefs();
+  }
+
+  void modifySharedPrefs() {
+    for (var camera in displayedCameras) {
+      prefs?.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
+      prefs?.setBool('${camera.sortableName}.isHidden', camera.isHidden);
+    }
+  }
+
+  void accessSharedPrefs() {
+    for (var camera in displayedCameras) {
+      camera.isFavourite =
+          prefs?.getBool('${camera.sortableName}.isFavourite') ?? false;
+      camera.isHidden =
+          prefs?.getBool('${camera.sortableName}.isHidden') ?? false;
+    }
+  }
+
+  Future<void> getSharedPrefs() async {
+    prefs = await SharedPreferences.getInstance();
   }
 
   bool _allTrue(List<Camera> list, bool Function(Camera) predicate) {
@@ -359,7 +404,8 @@ Future<Position> _getCurrentLocation() async {
 
 List<Camera> _parseCameraJson(String jsonString) {
   List<dynamic> jsonArray = json.decode(jsonString);
-  return jsonArray.map((e) => Camera.fromJson(e)).toList();
+  var cameras = jsonArray.map((e) => Camera.fromJson(e)).toList();
+  return cameras;
 }
 
 List<Neighbourhood> _parseNeighbourhoodJson(String jsonString) {
