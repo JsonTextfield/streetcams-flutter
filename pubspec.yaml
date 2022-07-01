@@ -28,6 +28,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   google_maps_flutter: ^2.1.8
+  google_maps_flutter_web: ^0.4.0
   geolocator: ^9.0.0
   http: ^0.13.4
   shared_preferences: ^2.0.15

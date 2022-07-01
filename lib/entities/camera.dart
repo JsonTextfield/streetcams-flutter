@@ -8,6 +8,7 @@ class Camera extends BilingualObject {
   final int num;
   final Location location;
   final String type;
+  String neighbourhood = '';
 
   Camera({
     required this.num,

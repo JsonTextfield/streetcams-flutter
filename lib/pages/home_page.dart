@@ -44,28 +44,17 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (prefs == null) {
-      getSharedPrefs().then((value) => setState(() {}));
-    }
-    _downloadNeighbourhoodList();
     return Scaffold(
       appBar: AppBar(
         title: Text(BilingualObject.appName),
         actions: getAppBarActions(),
       ),
       body: FutureBuilder<List<Camera>>(
-        future: _downloadCameraList(),
+        future: downloadAll(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(child: Text('An error has occurred.'));
           } else if (snapshot.hasData) {
-            if (allCameras.isEmpty) {
-              allCameras = snapshot.data ?? displayedCameras;
-              allCameras
-                  .sort((a, b) => a.sortableName.compareTo(b.sortableName));
-              accessSharedPrefs();
-              _resetDisplayedCameras();
-            }
             return Stack(
               children: [
                 Visibility(visible: showList, child: getListView()),
@@ -151,7 +140,8 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       Visibility(
-        visible: selectedCameras.length < displayedCameras.length,
+        visible: selectedCameras.isEmpty ||
+            selectedCameras.length < displayedCameras.length,
         child: IconButton(
           onPressed: () {
             setState(() {
@@ -195,8 +185,15 @@ class _HomePageState extends State<HomePage> {
         return ListTile(
           tileColor: selectedCameras.contains(displayedCameras[i])
               ? Colors.blue
-              : Colors.transparent,
-          title: Text(displayedCameras[i].name),
+              : null,
+          dense: true,
+          title: Text(
+            displayedCameras[i].name,
+            style: const TextStyle(fontSize: 16),
+          ),
+          subtitle: displayedCameras[i].neighbourhood.isEmpty
+              ? null
+              : Text(displayedCameras[i].neighbourhood),
           trailing: IconButton(
             icon: Icon(displayedCameras[i].isFavourite
                 ? Icons.favorite
@@ -335,10 +332,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> getSharedPrefs() async {
-    prefs = await SharedPreferences.getInstance();
-  }
-
   bool _allTrue(List<Camera> list, bool Function(Camera) predicate) {
     return list.map(predicate).reduce((value, element) {
       return value && element;
@@ -375,6 +368,30 @@ class _HomePageState extends State<HomePage> {
     selectedCameras.add(camera);
     return true;
   }
+
+  Future<List<Camera>> downloadAll() async {
+    if (allCameras.isNotEmpty) return allCameras;
+    var time = DateTime.now();
+    prefs = await SharedPreferences.getInstance();
+    allCameras = await _downloadCameraList();
+    allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
+
+    neighbourhoods = await _downloadNeighbourhoodList();
+
+    for (var camera in allCameras) {
+      for (var neighbourhood in neighbourhoods) {
+        if (neighbourhood.containsCamera(camera)) {
+          camera.neighbourhood = neighbourhood.name;
+        }
+      }
+    }
+    accessSharedPrefs();
+    _resetDisplayedCameras();
+
+    print(
+        'Operation took ${DateTime.now().millisecondsSinceEpoch - time.millisecondsSinceEpoch} ms');
+    return allCameras;
+  }
 }
 
 Future<Position> _getCurrentLocation() async {
@@ -398,14 +415,13 @@ Future<Position> _getCurrentLocation() async {
 }
 
 List<Camera> _parseCameraJson(String jsonString) {
-  List<dynamic> jsonArray = json.decode(jsonString);
-  var cameras = jsonArray.map((e) => Camera.fromJson(e)).toList();
-  return cameras;
+  List jsonArray = json.decode(jsonString);
+  return jsonArray.map((json) => Camera.fromJson(json)).toList();
 }
 
 List<Neighbourhood> _parseNeighbourhoodJson(String jsonString) {
-  List<dynamic> jsonArray = json.decode(jsonString)['features'];
-  return jsonArray.map((e) => Neighbourhood.fromJson(e)).toList();
+  List jsonArray = json.decode(jsonString)['features'];
+  return jsonArray.map((json) => Neighbourhood.fromJson(json)).toList();
 }
 
 Future<List<Camera>> _downloadCameraList() async {

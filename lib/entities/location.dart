@@ -18,8 +18,8 @@ class Location {
 
   factory Location.createFromJsonArray(List<dynamic> json) {
     return Location(
-      lat: json[0],
-      lon: json[1],
+      lat: json[1],
+      lon: json[0],
     );
   }
 
