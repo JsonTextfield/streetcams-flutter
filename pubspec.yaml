@@ -32,6 +32,8 @@ dependencies:
   geolocator: ^9.0.0
   http: ^0.13.4
   shared_preferences: ^2.0.15
+  shared_preferences_windows: ^2.1.1
+  shared_preferences_web: ^2.0.4
   flutter:
     sdk: flutter
   flutter_localizations:
@@ -93,3 +95,5 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_intl:
+  enabled: true
