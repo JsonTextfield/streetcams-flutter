@@ -65,9 +65,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  var _showList = true;
-  var _stackIndex = 0;
-  var _sortByDistance = false;
+  bool _showList = true;
+  bool _sortByDistance = false;
+  int _stackIndex = 0;
   SharedPreferences? prefs;
   List<Camera> allCameras = [];
   List<Camera> displayedCameras = [];
@@ -214,7 +214,7 @@ class _HomePageState extends State<HomePage> {
         child: IconButton(
           onPressed: () {
             setState(() {
-              selectedCameras = List.from(displayedCameras);
+              selectedCameras = displayedCameras.toList();
             });
           },
           icon: const Icon(Icons.select_all),
