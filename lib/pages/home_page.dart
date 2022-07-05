@@ -16,6 +16,8 @@ import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
 import 'camera_page.dart';
 
+bool isLocationEnabled = true;
+
 Future<List<Camera>> _downloadCameraList() async {
   var url = Uri.parse('https://traffic.ottawa.ca/beta/camera_list');
   return compute(_parseCameraJson, await http.read(url));
@@ -29,8 +31,8 @@ Future<List<Neighbourhood>> _downloadNeighbourhoodList() async {
 
 Future<Position> _getCurrentLocation() async {
   // Test if location services are enabled.
-  bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
+  isLocationEnabled = await Geolocator.isLocationServiceEnabled();
+  if (!isLocationEnabled) {
     return Future.error('Location services are disabled.');
   }
 
@@ -85,7 +87,7 @@ class _HomePageState extends State<HomePage> {
         future: _downloadAll(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text('An error has occurred.'));
+            return Center(child: Text(BilingualObject.translate('error')));
           } else if (snapshot.hasData) {
             return Column(
               children: [
@@ -121,6 +123,12 @@ class _HomePageState extends State<HomePage> {
   PopupMenuItem convertToOverflowAction(Visibility visibility) {
     var iconButton = visibility.child as IconButton;
     return PopupMenuItem(
+      padding: const EdgeInsets.all(0),
+      onTap: () {
+        setState(() {
+          iconButton.onPressed?.call();
+        });
+      },
       child: ListTile(
         leading: iconButton.icon,
         title: Text(iconButton.tooltip ?? ''),
@@ -142,7 +150,7 @@ class _HomePageState extends State<HomePage> {
       Visibility(
         visible: selectedCameras.isNotEmpty,
         child: IconButton(
-          tooltip: 'Clear',
+          tooltip: BilingualObject.translate('clear'),
           onPressed: () {
             setState(() {
               selectedCameras.clear();
@@ -156,7 +164,7 @@ class _HomePageState extends State<HomePage> {
       Visibility(
         visible: selectedCameras.isNotEmpty && selectedCameras.length < 5,
         child: IconButton(
-          tooltip: 'Show',
+          tooltip: BilingualObject.translate('showCameras'),
           onPressed: () {
             _showCameras(selectedCameras);
           },
@@ -171,7 +179,8 @@ class _HomePageState extends State<HomePage> {
             _sortCameras().then((value) => setState(() {}));
           },
           icon: const Icon(Icons.sort),
-          tooltip: 'Sort by ${_sortByDistance ? 'name' : 'distance'}',
+          tooltip: BilingualObject.translate(
+              'sort${_sortByDistance ? 'Name' : 'Distance'}'),
         ),
       ),
       // Show map/list
@@ -184,7 +193,7 @@ class _HomePageState extends State<HomePage> {
             });
           }),
           icon: Icon(_showList ? Icons.map : Icons.list),
-          tooltip: _showList ? 'Map' : 'List',
+          tooltip: BilingualObject.translate(_showList ? 'map' : 'list'),
         ),
       ),
       // Favourite cameras
@@ -194,7 +203,7 @@ class _HomePageState extends State<HomePage> {
             setState(_favouriteOptionClicked);
           },
           icon: const Icon(Icons.favorite),
-          tooltip: 'Favourites',
+          tooltip: BilingualObject.translate('favourites'),
         ),
       ),
       // Hidden cameras
@@ -204,7 +213,7 @@ class _HomePageState extends State<HomePage> {
             setState(_hideOptionClicked);
           },
           icon: const Icon(Icons.visibility_off),
-          tooltip: 'Hidden',
+          tooltip: BilingualObject.translate('hidden'),
         ),
       ),
       // Select all cameras
@@ -218,7 +227,7 @@ class _HomePageState extends State<HomePage> {
             });
           },
           icon: const Icon(Icons.select_all),
-          tooltip: 'Select all',
+          tooltip: BilingualObject.translate('selectAll'),
         ),
       ),
       // Show random camera
@@ -234,7 +243,7 @@ class _HomePageState extends State<HomePage> {
             ]);
           },
           icon: const Icon(Icons.casino),
-          tooltip: 'Random',
+          tooltip: BilingualObject.translate('random'),
         ),
       ),
       // Shuffle cameras
@@ -248,13 +257,13 @@ class _HomePageState extends State<HomePage> {
                 shuffle: true);
           },
           icon: const Icon(Icons.shuffle),
-          tooltip: 'Shuffle',
+          tooltip: BilingualObject.translate('shuffle'),
         ),
       ),
       // About StreetCams
       Visibility(
         child: IconButton(
-          tooltip: 'About',
+          tooltip: BilingualObject.translate('about'),
           icon: const Icon(Icons.info),
           onPressed: () {
             showAboutDialog(context: context, applicationVersion: '1.0.0+1');
@@ -271,7 +280,7 @@ class _HomePageState extends State<HomePage> {
 
       actions = actions.sublist(0, maxActions);
       actions.add(PopupMenuButton(
-        tooltip: 'More',
+        tooltip: BilingualObject.translate('more'),
         position: PopupMenuPosition.under,
         itemBuilder: (context) {
           return overflowActions
@@ -293,11 +302,13 @@ class _HomePageState extends State<HomePage> {
               child: Text(
                 Intl.plural(
                   displayedCameras.length,
-                  one: '${displayedCameras.length} camera',
-                  other: '${displayedCameras.length} cameras',
+                  one:
+                      '${displayedCameras.length} ${BilingualObject.translate('camera')}',
+                  other:
+                      '${displayedCameras.length} ${BilingualObject.translate('cameras')}',
                   name: 'displayedCamerasCounter',
                   args: [displayedCameras.length],
-                  desc: 'Number of displayed cameras',
+                  desc: 'Number of displayed cameras.',
                 ),
               ),
             ),

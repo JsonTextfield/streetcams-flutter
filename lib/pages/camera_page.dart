@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import '../entities/camera.dart';
 
@@ -51,7 +52,7 @@ class _CameraState extends State<CameraPage> {
                 padding: const EdgeInsets.all(10),
                 onPressed: Navigator.of(context).pop,
                 icon: const Icon(Icons.arrow_back),
-                tooltip: 'Back',
+                tooltip: BilingualObject.translate('back'),
               ),
             ),
           ],
