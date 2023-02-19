@@ -4,11 +4,13 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sprintf/sprintf.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import '../entities/camera.dart';
@@ -17,6 +19,8 @@ import '../entities/neighbourhood.dart';
 import 'camera_page.dart';
 
 bool isLocationEnabled = true;
+
+enum SortMode { name, distance, neighbourhood }
 
 Future<List<Camera>> _downloadCameraList() async {
   var url = Uri.parse('https://traffic.ottawa.ca/beta/camera_list');
@@ -67,21 +71,46 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final int _maxCameras = 8;
   bool _showList = true;
-  bool _sortByDistance = false;
-  int _stackIndex = 0;
-  SharedPreferences? prefs;
-  List<Camera> allCameras = [];
-  List<Camera> displayedCameras = [];
-  List<Camera> selectedCameras = [];
-  List<Neighbourhood> neighbourhoods = [];
+  bool _isFiltered = false;
+  bool _showSearchBox = false;
+  bool _sortedByName = true;
+  int _listPosition = 0;
+  int _pressedIndex = -1;
+  String _query = '';
+  SharedPreferences? _prefs;
+  List<Camera> _allCameras = [];
+  List<Camera> _displayedCameras = [];
+  List<Camera> _selectedCameras = [];
+  List<Neighbourhood> _neighbourhoods = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(BilingualObject.appName),
+        title: (!_showSearchBox || _selectedCameras.isNotEmpty)
+            ? Text(BilingualObject.appName)
+            : TextField(
+                textInputAction: TextInputAction.done,
+                onSubmitted: (value) {
+                  _query = value;
+                  setState(_filterDisplayedCamerasFromQuery);
+                },
+                decoration: InputDecoration(
+                    hintText: Intl.plural(
+                  _displayedCameras.length,
+                  one: sprintf(BilingualObject.translate('searchCamera'),
+                      [_displayedCameras.length]),
+                  other: sprintf(BilingualObject.translate('searchCameras'),
+                      [_displayedCameras.length]),
+                  name: 'displayedCamerasCounter',
+                  args: [_displayedCameras.length],
+                  desc: 'Number of displayed cameras.',
+                )),
+              ),
         actions: getAppBarActions(),
+        backgroundColor: _selectedCameras.isEmpty ? null : Colors.blue,
       ),
       body: FutureBuilder<List<Camera>>(
         future: _downloadAll(),
@@ -91,22 +120,12 @@ class _HomePageState extends State<HomePage> {
           } else if (snapshot.hasData) {
             return Column(
               children: [
-                /*Stack(
-                  children: [
-                    const Visibility(
-                      child: Text('Search by neighbourhood'),
-                    ),
-                    Visibility(visible: true, child: getSearchBox())
-                  ],
-                ),*/
                 Expanded(
                   child: IndexedStack(
-                    index: _stackIndex,
+                    index: _showList ? 0 : 1,
                     children: [
                       getListView(),
-                      Center(
-                        child: getMapView(),
-                      ),
+                      getMapView(),
                     ],
                   ),
                 ),
@@ -120,19 +139,56 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  PopupMenuItem convertToOverflowAction(Visibility visibility) {
-    var iconButton = visibility.child as IconButton;
+  Widget getSectionIndex() {
+    List<Widget> result = [];
+    Set<String> indices = {};
+    for (int i = 0; i < _allCameras.length; i++) {
+      if (!indices.contains(_allCameras[i].sortableName[0])) {
+        indices.add(_allCameras[i].sortableName[0]);
+        result.add(
+          Expanded(
+            child: GestureDetector(
+              child: Container(
+                padding: const EdgeInsets.all(10),
+                child: Text(
+                  _allCameras[i].sortableName[0],
+                  style: TextStyle(
+                      color: _pressedIndex == i ? Colors.blue : null),
+                ),
+              ),
+              onTapDown: (d) {
+                setState(() {
+                  _pressedIndex = i;
+                });
+              },
+              onTapUp: (d) {
+                setState(() {
+                  _pressedIndex = -1;
+                  _listPosition = i;
+                });
+              },
+            ),
+          ),
+        );
+      }
+    }
+
+    return Visibility(
+      visible: !_isFiltered && _sortedByName,
+      child: Column(children: result),
+    );
+  }
+
+  PopupMenuItem convertToOverflowAction(IconButton iconButton) {
     return PopupMenuItem(
       padding: const EdgeInsets.all(0),
-      onTap: () {
-        setState(() {
-          iconButton.onPressed?.call();
-        });
-      },
       child: ListTile(
         leading: iconButton.icon,
         title: Text(iconButton.tooltip ?? ''),
-        onTap: iconButton.onPressed,
+        onTap: () {
+          Navigator.pop(context);
+          iconButton.onPressed?.call();
+        },
       ),
     );
   }
@@ -141,55 +197,62 @@ class _HomePageState extends State<HomePage> {
     List<Widget> actions = [
       // Number of selected cameras
       Visibility(
-        visible: selectedCameras.isNotEmpty,
+        visible: _selectedCameras.isNotEmpty,
         child: Center(
-          child: Text('${selectedCameras.length}'),
+          child: Text('${_selectedCameras.length} selected'),
         ),
       ),
       // Clear selected cameras
       Visibility(
-        visible: selectedCameras.isNotEmpty,
+        visible: _selectedCameras.isNotEmpty,
         child: IconButton(
           tooltip: BilingualObject.translate('clear'),
           onPressed: () {
             setState(() {
-              selectedCameras.clear();
+              _selectedCameras.clear();
               _resetDisplayedCameras();
             });
           },
           icon: const Icon(Icons.close),
         ),
       ),
+
+      Visibility(
+        visible: _selectedCameras.isEmpty,
+        child: IconButton(
+          tooltip: BilingualObject.translate('search'),
+          onPressed: () {
+            setState(() {
+              if (_showSearchBox) {
+                _resetDisplayedCameras();
+              }
+              _selectedCameras.clear();
+              _query = '';
+              _showSearchBox = !_showSearchBox;
+            });
+          },
+          icon: Icon(_showSearchBox ? Icons.clear : Icons.search),
+        ),
+      ),
       // Show selected cameras
       Visibility(
-        visible: selectedCameras.isNotEmpty && selectedCameras.length < 5,
+        visible: _selectedCameras.isNotEmpty &&
+            _selectedCameras.length <= _maxCameras,
         child: IconButton(
           tooltip: BilingualObject.translate('showCameras'),
           onPressed: () {
-            _showCameras(selectedCameras);
+            _showCameras(_selectedCameras);
           },
           icon: const Icon(Icons.camera_alt),
         ),
       ),
-      // Sort by distance/name
-      Visibility(
-        visible: selectedCameras.isEmpty && _showList,
-        child: IconButton(
-          onPressed: () {
-            _sortCameras().then((value) => setState(() {}));
-          },
-          icon: const Icon(Icons.sort),
-          tooltip: BilingualObject.translate(
-              'sort${_sortByDistance ? 'Name' : 'Distance'}'),
-        ),
-      ),
       // Show map/list
       Visibility(
+        visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
         child: IconButton(
           onPressed: (() {
             setState(() {
               _showList = !_showList;
-              _stackIndex = _showList ? 0 : 1;
             });
           }),
           icon: Icon(_showList ? Icons.map : Icons.list),
@@ -202,8 +265,8 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             setState(_favouriteOptionClicked);
           },
-          icon: const Icon(Icons.favorite),
-          tooltip: BilingualObject.translate('favourites'),
+          icon: getFavouriteIcon(),
+          tooltip: getFavouriteTooltip(),
         ),
       ),
       // Hidden cameras
@@ -212,35 +275,46 @@ class _HomePageState extends State<HomePage> {
           onPressed: () {
             setState(_hideOptionClicked);
           },
-          icon: const Icon(Icons.visibility_off),
-          tooltip: BilingualObject.translate('hidden'),
+          icon: getHiddenIcon(),
+          tooltip: getHiddenTooltip(),
         ),
       ),
       // Select all cameras
       Visibility(
-        visible: selectedCameras.isEmpty ||
-            selectedCameras.length < displayedCameras.length,
+        visible: _selectedCameras.isNotEmpty &&
+            _selectedCameras.length < _displayedCameras.length,
         child: IconButton(
           onPressed: () {
             setState(() {
-              selectedCameras = displayedCameras.toList();
+              _selectedCameras = _displayedCameras.toList();
             });
           },
           icon: const Icon(Icons.select_all),
           tooltip: BilingualObject.translate('selectAll'),
         ),
       ),
+      // Sort by distance/name
+      Visibility(
+        visible: _selectedCameras.isEmpty && _showList,
+        child: PopupMenuButton(
+          position: PopupMenuPosition.under,
+          itemBuilder: (context) {
+            return getSortingOptions();
+          },
+          icon: const Icon(Icons.sort),
+          tooltip: BilingualObject.translate('sort'),
+        ),
+      ),
       // Show random camera
       Visibility(
-        visible: selectedCameras.isEmpty,
+        visible: _selectedCameras.isEmpty,
         child: IconButton(
           onPressed: () {
-            if (allCameras.isEmpty) return;
-            _showCameras([
-              allCameras
-                  .where((element) => !element.isHidden)
-                  .toList()[Random().nextInt(displayedCameras.length)]
-            ]);
+            var visibleCameras =
+                _allCameras.where((element) => !element.isHidden).toList();
+            if (visibleCameras.isEmpty) return;
+            _showCameras(
+                [visibleCameras[Random().nextInt(_allCameras.length)]]);
           },
           icon: const Icon(Icons.casino),
           tooltip: BilingualObject.translate('random'),
@@ -248,12 +322,12 @@ class _HomePageState extends State<HomePage> {
       ),
       // Shuffle cameras
       Visibility(
-        visible: selectedCameras.isEmpty,
+        visible: _selectedCameras.isEmpty,
         child: IconButton(
           onPressed: () {
-            if (allCameras.isEmpty) return;
+            if (_allCameras.isEmpty) return;
             _showCameras(
-                allCameras.where((element) => !element.isHidden).toList(),
+                _allCameras.where((element) => !element.isHidden).toList(),
                 shuffle: true);
           },
           icon: const Icon(Icons.shuffle),
@@ -262,6 +336,7 @@ class _HomePageState extends State<HomePage> {
       ),
       // About StreetCams
       Visibility(
+        visible: _selectedCameras.isEmpty,
         child: IconButton(
           tooltip: BilingualObject.translate('about'),
           icon: const Icon(Icons.info),
@@ -271,43 +346,134 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     ];
-    var maxActions = (MediaQuery.of(context).size.width * .75 / 48).floor();
-    if (actions.length > maxActions) {
-      List<Widget> overflowActions = actions
-          .sublist(maxActions, actions.length)
-          .where((element) => (element as Visibility).visible)
+    int maxActions = (MediaQuery.of(context).size.width * .5 / 48).floor();
+    var visibleActions = actions
+        .where((action) => action is Visibility && action.visible)
+        .toList();
+    if (visibleActions.length > maxActions) {
+      var overflowActions = visibleActions
+          .sublist(maxActions)
+          .where((action) => action is Visibility && action.child is IconButton)
+          .map((visibility) => convertToOverflowAction(
+              (visibility as Visibility).child as IconButton))
           .toList();
-
-      actions = actions.sublist(0, maxActions);
-      actions.add(PopupMenuButton(
-        tooltip: BilingualObject.translate('more'),
-        position: PopupMenuPosition.under,
-        itemBuilder: (context) {
-          return overflowActions
-              .map((action) => convertToOverflowAction(action as Visibility))
-              .toList();
-        },
-      ));
+      visibleActions = visibleActions.sublist(0, maxActions);
+      visibleActions.add(
+        PopupMenuButton(
+          tooltip: BilingualObject.translate('more'),
+          position: PopupMenuPosition.under,
+          itemBuilder: (context) {
+            return overflowActions;
+          },
+        ),
+      );
     }
-    return actions;
+    return visibleActions;
+  }
+
+  String getFavouriteTooltip() {
+    String result = '';
+    if (_selectedCameras.isEmpty) {
+      result = 'favourites';
+    } else if (_selectedCameras.every((camera) => camera.isFavourite)) {
+      result = 'unfavourite';
+    } else {
+      result = 'favourite';
+    }
+    return BilingualObject.translate(result);
+  }
+
+  String getHiddenTooltip() {
+    String result = '';
+    if (_selectedCameras.isEmpty) {
+      result = 'hidden';
+    } else if (_selectedCameras.every((camera) => camera.isHidden)) {
+      result = 'unhide';
+    } else {
+      result = 'hide';
+    }
+    return BilingualObject.translate(result);
+  }
+
+  Icon getFavouriteIcon() {
+    if (_selectedCameras.isEmpty ||
+        _selectedCameras.any((camera) => !camera.isFavourite)) {
+      return const Icon(Icons.star);
+    }
+    return const Icon(Icons.star_border);
+  }
+
+  Icon getHiddenIcon() {
+    if (_selectedCameras.isEmpty || _selectedCameras.any((c) => !c.isHidden)) {
+      return const Icon(Icons.visibility_off);
+    }
+    return const Icon(Icons.visibility);
+  }
+
+  List<PopupMenuItem> getSortingOptions() {
+    return [
+      PopupMenuItem(
+        onTap: () {
+          setState(() {
+            _sortCameras(SortMode.name);
+          });
+        },
+        child: Text(
+          BilingualObject.translate('sortName'),
+        ),
+      ),
+      PopupMenuItem(
+        onTap: () {
+          setState(() {
+            _sortCameras(SortMode.distance);
+          });
+        },
+        child: Text(
+          BilingualObject.translate('sortDistance'),
+        ),
+      ),
+      PopupMenuItem(
+        onTap: () {
+          setState(() {
+            _sortCameras(SortMode.neighbourhood);
+          });
+        },
+        child: Text(
+          BilingualObject.translate('sortNeighbourhood'),
+        ),
+      ),
+    ];
   }
 
   Widget getListView() {
+    return Row(children: [
+      Flexible(
+        flex: 5,
+        child: getSectionIndex(),
+      ),
+      Flexible(
+        flex: 95,
+        child: getListViewBuilder(),
+      ),
+    ]);
+  }
+
+  ListView getListViewBuilder() {
     return ListView.builder(
-      itemCount: displayedCameras.length + 1,
+      itemCount: _displayedCameras.length + 1,
       itemBuilder: (context, i) {
-        if (i == displayedCameras.length) {
+        if (i == _displayedCameras.length) {
           return ListTile(
             title: Center(
               child: Text(
                 Intl.plural(
-                  displayedCameras.length,
+                  _displayedCameras.length,
                   one:
-                      '${displayedCameras.length} ${BilingualObject.translate('camera')}',
+                      '${_displayedCameras.length} ${BilingualObject.translate('camera')}',
                   other:
-                      '${displayedCameras.length} ${BilingualObject.translate('cameras')}',
+                      '${_displayedCameras.length} ${BilingualObject.translate('cameras')}',
                   name: 'displayedCamerasCounter',
-                  args: [displayedCameras.length],
+                  args: [_displayedCameras.length],
                   desc: 'Number of displayed cameras.',
                 ),
               ),
@@ -315,42 +481,42 @@ class _HomePageState extends State<HomePage> {
           );
         }
         return ListTile(
-          tileColor: selectedCameras.contains(displayedCameras[i])
+          tileColor: _selectedCameras.contains(_displayedCameras[i])
               ? Colors.blue
               : null,
           dense: true,
           title: Text(
-            displayedCameras[i].name,
+            _displayedCameras[i].name,
             style: const TextStyle(fontSize: 16),
           ),
-          subtitle: displayedCameras[i].neighbourhood.isNotEmpty
-              ? Text(displayedCameras[i].neighbourhood)
+          subtitle: _displayedCameras[i].neighbourhood.isNotEmpty
+              ? Text(_displayedCameras[i].neighbourhood)
               : null,
           trailing: IconButton(
-            icon: Icon(displayedCameras[i].isFavourite
-                ? Icons.favorite
-                : Icons.favorite_border),
-            color: displayedCameras[i].isFavourite ? Colors.red : null,
+            icon: Icon(_displayedCameras[i].isFavourite
+                ? Icons.star
+                : Icons.star_border),
+            color: _displayedCameras[i].isFavourite ? Colors.yellow : null,
             onPressed: () {
               setState(() {
-                displayedCameras[i].isFavourite =
-                    !displayedCameras[i].isFavourite;
+                _displayedCameras[i].isFavourite =
+                    !_displayedCameras[i].isFavourite;
                 _writeSharedPrefs();
               });
             },
           ),
           onTap: () {
-            if (selectedCameras.isEmpty) {
-              _showCameras([displayedCameras[i]]);
+            if (_selectedCameras.isEmpty) {
+              _showCameras([_displayedCameras[i]]);
             } else {
               setState(() {
-                _selectCamera(displayedCameras[i]);
+                _selectCamera(_displayedCameras[i]);
               });
             }
           },
           onLongPress: () {
             setState(() {
-              _selectCamera(displayedCameras[i]);
+              _selectCamera(_displayedCameras[i]);
             });
           },
         );
@@ -366,12 +532,12 @@ class _HomePageState extends State<HomePage> {
 
     LatLngBounds? bounds;
     CameraUpdate? cameraUpdate;
-    if (displayedCameras.isNotEmpty) {
-      var minLat = displayedCameras[0].location.lat;
-      var maxLat = displayedCameras[0].location.lat;
-      var minLon = displayedCameras[0].location.lon;
-      var maxLon = displayedCameras[0].location.lon;
-      for (var camera in displayedCameras) {
+    if (_displayedCameras.isNotEmpty) {
+      var minLat = _displayedCameras[0].location.lat;
+      var maxLat = _displayedCameras[0].location.lat;
+      var minLon = _displayedCameras[0].location.lon;
+      var maxLon = _displayedCameras[0].location.lon;
+      for (var camera in _displayedCameras) {
         minLat = min(minLat, camera.location.lat);
         maxLat = max(maxLat, camera.location.lat);
         minLon = min(minLon, camera.location.lon);
@@ -386,7 +552,7 @@ class _HomePageState extends State<HomePage> {
         cameraTargetBounds: CameraTargetBounds(bounds),
         initialCameraPosition: cameraPosition,
         minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
-        markers: displayedCameras
+        markers: _displayedCameras
             .map((camera) => Marker(
                   icon: _getMarkerIcon(camera),
                   markerId: MarkerId(camera.id.toString()),
@@ -400,6 +566,11 @@ class _HomePageState extends State<HomePage> {
                 ))
             .toSet(),
         onMapCreated: (GoogleMapController controller) {
+          if (Theme.of(context).brightness == Brightness.dark) {
+            rootBundle.loadString('assets/dark_mode.json').then((string) {
+              controller.setMapStyle(string);
+            });
+          }
           if (cameraUpdate != null) {
             controller.animateCamera(cameraUpdate);
           }
@@ -411,12 +582,10 @@ class _HomePageState extends State<HomePage> {
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
-          setState(() {
-            _resetDisplayedCameras();
-          });
+          setState(_resetDisplayedCameras);
           return const Iterable<String>.empty();
         }
-        return neighbourhoods.map((neighbourhood) => neighbourhood.name).where(
+        return _neighbourhoods.map((neighbourhood) => neighbourhood.name).where(
             (neighbourhoodName) => neighbourhoodName
                 .toLowerCase()
                 .contains(textEditingValue.text.toLowerCase()));
@@ -431,17 +600,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<Camera>> _downloadAll() async {
-    if (allCameras.isNotEmpty) return allCameras;
+    if (_allCameras.isNotEmpty) return _allCameras;
 
-    prefs = await SharedPreferences.getInstance();
+    _prefs = await SharedPreferences.getInstance();
 
-    allCameras = await _downloadCameraList();
-    allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
+    _allCameras = await _downloadCameraList();
+    _allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
 
-    neighbourhoods = await _downloadNeighbourhoodList();
+    _neighbourhoods = await _downloadNeighbourhoodList();
 
-    for (var camera in allCameras) {
-      for (var neighbourhood in neighbourhoods) {
+    for (var camera in _allCameras) {
+      for (var neighbourhood in _neighbourhoods) {
         if (neighbourhood.containsCamera(camera)) {
           camera.neighbourhood = neighbourhood.name;
         }
@@ -449,11 +618,11 @@ class _HomePageState extends State<HomePage> {
     }
     _readSharedPrefs();
     _resetDisplayedCameras();
-    return allCameras;
+    return _allCameras;
   }
 
   void _favouriteOptionClicked() {
-    if (selectedCameras.isEmpty) {
+    if (_selectedCameras.isEmpty) {
       _filterDisplayedCameras((camera) => camera.isFavourite);
     } else {
       _favouriteSelectedCameras();
@@ -461,34 +630,54 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _favouriteSelectedCameras() {
-    var allFave = selectedCameras.every((camera) => camera.isFavourite);
-    for (var element in selectedCameras) {
+    var allFave = _selectedCameras.every((camera) => camera.isFavourite);
+    for (var element in _selectedCameras) {
       element.isFavourite = !allFave;
     }
     _writeSharedPrefs();
   }
 
   void _filterDisplayedCameras(bool Function(Camera) predicate) {
-    // If no cameras are displayed, or every displayed camera satisfies the
-    // predicate, reset the displayed cameras.
-    if (displayedCameras.isEmpty || displayedCameras.every(predicate)) {
-      return _resetDisplayedCameras();
+    if (_isFiltered) {
+      _resetDisplayedCameras();
+    } else {
+      _displayedCameras = _allCameras.where(predicate).toList();
+      _isFiltered = true;
     }
-    displayedCameras = allCameras.where(predicate).toList();
+  }
+
+  void _filterDisplayedCamerasFromQuery() {
+    List<Camera> result = _displayedCameras;
+    String q = _query.toLowerCase();
+    if (q.startsWith('f:')) {
+      q = q.substring(2).trim();
+      result.removeWhere((camera) => !camera.isFavourite);
+    } else if (q.startsWith('h:')) {
+      q = q.substring(2).trim();
+      result.removeWhere((camera) => !camera.isHidden);
+    } else if (q.startsWith('n:')) {
+      q = q.substring(2).trim();
+      result.removeWhere((cam) => !cam.neighbourhood.toLowerCase().contains(q));
+    }
+    if (q.trim().isNotEmpty) {
+      result.removeWhere((camera) => !camera.name.toLowerCase().contains(q));
+    }
+    _displayedCameras = result;
+    _isFiltered = true;
   }
 
   BitmapDescriptor _getMarkerIcon(Camera camera) {
-    if (selectedCameras.contains(camera)) {
+    if (_selectedCameras.contains(camera)) {
       return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
     }
     if (camera.isFavourite) {
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRose);
+      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
     }
     return BitmapDescriptor.defaultMarker;
   }
 
   void _hideOptionClicked() {
-    if (selectedCameras.isEmpty) {
+    if (_selectedCameras.isEmpty) {
       _filterDisplayedCameras((camera) => camera.isHidden);
     } else {
       _hideSelectedCameras();
@@ -496,63 +685,84 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _hideSelectedCameras() {
-    var allHidden = selectedCameras.every((camera) => camera.isHidden);
-    for (var camera in selectedCameras) {
+    var allHidden = _selectedCameras.every((camera) => camera.isHidden);
+    for (var camera in _selectedCameras) {
       camera.isHidden = !allHidden;
     }
     _writeSharedPrefs();
   }
 
   void _readSharedPrefs() {
-    for (var camera in allCameras) {
-      camera.isFavourite =
-          prefs?.getBool('${camera.sortableName}.isFavourite') ?? false;
-      camera.isHidden =
-          prefs?.getBool('${camera.sortableName}.isHidden') ?? false;
+    for (var c in _allCameras) {
+      c.isFavourite = _prefs?.getBool('${c.sortableName}.isFavourite') ?? false;
+      c.isHidden = _prefs?.getBool('${c.sortableName}.isHidden') ?? false;
     }
   }
 
   void _resetDisplayedCameras() {
-    displayedCameras = allCameras.where((camera) => !camera.isHidden).toList();
+    _displayedCameras = _allCameras.where((cam) => !cam.isHidden).toList();
+    _isFiltered = false;
   }
 
   /// Adds/removes a [Camera] to/from the selected camera list.
   /// Returns true if the [Camera] was added, or false if it was removed.
   bool _selectCamera(Camera camera) {
-    if (selectedCameras.contains(camera)) {
-      selectedCameras.remove(camera);
+    if (_selectedCameras.contains(camera)) {
+      _selectedCameras.remove(camera);
       return false;
     }
-    selectedCameras.add(camera);
+    _selectedCameras.add(camera);
     return true;
   }
 
   void _showCameras(List<Camera> cameras, {shuffle = false}) {
-    if (cameras.isEmpty) return;
-    Navigator.pushNamed(
-      context,
-      CameraPage.routeName,
-      arguments: [cameras, shuffle],
-    );
+    if (cameras.isNotEmpty) {
+      Navigator.pushNamed(
+        context,
+        CameraPage.routeName,
+        arguments: [cameras, shuffle],
+      );
+    }
   }
 
-  Future<void> _sortCameras() async {
-    _sortByDistance = !_sortByDistance;
-    if (_sortByDistance) {
-      var position = await _getCurrentLocation();
-      var location = Location(lat: position.latitude, lon: position.longitude);
-      displayedCameras.sort((a, b) => location
-          .distanceTo(a.location)
-          .compareTo(location.distanceTo(b.location)));
-    } else {
-      displayedCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
+  Future<void> _sortCameras(SortMode sortMode) async {
+    switch (sortMode) {
+      case SortMode.name:
+        _displayedCameras
+            .sort((a, b) => a.sortableName.compareTo(b.sortableName));
+        _sortedByName = true;
+        break;
+
+      case SortMode.distance:
+        var position = await _getCurrentLocation();
+        var location =
+            Location(lat: position.latitude, lon: position.longitude);
+        _displayedCameras.sort((a, b) => location
+            .distanceTo(a.location)
+            .compareTo(location.distanceTo(b.location)));
+        _sortedByName = false;
+        break;
+
+      case SortMode.neighbourhood:
+        _displayedCameras.sort((a, b) {
+          int result = a.neighbourhood.compareTo(b.neighbourhood);
+          if (a.neighbourhood.compareTo(b.neighbourhood) != 0) {
+            return result;
+          }
+          return a.sortableName.compareTo(b.sortableName);
+        });
+        _sortedByName = false;
+        break;
+
+      default:
+        break;
     }
   }
 
   void _writeSharedPrefs() {
-    for (var camera in displayedCameras) {
-      prefs?.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
-      prefs?.setBool('${camera.sortableName}.isHidden', camera.isHidden);
+    for (var camera in _displayedCameras) {
+      _prefs?.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
+      _prefs?.setBool('${camera.sortableName}.isHidden', camera.isHidden);
     }
   }
 }

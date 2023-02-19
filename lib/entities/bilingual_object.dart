@@ -54,6 +54,10 @@ class BilingualObject {
       en: 'About',
       fr: 'À propos de',
     },
+    'search': {
+      en: 'Search',
+      fr: 'Chercher',
+    },
     'sortName': {
       en: 'Sort by name',
       fr: 'Trier par nom',
@@ -61,6 +65,14 @@ class BilingualObject {
     'sortDistance': {
       en: 'Sort by distance',
       fr: 'Trier par distance',
+    },
+    'sortNeighbourhood': {
+      en: 'Sort by neighbourhood',
+      fr: 'Trier par quartier',
+    },
+    'sort': {
+      en: 'Sort',
+      fr: 'Trier',
     },
     'list': {
       en: 'List',
@@ -78,9 +90,25 @@ class BilingualObject {
       en: 'Hidden',
       fr: 'Cachées',
     },
+    'hide': {
+      en: 'Hide',
+      fr: 'Cacher',
+    },
+    'unhide': {
+      en: 'Unhide',
+      fr: 'Afficher',
+    },
     'favourites': {
       en: 'Favourites',
       fr: 'Favoris',
+    },
+    'favourite': {
+      en: 'Favourite',
+      fr: 'Favori',
+    },
+    'unfavourite': {
+      en: 'Unfavourite',
+      fr: 'Déconseillé',
     },
     'error': {
       en: 'An error has occurred.',
@@ -97,6 +125,14 @@ class BilingualObject {
     'cameras': {
       en: 'cameras',
       fr: 'caméras',
+    },
+    'searchCamera': {
+      en: 'Search from %d camera',
+      fr: 'Chercher de %d caméra',
+    },
+    'searchCameras': {
+      en: 'Search from %d cameras',
+      fr: 'Chercher de %d caméras',
     },
     'back': {
       en: 'Back',
