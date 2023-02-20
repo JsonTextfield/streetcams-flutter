@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sprintf/sprintf.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
@@ -71,12 +73,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final ItemScrollController _itemScrollController = ItemScrollController();
+
   final int _maxCameras = 8;
   bool _showList = true;
   bool _isFiltered = false;
   bool _showSearchBox = false;
   bool _sortedByName = true;
-  int _listPosition = 0;
   int _pressedIndex = -1;
   String _query = '';
   SharedPreferences? _prefs;
@@ -84,6 +87,10 @@ class _HomePageState extends State<HomePage> {
   List<Camera> _displayedCameras = [];
   List<Camera> _selectedCameras = [];
   List<Neighbourhood> _neighbourhoods = [];
+
+  void _scrollToIndex(int index) {
+    _itemScrollController.jumpTo(index: index);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -149,22 +156,25 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: GestureDetector(
               child: Container(
-                padding: const EdgeInsets.all(10),
-                child: Text(
-                  _allCameras[i].sortableName[0],
-                  style: TextStyle(
-                      color: _pressedIndex == i ? Colors.blue : null),
+                color: Colors.transparent,
+                width: 50,
+                child: Center(
+                  child: Text(
+                    _allCameras[i].sortableName[0],
+                    style: TextStyle(
+                        color: _pressedIndex == i ? Colors.blue : null),
+                  ),
                 ),
               ),
               onTapDown: (d) {
                 setState(() {
                   _pressedIndex = i;
+                  _scrollToIndex(i);
                 });
               },
               onTapUp: (d) {
                 setState(() {
                   _pressedIndex = -1;
-                  _listPosition = i;
                 });
               },
             ),
@@ -448,18 +458,18 @@ class _HomePageState extends State<HomePage> {
   Widget getListView() {
     return Row(children: [
       Flexible(
-        flex: 5,
+        flex: 0,
         child: getSectionIndex(),
       ),
-      Flexible(
-        flex: 95,
+      Expanded(
         child: getListViewBuilder(),
       ),
     ]);
   }
 
-  ListView getListViewBuilder() {
-    return ListView.builder(
+  ScrollablePositionedList getListViewBuilder() {
+    return ScrollablePositionedList.builder(
+      itemScrollController: _itemScrollController,
       itemCount: _displayedCameras.length + 1,
       itemBuilder: (context, i) {
         if (i == _displayedCameras.length) {
@@ -526,12 +536,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget getMapView() {
     Completer<GoogleMapController> completer = Completer();
-    const CameraPosition cameraPosition = CameraPosition(
-      target: LatLng(45.4, -75.7),
-    );
-
     LatLngBounds? bounds;
-    CameraUpdate? cameraUpdate;
     if (_displayedCameras.isNotEmpty) {
       var minLat = _displayedCameras[0].location.lat;
       var maxLat = _displayedCameras[0].location.lat;
@@ -545,12 +550,11 @@ class _HomePageState extends State<HomePage> {
       }
       bounds = LatLngBounds(
           southwest: LatLng(minLat, minLon), northeast: LatLng(maxLat, maxLon));
-      cameraUpdate = CameraUpdate.newLatLngBounds(bounds, 20);
     }
-
     return GoogleMap(
         cameraTargetBounds: CameraTargetBounds(bounds),
-        initialCameraPosition: cameraPosition,
+        initialCameraPosition:
+            const CameraPosition(target: LatLng(45.4, -75.7)),
         minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
         markers: _displayedCameras
             .map((camera) => Marker(
@@ -571,8 +575,8 @@ class _HomePageState extends State<HomePage> {
               controller.setMapStyle(string);
             });
           }
-          if (cameraUpdate != null) {
-            controller.animateCamera(cameraUpdate);
+          if (bounds != null) {
+            controller.animateCamera(CameraUpdate.newLatLngBounds(bounds, 20));
           }
           completer.complete(controller);
         });
