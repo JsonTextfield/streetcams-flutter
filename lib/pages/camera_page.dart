@@ -116,9 +116,7 @@ class _CameraImageState extends State<CameraImage> {
                 color: const Color.fromARGB(128, 0, 0, 0),
                 child: Text(
                   widget.camera.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                  ),
+                  style: const TextStyle(color: Colors.white),
                 ),
               ),
             ),
