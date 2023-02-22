@@ -217,6 +217,18 @@ class _HomePageState extends State<HomePage> {
           tooltip: BilingualObject.translate(_showList ? 'map' : 'list'),
         ),
       ),
+      // Sort by distance/name/neighbourhood
+      Visibility(
+        visible: _selectedCameras.isEmpty && _showList,
+        child: PopupMenuButton(
+          position: PopupMenuPosition.under,
+          itemBuilder: (context) {
+            return getSortingOptions();
+          },
+          icon: const Icon(Icons.sort),
+          tooltip: BilingualObject.translate('sort'),
+        ),
+      ),
       // Favourite cameras
       Visibility(
         child: IconButton(
@@ -247,18 +259,6 @@ class _HomePageState extends State<HomePage> {
           },
           icon: const Icon(Icons.select_all),
           tooltip: BilingualObject.translate('selectAll'),
-        ),
-      ),
-      // Sort by distance/name
-      Visibility(
-        visible: _selectedCameras.isEmpty && _showList,
-        child: PopupMenuButton(
-          position: PopupMenuPosition.under,
-          itemBuilder: (context) {
-            return getSortingOptions();
-          },
-          icon: const Icon(Icons.sort),
-          tooltip: BilingualObject.translate('sort'),
         ),
       ),
       // Show random camera
