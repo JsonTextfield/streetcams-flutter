@@ -3,8 +3,8 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
+import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 
 class CameraPage extends StatefulWidget {
@@ -18,7 +18,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraState extends State<CameraPage> {
   List<Camera> cameras = [];
-  var shuffle = false;
+  bool shuffle = false;
   Timer? timer;
 
   @override
@@ -33,26 +33,31 @@ class _CameraState extends State<CameraPage> {
     cameras = arguments[0] as List<Camera>;
     shuffle = arguments[1] as bool;
     if (shuffle && timer == null) {
-      timer = Timer.periodic(const Duration(seconds: 6), (timer) {
-        setState(() {});
-      });
+      timer =
+          Timer.periodic(const Duration(seconds: 6), (t) => setState(() {}));
     }
     return Scaffold(
       body: SafeArea(
         child: Stack(
           children: [
-            ListView(
-              children: getCameraImages(),
+            ListView.builder(
+              itemCount: shuffle ? 1 : cameras.length,
+              itemBuilder: (context, index) {
+                if (shuffle) {
+                  var camera = cameras[Random().nextInt(cameras.length)];
+                  return CameraImage(camera: camera, shuffle: true);
+                }
+                return CameraImage(camera: cameras[index]);
+              },
             ),
             Container(
               margin: const EdgeInsets.all(5),
-              color: const Color.fromARGB(128, 255, 255, 255),
-              child: IconButton(
-                color: Colors.black,
-                padding: const EdgeInsets.all(10),
+              child: FloatingActionButton(
+                foregroundColor: Colors.black,
+                backgroundColor: const Color.fromARGB(128, 255, 255, 255),
                 onPressed: Navigator.of(context).pop,
-                icon: const Icon(Icons.arrow_back),
                 tooltip: BilingualObject.translate('back'),
+                child: const Icon(Icons.arrow_back),
               ),
             ),
           ],
@@ -90,9 +95,8 @@ class _CameraImageState extends State<CameraImage> {
     String url =
         'https://traffic.ottawa.ca/beta/camera?id=${widget.camera.num}&timems=${DateTime.now().millisecondsSinceEpoch}';
     if (!widget.shuffle && timer == null) {
-      timer = Timer.periodic(const Duration(seconds: 6), (t) {
-        setState(() {});
-      });
+      timer =
+          Timer.periodic(const Duration(seconds: 6), (t) => setState(() {}));
     }
 
     return Container(

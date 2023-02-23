@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:streetcams_flutter/entities/bilingual_object.dart';
-import 'package:streetcams_flutter/pages/camera_page.dart';
 
+import 'entities/bilingual_object.dart';
+import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
 
 void main() {

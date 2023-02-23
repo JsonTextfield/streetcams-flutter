@@ -12,7 +12,7 @@ class BilingualObject {
   });
 
   String get sortableName =>
-      nameEn.replaceAll(RegExp('[\(\)]'), '').toUpperCase();
+      nameEn.replaceAll(RegExp('[()]'), '').toUpperCase();
 
   String get name => Intl.getCurrentLocale().contains(fr) ? nameFr : nameEn;
 
