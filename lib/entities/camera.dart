@@ -3,7 +3,7 @@ import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'location.dart';
 
 class Camera extends BilingualObject {
-  bool isHidden = false;
+  bool isVisible = true;
   bool isFavourite = false;
   final int num;
   final Location location;

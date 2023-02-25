@@ -72,6 +72,7 @@ class _HomePageState extends State<HomePage> {
   CameraModel cameraModel = CameraModel([]);
   Future<List<Camera>>? future;
   final ItemScrollController _itemScrollController = ItemScrollController();
+  final TextEditingController _textEditingController = TextEditingController();
   final List<int> _positions = [];
   final int _maxCameras = 8;
   bool _showList = true;
@@ -79,7 +80,6 @@ class _HomePageState extends State<HomePage> {
   bool _showSearchBox = false;
   bool _sortedByName = true;
   int _selectedIndex = -1;
-  String _query = '';
   SharedPreferences? _prefs;
   List<Camera> _allCameras = [];
   List<Camera> _displayedCameras = [];
@@ -96,32 +96,9 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: (!_showSearchBox || _selectedCameras.isNotEmpty)
-            ? GestureDetector(
-                child: Text(_selectedCameras.isEmpty
-                    ? BilingualObject.appName
-                    : '${_selectedCameras.length} selected'),
-                onTap: () => _moveToListPosition(0),
-              )
-            : TextField(
-                textInputAction: TextInputAction.done,
-                onSubmitted: (value) {
-                  _query = value;
-                  setState(_filterDisplayedCamerasFromQuery);
-                },
-                decoration: InputDecoration(
-                    hintText: Intl.plural(
-                  _displayedCameras.length,
-                  one: sprintf(BilingualObject.translate('searchCamera'),
-                      [_displayedCameras.length]),
-                  other: sprintf(BilingualObject.translate('searchCameras'),
-                      [_displayedCameras.length]),
-                  name: 'displayedCamerasCounter',
-                  args: [_displayedCameras.length],
-                  desc: 'Number of displayed cameras.',
-                )),
-              ),
+        title: getTitleBar(),
         actions: getAppBarActions(),
         backgroundColor: _selectedCameras.isEmpty ? null : Colors.blue,
       ),
@@ -131,17 +108,11 @@ class _HomePageState extends State<HomePage> {
           if (snapshot.hasError) {
             return Center(child: Text(BilingualObject.translate('error')));
           } else if (snapshot.hasData) {
-            return Column(
+            return IndexedStack(
+              index: _showList ? 0 : 1,
               children: [
-                Expanded(
-                  child: IndexedStack(
-                    index: _showList ? 0 : 1,
-                    children: [
-                      getListView(),
-                      getMapView(),
-                    ],
-                  ),
-                ),
+                getListView(),
+                getMapView(),
               ],
             );
           } else {
@@ -150,6 +121,55 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+  }
+
+  Widget getTitleBar() {
+    if (!_showSearchBox || _selectedCameras.isNotEmpty) {
+      return GestureDetector(
+        child: Text(_selectedCameras.isEmpty
+            ? BilingualObject.appName
+            : '${_selectedCameras.length} selected'),
+        onTap: () => _moveToListPosition(0),
+      );
+    } else {
+      return TextField(
+        controller: _textEditingController,
+        textAlignVertical: TextAlignVertical.center,
+        textInputAction: TextInputAction.done,
+        onChanged: _filterDisplayedCamerasWithString,
+        decoration: InputDecoration(
+            icon: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                _resetDisplayedCameras();
+                _textEditingController.clear();
+                setState(() {
+                  _showSearchBox = false;
+                  _isFiltered = false;
+                });
+              },
+            ),
+            suffixIcon: IconButton(
+              icon: const Icon(Icons.clear),
+              onPressed: () {
+                setState(() {
+                  _textEditingController.clear();
+                  _filterDisplayedCamerasWithString('');
+                });
+              },
+            ),
+            hintText: Intl.plural(
+              _displayedCameras.length,
+              one: sprintf(BilingualObject.translate('searchCamera'),
+                  [_displayedCameras.length]),
+              other: sprintf(BilingualObject.translate('searchCameras'),
+                  [_displayedCameras.length]),
+              name: 'displayedCamerasCounter',
+              args: [_displayedCameras.length],
+              desc: 'Number of displayed cameras.',
+            )),
+      );
+    }
   }
 
   PopupMenuItem convertToOverflowAction(IconButton iconButton) {
@@ -176,7 +196,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     var search = Visibility(
-      visible: _selectedCameras.isEmpty,
+      visible: _selectedCameras.isEmpty && !_showSearchBox,
       child: IconButton(
         tooltip: BilingualObject.translate('search'),
         onPressed: () {
@@ -184,11 +204,10 @@ class _HomePageState extends State<HomePage> {
             if (_showSearchBox) {
               _resetDisplayedCameras();
             }
-            _query = '';
             _showSearchBox = !_showSearchBox;
           });
         },
-        icon: Icon(_showSearchBox ? Icons.clear : Icons.search),
+        icon: const Icon(Icons.search),
       ),
     );
     var showCameras = Visibility(
@@ -209,7 +228,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     var sort = Visibility(
-      visible: _selectedCameras.isEmpty && _showList,
+      visible: _selectedCameras.isEmpty && _showList && !_showSearchBox,
       child: PopupMenuButton(
         position: PopupMenuPosition.under,
         itemBuilder: (context) {
@@ -247,12 +266,7 @@ class _HomePageState extends State<HomePage> {
     var random = Visibility(
       visible: _selectedCameras.isEmpty,
       child: IconButton(
-        onPressed: () {
-          var visibleCameras =
-              _allCameras.where((element) => !element.isHidden).toList();
-          if (visibleCameras.isEmpty) return;
-          _showCameras([visibleCameras[Random().nextInt(_allCameras.length)]]);
-        },
+        onPressed: showRandomCamera,
         icon: const Icon(Icons.casino),
         tooltip: BilingualObject.translate('random'),
       ),
@@ -263,7 +277,7 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           if (_allCameras.isEmpty) return;
           _showCameras(
-              _allCameras.where((element) => !element.isHidden).toList(),
+              _allCameras.where((element) => !element.isVisible).toList(),
               shuffle: true);
         },
         icon: const Icon(Icons.shuffle),
@@ -297,8 +311,8 @@ class _HomePageState extends State<HomePage> {
     List<Visibility> visibleActions =
         actions.where((action) => action.visible).toList();
     List<Visibility> overflowActions = [];
-    // the number of 48-width buttons that can fit in half the width of the window
-    int maxActions = (MediaQuery.of(context).size.width / 2 / 48).floor();
+    // the number of 48-width buttons that can fit in 1/4 the width of the window
+    int maxActions = (MediaQuery.of(context).size.width / 4 / 48).floor();
     if (visibleActions.length > maxActions) {
       for (int i = maxActions; i < visibleActions.length; i++) {
         if (visibleActions[i] == sort) {
@@ -325,6 +339,14 @@ class _HomePageState extends State<HomePage> {
     return visibleActions;
   }
 
+  void showRandomCamera() {
+    var visibleCameras =
+        _allCameras.where((camera) => camera.isVisible).toList();
+    if (visibleCameras.isNotEmpty) {
+      _showCameras([visibleCameras[Random().nextInt(_allCameras.length)]]);
+    }
+  }
+
   String getFavouriteTooltip() {
     String result = '';
     if (_selectedCameras.isEmpty) {
@@ -341,7 +363,7 @@ class _HomePageState extends State<HomePage> {
     String result = '';
     if (_selectedCameras.isEmpty) {
       result = 'hidden';
-    } else if (_selectedCameras.every((camera) => camera.isHidden)) {
+    } else if (_selectedCameras.every((camera) => camera.isVisible)) {
       result = 'unhide';
     } else {
       result = 'hide';
@@ -358,7 +380,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Icon getHiddenIcon() {
-    if (_selectedCameras.isEmpty || _selectedCameras.any((c) => !c.isHidden)) {
+    if (_selectedCameras.isEmpty || _selectedCameras.any((c) => !c.isVisible)) {
       return const Icon(Icons.visibility_off);
     }
     return const Icon(Icons.visibility);
@@ -383,10 +405,11 @@ class _HomePageState extends State<HomePage> {
 
   Widget getListView() {
     return Row(children: [
-      Flexible(
-        flex: 0,
-        child: getSectionIndex(),
-      ),
+      if (!_isFiltered && _sortedByName)
+        Flexible(
+          flex: 0,
+          child: getSectionIndex(),
+        ),
       Expanded(
         child: getListViewBuilder(),
       ),
@@ -407,11 +430,12 @@ class _HomePageState extends State<HomePage> {
           Expanded(
             child: Container(
               color: Colors.transparent,
-              width: 50,
+              width: 20,
               child: Center(
                 child: Text(
                   letter,
                   style: TextStyle(
+                      fontSize: 12,
                       color: _selectedIndex == i ? Colors.blue : null),
                 ),
               ),
@@ -420,16 +444,13 @@ class _HomePageState extends State<HomePage> {
         );
       }
     }
-    return Visibility(
-      visible: !_isFiltered && _sortedByName,
-      child: GestureDetector(
-        child: Column(children: result),
-        onTapDown: (details) => _scrollFromPointer(details.globalPosition.dy),
-        onTapUp: (details) => _resetSelectedIndex(),
-        onVerticalDragUpdate: (details) =>
-            _scrollFromPointer(details.globalPosition.dy),
-        onVerticalDragEnd: (details) => _resetSelectedIndex(),
-      ),
+    return GestureDetector(
+      child: Column(children: result),
+      onTapDown: (details) => _scrollFromPointer(details.globalPosition.dy),
+      onTapUp: (details) => _resetSelectedIndex(),
+      onVerticalDragUpdate: (details) =>
+          _scrollFromPointer(details.globalPosition.dy),
+      onVerticalDragEnd: (details) => _resetSelectedIndex(),
     );
   }
 
@@ -639,20 +660,20 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  void _filterDisplayedCamerasFromQuery() {
-    List<Camera> result = _displayedCameras.toList();
-    String q = _query.toLowerCase();
+  void _filterDisplayedCamerasWithString(String query) {
+    List<Camera> result =
+        _allCameras.where((camera) => camera.isVisible).toList();
+    String q = query.toLowerCase();
     if (q.startsWith('f:')) {
       q = q.substring(2).trim();
       result.removeWhere((camera) => !camera.isFavourite);
     } else if (q.startsWith('h:')) {
       q = q.substring(2).trim();
-      result.removeWhere((camera) => !camera.isHidden);
+      result.removeWhere((camera) => camera.isVisible);
     } else if (q.startsWith('n:')) {
       q = q.substring(2).trim();
       result.removeWhere((cam) => !cam.neighbourhood.toLowerCase().contains(q));
-    }
-    if (q.trim().isNotEmpty) {
+    } else {
       result.removeWhere((camera) => !camera.name.toLowerCase().contains(q));
     }
     setState(() {
@@ -673,16 +694,17 @@ class _HomePageState extends State<HomePage> {
 
   void _hideOptionClicked() {
     if (_selectedCameras.isEmpty) {
-      _filterDisplayedCameras((camera) => camera.isHidden);
+      _filterDisplayedCameras((camera) => !camera.isVisible);
     } else {
       _hideSelectedCameras();
     }
   }
 
   void _hideSelectedCameras() {
-    var allHidden = _selectedCameras.every((camera) => camera.isHidden);
+    // if any of the selected cameras is not visible, hide the selected cameras
+    var anyNotVisible = _selectedCameras.any((camera) => !camera.isVisible);
     for (var camera in _selectedCameras) {
-      camera.isHidden = !allHidden;
+      camera.isVisible = !anyNotVisible;
     }
     _writeSharedPrefs();
   }
@@ -690,13 +712,13 @@ class _HomePageState extends State<HomePage> {
   void _readSharedPrefs() {
     for (var c in _allCameras) {
       c.isFavourite = _prefs?.getBool('${c.sortableName}.isFavourite') ?? false;
-      c.isHidden = _prefs?.getBool('${c.sortableName}.isHidden') ?? false;
+      c.isVisible = _prefs?.getBool('${c.sortableName}.isVisible') ?? true;
     }
   }
 
   void _resetDisplayedCameras() {
     _selectedCameras.clear();
-    _displayedCameras = _allCameras.where((cam) => !cam.isHidden).toList();
+    _displayedCameras = _allCameras.where((cam) => cam.isVisible).toList();
     _isFiltered = false;
   }
 
@@ -755,7 +777,7 @@ class _HomePageState extends State<HomePage> {
   void _writeSharedPrefs() {
     for (var camera in _displayedCameras) {
       _prefs?.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
-      _prefs?.setBool('${camera.sortableName}.isHidden', camera.isHidden);
+      _prefs?.setBool('${camera.sortableName}.isVisible', camera.isVisible);
     }
   }
 }

@@ -64,7 +64,7 @@ class CameraModel {
 
   void resetDisplayedCameras() {
     _displayedCameras =
-        _allCameras.where((camera) => !camera.isHidden).toList();
+        _allCameras.where((camera) => !camera.isVisible).toList();
   }
 
   void favouriteSelectedCameras() {
@@ -75,9 +75,9 @@ class CameraModel {
   }
 
   void hideSelectedCameras() {
-    var allHidden = _selectedCameras.every((camera) => camera.isHidden);
+    var allHidden = _selectedCameras.every((camera) => camera.isVisible);
     for (var camera in _selectedCameras) {
-      camera.isHidden = !allHidden;
+      camera.isVisible = !allHidden;
     }
   }
 }
