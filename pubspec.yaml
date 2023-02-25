@@ -27,6 +27,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  flutter_bloc: ^8.1.2
   scrollable_positioned_list: ^0.3.5
   sprintf: ^7.0.0
   google_maps_flutter: ^2.2.3
@@ -46,6 +47,7 @@ dependencies:
   cupertino_icons: ^1.0.2
 
 dev_dependencies:
+  test:
   flutter_test:
     sdk: flutter
 

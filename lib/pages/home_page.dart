@@ -13,6 +13,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sprintf/sprintf.dart';
 
+import '../camera_model.dart';
 import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
@@ -68,6 +69,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  CameraModel cameraModel = CameraModel([]);
   Future<List<Camera>>? future;
   final ItemScrollController _itemScrollController = ItemScrollController();
   final List<int> _positions = [];
@@ -87,6 +89,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     future = _downloadAll();
+    future?.then((cameras) => cameraModel = CameraModel(cameras));
     super.initState();
   }
 
