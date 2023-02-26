@@ -3,8 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 class _MyBilingualObject extends BilingualObject {
-  _MyBilingualObject(
-      {required super.id, required super.nameEn, required super.nameFr});
+  _MyBilingualObject({
+    required super.id,
+    required super.nameEn,
+    required super.nameFr,
+  });
 }
 
 void main() {

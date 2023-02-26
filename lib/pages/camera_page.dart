@@ -3,8 +3,8 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 
 class CameraPage extends StatefulWidget {
@@ -56,7 +56,7 @@ class _CameraState extends State<CameraPage> {
                 foregroundColor: Colors.black,
                 backgroundColor: const Color.fromARGB(128, 255, 255, 255),
                 onPressed: Navigator.of(context).pop,
-                tooltip: BilingualObject.translate('back'),
+                tooltip: AppLocalizations.of(context)!.back,
                 child: const Icon(Icons.arrow_back),
               ),
             ),

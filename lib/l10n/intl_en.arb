@@ -1,0 +1,47 @@
+{
+  "language": "English",
+  "@language": {
+    "description": "Default langauge for StreetCams"
+  },
+  "appName": "StreetCams",
+  "clear": "Clear",
+  "shuffle": "Shuffle",
+  "random": "Random",
+  "selectAll": "Select all",
+  "about": "About",
+  "search": "Search",
+  "sortName": "Sort by name",
+  "sortDistance": "Sort by distance",
+  "sortNeighbourhood": "Sort by neighbourhood",
+  "sort": "Sort",
+  "list": "List",
+  "map": "Map",
+  "showCameras": "View",
+  "hidden": "Hidden",
+  "hide": "Hide",
+  "unhide": "Unhide",
+  "favourites": "Favourites",
+  "favourite": "Favourite",
+  "unfavourite": "Unfavourite",
+  "error": "An error has occurred.",
+  "more": "More",
+  "camera": "camera",
+  "cameras": "cameras",
+  "searchCamera": "Search from {cameraCount} camera",
+  "@searchCamera": {
+    "placeholders": {
+      "cameraCount": {
+        "type": "int"
+      }
+    }
+  },
+  "searchCameras": "Search from {cameraCount} cameras",
+  "@searchCameras": {
+    "placeholders": {
+      "cameraCount": {
+        "type": "int"
+      }
+    }
+  },
+  "back": "Back"
+}

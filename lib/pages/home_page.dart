@@ -5,16 +5,15 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sprintf/sprintf.dart';
 
 import '../camera_model.dart';
-import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
@@ -107,7 +106,7 @@ class _HomePageState extends State<HomePage> {
         future: future,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text(BilingualObject.translate('error')));
+            return Center(child: Text(AppLocalizations.of(context)!.error));
           } else if (snapshot.hasData) {
             return IndexedStack(
               index: _showList ? 0 : 1,
@@ -128,7 +127,7 @@ class _HomePageState extends State<HomePage> {
     if (!_showSearchBox || _selectedCameras.isNotEmpty) {
       return GestureDetector(
         child: Text(_selectedCameras.isEmpty
-            ? BilingualObject.appName
+            ? AppLocalizations.of(context)!.appName
             : '${_selectedCameras.length} selected'),
         onTap: () => _moveToListPosition(0),
       );
@@ -161,8 +160,10 @@ class _HomePageState extends State<HomePage> {
           ),
           hintText: Intl.plural(
             _displayedCameras.length,
-            one: _formatSearchBarText('searchCamera'),
-            other: _formatSearchBarText('searchCameras'),
+            one: AppLocalizations.of(context)!
+                .searchCamera(_displayedCameras.length),
+            other: AppLocalizations.of(context)!
+                .searchCameras(_displayedCameras.length),
             name: 'displayedCamerasCounter',
             args: [_displayedCameras.length],
             desc: 'Number of displayed cameras.',
@@ -170,13 +171,6 @@ class _HomePageState extends State<HomePage> {
         ),
       );
     }
-  }
-
-  String _formatSearchBarText(String text) {
-    return sprintf(
-      BilingualObject.translate(text),
-      [_displayedCameras.length],
-    );
   }
 
   PopupMenuItem convertToOverflowAction(IconButton iconButton) {
@@ -197,7 +191,7 @@ class _HomePageState extends State<HomePage> {
     var clear = Visibility(
       visible: _selectedCameras.isNotEmpty,
       child: IconButton(
-        tooltip: BilingualObject.translate('clear'),
+        tooltip: AppLocalizations.of(context)!.clear,
         onPressed: () => setState(_selectedCameras.clear),
         icon: const Icon(Icons.close),
       ),
@@ -205,7 +199,7 @@ class _HomePageState extends State<HomePage> {
     var search = Visibility(
       visible: _selectedCameras.isEmpty && !_showSearchBox,
       child: IconButton(
-        tooltip: BilingualObject.translate('search'),
+        tooltip: AppLocalizations.of(context)!.search,
         onPressed: () {
           setState(() {
             if (_showSearchBox) {
@@ -221,7 +215,7 @@ class _HomePageState extends State<HomePage> {
       visible:
           _selectedCameras.isNotEmpty && _selectedCameras.length <= _maxCameras,
       child: IconButton(
-        tooltip: BilingualObject.translate('showCameras'),
+        tooltip: AppLocalizations.of(context)!.showCameras,
         onPressed: () => _showCameras(_selectedCameras),
         icon: const Icon(Icons.camera_alt),
       ),
@@ -229,10 +223,11 @@ class _HomePageState extends State<HomePage> {
     var switchView = Visibility(
       visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
       child: IconButton(
-        onPressed: (() => setState(() => _showList = !_showList)),
-        icon: Icon(_showList ? Icons.map : Icons.list),
-        tooltip: BilingualObject.translate(_showList ? 'map' : 'list'),
-      ),
+          onPressed: (() => setState(() => _showList = !_showList)),
+          icon: Icon(_showList ? Icons.map : Icons.list),
+          tooltip: _showList
+              ? AppLocalizations.of(context)!.map
+              : AppLocalizations.of(context)!.list),
     );
     var sort = Visibility(
       visible: _selectedCameras.isEmpty && _showList && !_showSearchBox,
@@ -240,7 +235,7 @@ class _HomePageState extends State<HomePage> {
         position: PopupMenuPosition.under,
         itemBuilder: (context) => getSortingOptions(),
         icon: const Icon(Icons.sort),
-        tooltip: BilingualObject.translate('sort'),
+        tooltip: AppLocalizations.of(context)!.sort,
       ),
     );
     var favourite = Visibility(
@@ -265,7 +260,7 @@ class _HomePageState extends State<HomePage> {
           setState(() => _selectedCameras = _displayedCameras.toList());
         },
         icon: const Icon(Icons.select_all),
-        tooltip: BilingualObject.translate('selectAll'),
+        tooltip: AppLocalizations.of(context)!.selectAll,
       ),
     );
     var random = Visibility(
@@ -273,7 +268,7 @@ class _HomePageState extends State<HomePage> {
       child: IconButton(
         onPressed: showRandomCamera,
         icon: const Icon(Icons.casino),
-        tooltip: BilingualObject.translate('random'),
+        tooltip: AppLocalizations.of(context)!.random,
       ),
     );
     var shuffle = Visibility(
@@ -284,13 +279,13 @@ class _HomePageState extends State<HomePage> {
           shuffle: true,
         ),
         icon: const Icon(Icons.shuffle),
-        tooltip: BilingualObject.translate('shuffle'),
+        tooltip: AppLocalizations.of(context)!.shuffle,
       ),
     );
     var about = Visibility(
       visible: _selectedCameras.isEmpty,
       child: IconButton(
-        tooltip: BilingualObject.translate('about'),
+        tooltip: AppLocalizations.of(context)!.about,
         icon: const Icon(Icons.info),
         onPressed: () =>
             showAboutDialog(context: context, applicationVersion: '1.0.0+1'),
@@ -327,7 +322,7 @@ class _HomePageState extends State<HomePage> {
       visibleActions.add(
         Visibility(
           child: PopupMenuButton(
-            tooltip: BilingualObject.translate('more'),
+            tooltip: AppLocalizations.of(context)!.more,
             position: PopupMenuPosition.under,
             itemBuilder: (context) {
               return overflowActions
@@ -351,27 +346,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   String getFavouriteTooltip() {
-    String result = '';
     if (_selectedCameras.isEmpty) {
-      result = 'favourites';
+      return AppLocalizations.of(context)!.favourites;
     } else if (_selectedCameras.every((camera) => camera.isFavourite)) {
-      result = 'unfavourite';
-    } else {
-      result = 'favourite';
+      return AppLocalizations.of(context)!.unfavourite;
     }
-    return BilingualObject.translate(result);
+    return AppLocalizations.of(context)!.favourite;
   }
 
   String getHiddenTooltip() {
-    String result = '';
     if (_selectedCameras.isEmpty) {
-      result = 'hidden';
+      return AppLocalizations.of(context)!.hidden;
     } else if (_selectedCameras.every((camera) => camera.isVisible)) {
-      result = 'unhide';
-    } else {
-      result = 'hide';
+      return AppLocalizations.of(context)!.unhide;
     }
-    return BilingualObject.translate(result);
+    return AppLocalizations.of(context)!.hide;
   }
 
   Icon getFavouriteIcon() {
@@ -393,15 +382,15 @@ class _HomePageState extends State<HomePage> {
     return [
       PopupMenuItem(
         onTap: _sortCamerasByName,
-        child: Text(BilingualObject.translate('sortName')),
+        child: Text(AppLocalizations.of(context)!.sortName),
       ),
       PopupMenuItem(
         onTap: _sortCamerasByDistance,
-        child: Text(BilingualObject.translate('sortDistance')),
+        child: Text(AppLocalizations.of(context)!.sortDistance),
       ),
       PopupMenuItem(
         onTap: _sortCamerasByNeighbourhood,
-        child: Text(BilingualObject.translate('sortNeighbourhood')),
+        child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
       ),
     ];
   }
@@ -498,7 +487,9 @@ class _HomePageState extends State<HomePage> {
           _selectedCameras.contains(_displayedCameras[i]) ? Colors.blue : null,
       dense: true,
       title: Text(
-        _displayedCameras[i].name,
+        AppLocalizations.of(context)?.localeName.contains('fr') ?? false
+            ? _displayedCameras[i].nameFr
+            : _displayedCameras[i].nameEn,
         style: const TextStyle(fontSize: 16),
       ),
       subtitle: _displayedCameras[i].neighbourhood.isNotEmpty
@@ -535,9 +526,9 @@ class _HomePageState extends State<HomePage> {
           Intl.plural(
             _displayedCameras.length,
             one:
-                '${_displayedCameras.length} ${BilingualObject.translate('camera')}',
+                '${_displayedCameras.length} ${AppLocalizations.of(context)!.camera}',
             other:
-                '${_displayedCameras.length} ${BilingualObject.translate('cameras')}',
+                '${_displayedCameras.length} ${AppLocalizations.of(context)!.cameras}',
             name: 'displayedCamerasCounter',
             args: [_displayedCameras.length],
             desc: 'Number of displayed cameras.',
@@ -593,7 +584,11 @@ class _HomePageState extends State<HomePage> {
               markerId: MarkerId(camera.id.toString()),
               position: LatLng(camera.location.lat, camera.location.lon),
               infoWindow: InfoWindow(
-                title: camera.name,
+                title:
+                    AppLocalizations.of(context)?.localeName.contains('fr') ??
+                            false
+                        ? camera.nameFr
+                        : camera.nameEn,
                 onTap: () => _showCameras([camera]),
               ),
             ))
@@ -633,7 +628,10 @@ class _HomePageState extends State<HomePage> {
     for (var camera in _allCameras) {
       for (var neighbourhood in _neighbourhoods) {
         if (neighbourhood.containsCamera(camera)) {
-          camera.neighbourhood = neighbourhood.name;
+          camera.neighbourhood =
+              AppLocalizations.of(context)?.localeName.contains('fr') ?? false
+                  ? neighbourhood.nameFr
+                  : neighbourhood.nameEn;
         }
       }
     }
@@ -681,12 +679,20 @@ class _HomePageState extends State<HomePage> {
       q = q.substring(2).trim();
       result.removeWhere((cam) => !cam.neighbourhood.toLowerCase().contains(q));
     } else {
-      result.removeWhere((camera) => !camera.name.toLowerCase().contains(q));
+      result.removeWhere(
+        (camera) {
+          var name =
+              AppLocalizations.of(context)?.localeName.contains('fr') ?? false
+                  ? camera.nameFr
+                  : camera.nameEn;
+          return !name.toLowerCase().contains(q);
+        },
+      );
+      setState(() {
+        _displayedCameras = result;
+        _isFiltered = true;
+      });
     }
-    setState(() {
-      _displayedCameras = result;
-      _isFiltered = true;
-    });
   }
 
   BitmapDescriptor _getMarkerIcon(Camera camera) {
