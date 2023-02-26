@@ -27,7 +27,8 @@ Future<List<Camera>> _downloadCameraList() async {
 
 Future<List<Neighbourhood>> _downloadNeighbourhoodList() async {
   var url = Uri.parse(
-      'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson');
+    'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson',
+  );
   return compute(_parseNeighbourhoodJson, await http.read(url));
 }
 
@@ -138,38 +139,44 @@ class _HomePageState extends State<HomePage> {
         textInputAction: TextInputAction.done,
         onChanged: _filterDisplayedCamerasWithString,
         decoration: InputDecoration(
-            icon: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                _resetDisplayedCameras();
+          icon: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
+              _resetDisplayedCameras();
+              _textEditingController.clear();
+              setState(() {
+                _showSearchBox = false;
+                _isFiltered = false;
+              });
+            },
+          ),
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.clear),
+            onPressed: () {
+              setState(() {
                 _textEditingController.clear();
-                setState(() {
-                  _showSearchBox = false;
-                  _isFiltered = false;
-                });
-              },
-            ),
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.clear),
-              onPressed: () {
-                setState(() {
-                  _textEditingController.clear();
-                  _filterDisplayedCamerasWithString('');
-                });
-              },
-            ),
-            hintText: Intl.plural(
-              _displayedCameras.length,
-              one: sprintf(BilingualObject.translate('searchCamera'),
-                  [_displayedCameras.length]),
-              other: sprintf(BilingualObject.translate('searchCameras'),
-                  [_displayedCameras.length]),
-              name: 'displayedCamerasCounter',
-              args: [_displayedCameras.length],
-              desc: 'Number of displayed cameras.',
-            )),
+                _filterDisplayedCamerasWithString('');
+              });
+            },
+          ),
+          hintText: Intl.plural(
+            _displayedCameras.length,
+            one: _formatSearchBarText('searchCamera'),
+            other: _formatSearchBarText('searchCameras'),
+            name: 'displayedCamerasCounter',
+            args: [_displayedCameras.length],
+            desc: 'Number of displayed cameras.',
+          ),
+        ),
       );
     }
+  }
+
+  String _formatSearchBarText(String text) {
+    return sprintf(
+      BilingualObject.translate(text),
+      [_displayedCameras.length],
+    );
   }
 
   PopupMenuItem convertToOverflowAction(IconButton iconButton) {
@@ -231,9 +238,7 @@ class _HomePageState extends State<HomePage> {
       visible: _selectedCameras.isEmpty && _showList && !_showSearchBox,
       child: PopupMenuButton(
         position: PopupMenuPosition.under,
-        itemBuilder: (context) {
-          return getSortingOptions();
-        },
+        itemBuilder: (context) => getSortingOptions(),
         icon: const Icon(Icons.sort),
         tooltip: BilingualObject.translate('sort'),
       ),
@@ -274,12 +279,10 @@ class _HomePageState extends State<HomePage> {
     var shuffle = Visibility(
       visible: _selectedCameras.isEmpty,
       child: IconButton(
-        onPressed: () {
-          if (_allCameras.isEmpty) return;
-          _showCameras(
-              _allCameras.where((element) => !element.isVisible).toList(),
-              shuffle: true);
-        },
+        onPressed: () => _showCameras(
+          _allCameras.where((element) => !element.isVisible).toList(),
+          shuffle: true,
+        ),
         icon: const Icon(Icons.shuffle),
         tooltip: BilingualObject.translate('shuffle'),
       ),
@@ -289,9 +292,8 @@ class _HomePageState extends State<HomePage> {
       child: IconButton(
         tooltip: BilingualObject.translate('about'),
         icon: const Icon(Icons.info),
-        onPressed: () {
-          showAboutDialog(context: context, applicationVersion: '1.0.0+1');
-        },
+        onPressed: () =>
+            showAboutDialog(context: context, applicationVersion: '1.0.0+1'),
       ),
     );
 
@@ -325,14 +327,15 @@ class _HomePageState extends State<HomePage> {
       visibleActions.add(
         Visibility(
           child: PopupMenuButton(
-              tooltip: BilingualObject.translate('more'),
-              position: PopupMenuPosition.under,
-              itemBuilder: (context) {
-                return overflowActions
-                    .map((visibility) =>
-                        convertToOverflowAction(visibility.child as IconButton))
-                    .toList();
-              }),
+            tooltip: BilingualObject.translate('more'),
+            position: PopupMenuPosition.under,
+            itemBuilder: (context) {
+              return overflowActions
+                  .map((visibility) =>
+                      convertToOverflowAction(visibility.child as IconButton))
+                  .toList();
+            },
+          ),
         ),
       );
     }
@@ -435,8 +438,9 @@ class _HomePageState extends State<HomePage> {
                 child: Text(
                   letter,
                   style: TextStyle(
-                      fontSize: 12,
-                      color: _selectedIndex == i ? Colors.blue : null),
+                    fontSize: 14,
+                    color: _selectedIndex == i ? Colors.blue : null,
+                  ),
                 ),
               ),
             ),
@@ -459,10 +463,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _scrollFromPointer(double yPosition) {
-    var topSection =
-        MediaQuery.of(context).padding.top + AppBar().preferredSize.height;
+    var mediaQuery = MediaQuery.of(context);
+    var topSection = mediaQuery.padding.top + AppBar().preferredSize.height;
     var yPos = yPosition - topSection;
-    var sectionIndexHeight = MediaQuery.of(context).size.height - topSection;
+    var sectionIndexHeight = mediaQuery.size.height - topSection;
     int listIndex = (yPos / sectionIndexHeight * _positions.length).toInt();
 
     setState(() {
@@ -502,7 +506,8 @@ class _HomePageState extends State<HomePage> {
           : null,
       trailing: IconButton(
         icon: Icon(
-            _displayedCameras[i].isFavourite ? Icons.star : Icons.star_border),
+          _displayedCameras[i].isFavourite ? Icons.star : Icons.star_border,
+        ),
         color: _displayedCameras[i].isFavourite ? Colors.yellow : null,
         onPressed: () {
           setState(() {
@@ -566,17 +571,19 @@ class _HomePageState extends State<HomePage> {
       );
     }
     return GoogleMap(
-        cameraTargetBounds: CameraTargetBounds(bounds),
-        initialCameraPosition: CameraPosition(target: initialCameraPosition),
-        minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
-        markers: getMapMarkers(),
-        onMapCreated: (GoogleMapController controller) {
-          if (Theme.of(context).brightness == Brightness.dark) {
-            rootBundle
-                .loadString('assets/dark_mode.json')
-                .then(controller.setMapStyle);
-          }
-        });
+      myLocationButtonEnabled: true,
+      cameraTargetBounds: CameraTargetBounds(bounds),
+      initialCameraPosition: CameraPosition(target: initialCameraPosition),
+      minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
+      markers: getMapMarkers(),
+      onMapCreated: (controller) {
+        if (Theme.of(context).brightness == Brightness.dark) {
+          rootBundle
+              .loadString('assets/dark_mode.json')
+              .then(controller.setMapStyle);
+        }
+      },
+    );
   }
 
   Set<Marker> getMapMarkers() {
@@ -760,7 +767,9 @@ class _HomePageState extends State<HomePage> {
       }
       return result;
     });
-    setState(() => _sortedByName = false);
+    if (mounted) {
+      setState(() => _sortedByName = false);
+    }
   }
 
   void _sortCamerasByNeighbourhood() {

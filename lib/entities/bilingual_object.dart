@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 
-class BilingualObject {
+abstract class BilingualObject {
   final int id;
   final String nameEn;
   final String nameFr;

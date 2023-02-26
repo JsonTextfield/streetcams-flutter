@@ -121,6 +121,7 @@ class _CameraImageState extends State<CameraImage> {
                 child: Text(
                   widget.camera.name,
                   style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),

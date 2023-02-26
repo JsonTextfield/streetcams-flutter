@@ -33,10 +33,11 @@ class Neighbourhood extends BilingualObject {
       tempLocations.add(locationList);
     }
     return Neighbourhood(
-        boundaries: tempLocations,
-        id: json['properties']['ONS_ID'],
-        nameEn: json['properties']['Name'],
-        nameFr: json['properties']['Name_FR']);
+      boundaries: tempLocations,
+      id: json['properties']['ONS_ID'],
+      nameEn: json['properties']['Name'],
+      nameFr: json['properties']['Name_FR'],
+    );
   }
 
   //http://en.wikipedia.org/wiki/Point_in_polygon
