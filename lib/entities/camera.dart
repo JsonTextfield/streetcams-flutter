@@ -22,7 +22,7 @@ class Camera extends BilingualObject {
   factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
       num: json['number'],
-      location: Location.createFromJson(json),
+      location: Location.fromJson(json),
       type: json['type'],
       id: json['id'],
       nameEn: json['description'],

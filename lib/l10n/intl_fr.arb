@@ -22,9 +22,21 @@
   "unfavourite": "Déconseillé",
   "error": "Erreur",
   "more": "Plus",
-  "camera": "caméra",
-  "cameras": "caméras",
-  "searchCamera": "Chercher de {cameraCount} caméra",
-  "searchCameras": "Chercher de {cameraCount} caméras",
+  "cameras": "{count,plural, =0{0} =1{1 caméra} other{{count} caméras}}",
+  "@cameras":  {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchCameras": "Chercher de {count,plural, =0{0} =1{1 caméra} other{{count} caméras}}",
+  "@searchCameras": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "back": "Retourner"
 }

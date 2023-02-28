@@ -25,20 +25,18 @@
   "unfavourite": "Unfavourite",
   "error": "An error has occurred.",
   "more": "More",
-  "camera": "camera",
-  "cameras": "cameras",
-  "searchCamera": "Search from {cameraCount} camera",
-  "@searchCamera": {
+  "cameras": "{count,plural, =0{0} =1{1 camera} other{{count} cameras}}",
+  "@cameras":  {
     "placeholders": {
-      "cameraCount": {
+      "count": {
         "type": "int"
       }
     }
   },
-  "searchCameras": "Search from {cameraCount} cameras",
+  "searchCameras": "Search from {count,plural, =0{0} =1{1 camera} other{{count} cameras}}",
   "@searchCameras": {
     "placeholders": {
-      "cameraCount": {
+      "count": {
         "type": "int"
       }
     }

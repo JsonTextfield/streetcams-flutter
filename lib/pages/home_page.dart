@@ -1,65 +1,22 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map/flutter_map.dart' as flutter_map;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart' as latlon;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:streetcams_flutter/services/download_service.dart';
 
-import '../camera_model.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
+import '../services/location_service.dart';
 import 'camera_page.dart';
-
-Future<List<Camera>> _downloadCameraList() async {
-  var url = Uri.parse('https://traffic.ottawa.ca/beta/camera_list');
-  return compute(_parseCameraJson, await http.read(url));
-}
-
-Future<List<Neighbourhood>> _downloadNeighbourhoodList() async {
-  var url = Uri.parse(
-    'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson',
-  );
-  return compute(_parseNeighbourhoodJson, await http.read(url));
-}
-
-Future<Position> _getCurrentLocation() async {
-  // Test if location services are enabled.
-  bool isLocationEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!isLocationEnabled) {
-    return Future.error('Location services are disabled.');
-  }
-
-  LocationPermission permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
-      return Future.error('Location permissions are denied');
-    }
-  }
-
-  return await Geolocator.getLastKnownPosition() ??
-      await Geolocator.getCurrentPosition();
-}
-
-List<Camera> _parseCameraJson(String jsonString) {
-  List jsonArray = json.decode(jsonString);
-  return jsonArray.map((json) => Camera.fromJson(json)).toList();
-}
-
-List<Neighbourhood> _parseNeighbourhoodJson(String jsonString) {
-  List jsonArray = json.decode(jsonString)['features'];
-  return jsonArray.map((json) => Neighbourhood.fromJson(json)).toList();
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -69,8 +26,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  CameraModel cameraModel = CameraModel([]);
   Future<List<Camera>>? future;
+  final flutter_map.MapController flutterMapController =
+      flutter_map.MapController();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final TextEditingController _textEditingController = TextEditingController();
   final List<int> _positions = [];
@@ -89,7 +47,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     future = _downloadAll();
-    future?.then((cameras) => cameraModel = CameraModel(cameras));
     super.initState();
   }
 
@@ -98,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: getTitleBar(),
+        title: _getTitleBar(),
         actions: getAppBarActions(),
         backgroundColor: _selectedCameras.isEmpty ? null : Colors.blue,
       ),
@@ -115,15 +72,14 @@ class _HomePageState extends State<HomePage> {
                 getMapView(),
               ],
             );
-          } else {
-            return const Center(child: CircularProgressIndicator());
           }
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
   }
 
-  Widget getTitleBar() {
+  Widget _getTitleBar() {
     if (!_showSearchBox || _selectedCameras.isNotEmpty) {
       return GestureDetector(
         child: Text(_selectedCameras.isEmpty
@@ -131,49 +87,35 @@ class _HomePageState extends State<HomePage> {
             : '${_selectedCameras.length} selected'),
         onTap: () => _moveToListPosition(0),
       );
-    } else {
-      return TextField(
-        controller: _textEditingController,
-        textAlignVertical: TextAlignVertical.center,
-        textInputAction: TextInputAction.done,
-        onChanged: _filterDisplayedCamerasWithString,
-        decoration: InputDecoration(
-          icon: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              _resetDisplayedCameras();
-              _textEditingController.clear();
-              setState(() {
-                _showSearchBox = false;
-                _isFiltered = false;
-              });
-            },
-          ),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.clear),
-            onPressed: () {
-              setState(() {
-                _textEditingController.clear();
-                _filterDisplayedCamerasWithString('');
-              });
-            },
-          ),
-          hintText: Intl.plural(
-            _displayedCameras.length,
-            one: AppLocalizations.of(context)!
-                .searchCamera(_displayedCameras.length),
-            other: AppLocalizations.of(context)!
-                .searchCameras(_displayedCameras.length),
-            name: 'displayedCamerasCounter',
-            args: [_displayedCameras.length],
-            desc: 'Number of displayed cameras.',
-          ),
-        ),
-      );
     }
+    return TextField(
+      controller: _textEditingController,
+      textAlignVertical: TextAlignVertical.center,
+      textInputAction: TextInputAction.done,
+      onChanged: _filterDisplayedCamerasWithString,
+      decoration: InputDecoration(
+        icon: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: _closeSearchBar,
+        ),
+        suffixIcon: _textEditingController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear),
+                onPressed: () {
+                  setState(() {
+                    _textEditingController.clear();
+                    _filterDisplayedCamerasWithString('');
+                  });
+                },
+              )
+            : null,
+        hintText: AppLocalizations.of(context)!
+            .searchCameras(_displayedCameras.length),
+      ),
+    );
   }
 
-  PopupMenuItem convertToOverflowAction(IconButton iconButton) {
+  PopupMenuItem _convertToOverflowAction(IconButton iconButton) {
     return PopupMenuItem(
       padding: const EdgeInsets.all(0),
       child: ListTile(
@@ -223,11 +165,12 @@ class _HomePageState extends State<HomePage> {
     var switchView = Visibility(
       visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
       child: IconButton(
-          onPressed: (() => setState(() => _showList = !_showList)),
-          icon: Icon(_showList ? Icons.map : Icons.list),
-          tooltip: _showList
-              ? AppLocalizations.of(context)!.map
-              : AppLocalizations.of(context)!.list),
+        onPressed: (() => setState(() => _showList = !_showList)),
+        icon: Icon(_showList ? Icons.map : Icons.list),
+        tooltip: _showList
+            ? AppLocalizations.of(context)!.map
+            : AppLocalizations.of(context)!.list,
+      ),
     );
     var sort = Visibility(
       visible: _selectedCameras.isEmpty && _showList && !_showSearchBox,
@@ -242,7 +185,7 @@ class _HomePageState extends State<HomePage> {
       child: IconButton(
         onPressed: () => setState(_favouriteOptionClicked),
         icon: getFavouriteIcon(),
-        tooltip: getFavouriteTooltip(),
+        tooltip: _getFavouriteTooltip(),
       ),
     );
     var hidden = Visibility(
@@ -266,7 +209,7 @@ class _HomePageState extends State<HomePage> {
     var random = Visibility(
       visible: _selectedCameras.isEmpty,
       child: IconButton(
-        onPressed: showRandomCamera,
+        onPressed: _showRandomCamera,
         icon: const Icon(Icons.casino),
         tooltip: AppLocalizations.of(context)!.random,
       ),
@@ -308,8 +251,8 @@ class _HomePageState extends State<HomePage> {
     List<Visibility> visibleActions =
         actions.where((action) => action.visible).toList();
     List<Visibility> overflowActions = [];
-    // the number of 48-width buttons that can fit in 1/4 the width of the window
-    int maxActions = (MediaQuery.of(context).size.width / 4 / 48).floor();
+    // the number of 48-width buttons that can fit in 1/3 the width of the window
+    int maxActions = (MediaQuery.of(context).size.width / 3 / 48).floor();
     if (visibleActions.length > maxActions) {
       for (int i = maxActions; i < visibleActions.length; i++) {
         if (visibleActions[i] == sort) {
@@ -327,7 +270,7 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context) {
               return overflowActions
                   .map((visibility) =>
-                      convertToOverflowAction(visibility.child as IconButton))
+                      _convertToOverflowAction(visibility.child as IconButton))
                   .toList();
             },
           ),
@@ -337,15 +280,7 @@ class _HomePageState extends State<HomePage> {
     return visibleActions;
   }
 
-  void showRandomCamera() {
-    var visibleCameras =
-        _allCameras.where((camera) => camera.isVisible).toList();
-    if (visibleCameras.isNotEmpty) {
-      _showCameras([visibleCameras[Random().nextInt(_allCameras.length)]]);
-    }
-  }
-
-  String getFavouriteTooltip() {
+  String _getFavouriteTooltip() {
     if (_selectedCameras.isEmpty) {
       return AppLocalizations.of(context)!.favourites;
     } else if (_selectedCameras.every((camera) => camera.isFavourite)) {
@@ -427,7 +362,7 @@ class _HomePageState extends State<HomePage> {
                 child: Text(
                   letter,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: _selectedIndex == i ? Colors.blue : null,
                   ),
                 ),
@@ -474,7 +409,13 @@ class _HomePageState extends State<HomePage> {
       itemCount: _displayedCameras.length + 1,
       itemBuilder: (context, i) {
         if (i == _displayedCameras.length) {
-          return getCameraCountListTile();
+          return ListTile(
+            title: Center(
+              child: Text(
+                AppLocalizations.of(context)!.cameras(_displayedCameras.length),
+              ),
+            ),
+          );
         }
         return getCameraListTile(i);
       },
@@ -487,9 +428,7 @@ class _HomePageState extends State<HomePage> {
           _selectedCameras.contains(_displayedCameras[i]) ? Colors.blue : null,
       dense: true,
       title: Text(
-        AppLocalizations.of(context)?.localeName.contains('fr') ?? false
-            ? _displayedCameras[i].nameFr
-            : _displayedCameras[i].nameEn,
+        _displayedCameras[i].name,
         style: const TextStyle(fontSize: 16),
       ),
       subtitle: _displayedCameras[i].neighbourhood.isNotEmpty
@@ -519,28 +458,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget getCameraCountListTile() {
-    return ListTile(
-      title: Center(
-        child: Text(
-          Intl.plural(
-            _displayedCameras.length,
-            one:
-                '${_displayedCameras.length} ${AppLocalizations.of(context)!.camera}',
-            other:
-                '${_displayedCameras.length} ${AppLocalizations.of(context)!.cameras}',
-            name: 'displayedCamerasCounter',
-            args: [_displayedCameras.length],
-            desc: 'Number of displayed cameras.',
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget getMapView() {
     LatLngBounds? bounds;
     LatLng initialCameraPosition = const LatLng(45.4, -75.7);
+    flutter_map.LatLngBounds? boundsFlutterMaps;
+    latlon.LatLng initCamPos = latlon.LatLng(45.4, -75.7);
     if (_displayedCameras.isNotEmpty) {
       var minLat = _displayedCameras[0].location.lat;
       var maxLat = _displayedCameras[0].location.lat;
@@ -560,19 +482,90 @@ class _HomePageState extends State<HomePage> {
         southwest: LatLng(minLat, minLon),
         northeast: LatLng(maxLat, maxLon),
       );
+      initCamPos = latlon.LatLng(
+        (minLat + maxLat) / 2,
+        (minLon + maxLon) / 2,
+      );
+      boundsFlutterMaps = flutter_map.LatLngBounds.fromPoints([
+        latlon.LatLng(minLat, minLon),
+        latlon.LatLng(maxLat, maxLon),
+      ]);
     }
-    return GoogleMap(
-      myLocationButtonEnabled: true,
-      cameraTargetBounds: CameraTargetBounds(bounds),
-      initialCameraPosition: CameraPosition(target: initialCameraPosition),
-      minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
-      markers: getMapMarkers(),
-      onMapCreated: (controller) {
-        if (Theme.of(context).brightness == Brightness.dark) {
-          rootBundle
-              .loadString('assets/dark_mode.json')
-              .then(controller.setMapStyle);
-        }
+    /*if (defaultTargetPlatform == TargetPlatform.windows) {
+      return flutter_map.FlutterMap(
+        mapController: flutterMapController,
+        options: flutter_map.MapOptions(
+          onMapReady: () {
+            if (boundsFlutterMaps != null) {
+              flutterMapController.fitBounds(boundsFlutterMaps);
+            }
+          },
+          bounds: boundsFlutterMaps,
+          boundsOptions: const flutter_map_api.FitBoundsOptions(inside: true),
+          center: initCamPos,
+          minZoom: 9,
+          maxZoom: 16,
+        ),
+        children: [
+          flutter_map.TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'com.jsontextfield.streetcams_flutter',
+          ),
+          flutter_map.MarkerLayer(
+            markers: _displayedCameras.map((camera) {
+              return flutter_map.Marker(
+                point: latlon.LatLng(camera.location.lat, camera.location.lon),
+                anchorPos: flutter_map.AnchorPos.exactly(
+                  flutter_map.Anchor(5.0, -20.0),
+                ),
+                builder: (context) => GestureDetector(
+                  child: Stack(
+                    children: [
+                      Icon(
+                        Icons.location_pin,
+                        size: 48,
+                        color: _selectedCameras.contains(camera)
+                            ? Colors.blue
+                            : camera.isFavourite
+                                ? Colors.yellow
+                                : Colors.red,
+                      ),
+                      const Icon(
+                        Icons.location_on_outlined,
+                        size: 48,
+                      ),
+                    ],
+                  ),
+                  onTap: () => _selectedCameras.isNotEmpty
+                      ? setState(() => _selectCamera(camera))
+                      : _showCameras([camera]),
+                  onLongPress: () => setState(() => _selectCamera(camera)),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      );
+    }*/
+    return FutureBuilder(
+      future: LocationService.getCurrentLocation(),
+      builder: (context, data) {
+        bool showLocation = data.hasData;
+        return GoogleMap(
+          myLocationButtonEnabled: showLocation,
+          myLocationEnabled: showLocation,
+          cameraTargetBounds: CameraTargetBounds(bounds),
+          initialCameraPosition: CameraPosition(target: initialCameraPosition),
+          minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
+          markers: getMapMarkers(),
+          onMapCreated: (controller) {
+            if (Theme.of(context).brightness == Brightness.dark) {
+              rootBundle
+                  .loadString('assets/dark_mode.json')
+                  .then(controller.setMapStyle);
+            }
+          },
+        );
       },
     );
   }
@@ -584,11 +577,7 @@ class _HomePageState extends State<HomePage> {
               markerId: MarkerId(camera.id.toString()),
               position: LatLng(camera.location.lat, camera.location.lon),
               infoWindow: InfoWindow(
-                title:
-                    AppLocalizations.of(context)?.localeName.contains('fr') ??
-                            false
-                        ? camera.nameFr
-                        : camera.nameEn,
+                title: camera.name,
                 onTap: () => _showCameras([camera]),
               ),
             ))
@@ -619,25 +608,36 @@ class _HomePageState extends State<HomePage> {
     if (_allCameras.isNotEmpty) return _allCameras;
 
     _prefs = await SharedPreferences.getInstance();
-
-    _allCameras = await _downloadCameraList();
-    _allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
-
-    _neighbourhoods = await _downloadNeighbourhoodList();
+    _allCameras = await DownloadService.downloadCameras();
+    _neighbourhoods = await DownloadService.downloadNeighbourhoods();
 
     for (var camera in _allCameras) {
       for (var neighbourhood in _neighbourhoods) {
         if (neighbourhood.containsCamera(camera)) {
-          camera.neighbourhood =
-              AppLocalizations.of(context)?.localeName.contains('fr') ?? false
-                  ? neighbourhood.nameFr
-                  : neighbourhood.nameEn;
+          camera.neighbourhood = neighbourhood.name;
         }
       }
     }
     _readSharedPrefs();
     _resetDisplayedCameras();
     return _allCameras;
+  }
+
+  void _closeSearchBar() {
+    _resetDisplayedCameras();
+    _textEditingController.clear();
+    setState(() {
+      _showSearchBox = false;
+      _isFiltered = false;
+    });
+  }
+
+  void _showRandomCamera() {
+    var visibleCameras =
+        _allCameras.where((camera) => camera.isVisible).toList();
+    if (visibleCameras.isNotEmpty) {
+      _showCameras([visibleCameras[Random().nextInt(_allCameras.length)]]);
+    }
   }
 
   void _favouriteOptionClicked() {
@@ -679,15 +679,7 @@ class _HomePageState extends State<HomePage> {
       q = q.substring(2).trim();
       result.removeWhere((cam) => !cam.neighbourhood.toLowerCase().contains(q));
     } else {
-      result.removeWhere(
-        (camera) {
-          var name =
-              AppLocalizations.of(context)?.localeName.contains('fr') ?? false
-                  ? camera.nameFr
-                  : camera.nameEn;
-          return !name.toLowerCase().contains(q);
-        },
-      );
+      result.removeWhere((camera) => !camera.name.toLowerCase().contains(q));
       setState(() {
         _displayedCameras = result;
         _isFiltered = true;
@@ -722,13 +714,6 @@ class _HomePageState extends State<HomePage> {
     _writeSharedPrefs();
   }
 
-  void _readSharedPrefs() {
-    for (var c in _allCameras) {
-      c.isFavourite = _prefs?.getBool('${c.sortableName}.isFavourite') ?? false;
-      c.isVisible = _prefs?.getBool('${c.sortableName}.isVisible') ?? true;
-    }
-  }
-
   void _resetDisplayedCameras() {
     _selectedCameras.clear();
     _displayedCameras = _allCameras.where((cam) => cam.isVisible).toList();
@@ -736,7 +721,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Adds/removes a [Camera] to/from the selected camera list.
-  /// Returns true if the [Camera] was added, or false if it was removed.
+  /// Returns [true] if the [Camera] was added, or [false] if it was removed.
   bool _selectCamera(Camera camera) {
     if (_selectedCameras.contains(camera)) {
       _selectedCameras.remove(camera);
@@ -762,7 +747,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _sortCamerasByDistance() async {
-    var position = await _getCurrentLocation();
+    var position = await LocationService.getCurrentLocation();
     var location = Location(lat: position.latitude, lon: position.longitude);
     _displayedCameras.sort((a, b) {
       int result = location
@@ -790,9 +775,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _writeSharedPrefs() {
-    for (var camera in _displayedCameras) {
+    for (var camera in _allCameras) {
       _prefs?.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
       _prefs?.setBool('${camera.sortableName}.isVisible', camera.isVisible);
+    }
+  }
+
+  void _readSharedPrefs() {
+    for (var c in _allCameras) {
+      c.isFavourite = _prefs?.getBool('${c.sortableName}.isFavourite') ?? false;
+      c.isVisible = _prefs?.getBool('${c.sortableName}.isVisible') ?? true;
     }
   }
 }

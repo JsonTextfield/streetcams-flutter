@@ -9,14 +9,14 @@ class Location {
     required this.lon,
   });
 
-  factory Location.createFromJson(Map<String, dynamic> json) {
+  factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
       lat: json['latitude'],
       lon: json['longitude'],
     );
   }
 
-  factory Location.createFromJsonArray(List<dynamic> json) {
+  factory Location.fromJsonArray(List<dynamic> json) {
     return Location(
       lat: json[1],
       lon: json[0],

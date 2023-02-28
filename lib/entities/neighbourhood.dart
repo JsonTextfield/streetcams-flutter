@@ -24,12 +24,9 @@ class Neighbourhood extends BilingualObject {
     for (int i = 0; i < areas.length; i++) {
       var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
           as List<dynamic>;
-      List<Location> locationList = [];
-
-      for (var jsonArray in geometry) {
-        var location = Location.createFromJsonArray(jsonArray);
-        locationList.add(location);
-      }
+      List<Location> locationList = geometry
+          .map((jsonArray) => Location.fromJsonArray(jsonArray))
+          .toList();
       tempLocations.add(locationList);
     }
     return Neighbourhood(
