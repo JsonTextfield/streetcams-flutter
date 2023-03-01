@@ -18,7 +18,6 @@ class CameraPage extends StatefulWidget {
 
 class _CameraState extends State<CameraPage> {
   List<Camera> cameras = [];
-  bool shuffle = false;
   Timer? timer;
 
   @override
@@ -31,11 +30,11 @@ class _CameraState extends State<CameraPage> {
   Widget build(BuildContext context) {
     var arguments = ModalRoute.of(context)!.settings.arguments as List;
     cameras = arguments[0] as List<Camera>;
-    shuffle = arguments[1] as bool;
-    if (shuffle && timer == null) {
-      timer =
-          Timer.periodic(const Duration(seconds: 6), (t) => setState(() {}));
-    }
+    final bool shuffle = arguments[1] as bool;
+    timer ??= Timer.periodic(
+      const Duration(seconds: 6),
+      (t) => setState(() {}),
+    );
     return Scaffold(
       body: SafeArea(
         child: Stack(
@@ -43,11 +42,9 @@ class _CameraState extends State<CameraPage> {
             ListView.builder(
               itemCount: shuffle ? 1 : cameras.length,
               itemBuilder: (context, index) {
-                if (shuffle) {
-                  var camera = cameras[Random().nextInt(cameras.length)];
-                  return CameraImage(camera: camera, shuffle: true);
-                }
-                return CameraImage(camera: cameras[index]);
+                var camera =
+                    cameras[shuffle ? Random().nextInt(cameras.length) : index];
+                return CameraWidget(camera: camera);
               },
             ),
             Container(
@@ -65,40 +62,17 @@ class _CameraState extends State<CameraPage> {
       ),
     );
   }
-
-  List<CameraImage> getCameraImages() {
-    if (shuffle) {
-      var camera = cameras[Random().nextInt(cameras.length)];
-      return [CameraImage(camera: camera, shuffle: true)];
-    }
-    return cameras.map((e) => CameraImage(camera: e)).toList();
-  }
 }
 
-class CameraImage extends StatefulWidget {
+class CameraWidget extends StatelessWidget {
   // Widget for an individual camera feed
-  const CameraImage({Key? key, required this.camera, this.shuffle = false})
-      : super(key: key);
-
   final Camera camera;
-  final bool shuffle;
 
-  @override
-  State<CameraImage> createState() => _CameraImageState();
-}
-
-class _CameraImageState extends State<CameraImage> {
-  Timer? timer;
+  const CameraWidget({super.key, required this.camera});
 
   @override
   Widget build(BuildContext context) {
-    String url =
-        'https://traffic.ottawa.ca/beta/camera?id=${widget.camera.num}&timems=${DateTime.now().millisecondsSinceEpoch}';
-    if (!widget.shuffle && timer == null) {
-      timer =
-          Timer.periodic(const Duration(seconds: 6), (t) => setState(() {}));
-    }
-
+    int time = DateTime.now().millisecondsSinceEpoch;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height -
@@ -107,8 +81,8 @@ class _CameraImageState extends State<CameraImage> {
       child: Stack(
         children: [
           Image.network(
-            url,
-            semanticLabel: widget.camera.name,
+            'https://traffic.ottawa.ca/beta/camera?id=${camera.num}&timems=$time',
+            semanticLabel: camera.name,
             fit: BoxFit.contain,
             width: MediaQuery.of(context).size.width,
             gaplessPlayback: true,
@@ -119,7 +93,7 @@ class _CameraImageState extends State<CameraImage> {
               child: Container(
                 color: const Color.fromARGB(128, 0, 0, 0),
                 child: Text(
-                  widget.camera.name,
+                  camera.name,
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
@@ -129,11 +103,5 @@ class _CameraImageState extends State<CameraImage> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
   }
 }

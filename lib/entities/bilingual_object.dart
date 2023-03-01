@@ -1,6 +1,6 @@
-import 'package:intl/intl.dart';
 
 abstract class BilingualObject {
+  static String locale = 'en';
   final int id;
   final String nameEn;
   final String nameFr;
@@ -14,5 +14,5 @@ abstract class BilingualObject {
   String get sortableName =>
       name.replaceAll(RegExp('[\\W_]'), '').toUpperCase();
 
-  String get name => Intl.getCurrentLocale().contains('fr') ? nameFr : nameEn;
+  String get name => locale.contains('fr') ? nameFr : nameEn;
 }

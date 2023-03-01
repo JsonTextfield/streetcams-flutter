@@ -7,19 +7,24 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_map/flutter_map.dart' as flutter_map;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl_standalone.dart';
 import 'package:latlong2/latlong.dart' as latlon;
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
+import 'package:streetcams_flutter/widgets/camera_list_tile.dart';
 
+import '../constants.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
 import '../services/location_service.dart';
+import '../widgets/section_index.dart';
 import 'camera_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -31,13 +36,11 @@ class _HomePageState extends State<HomePage> {
       flutter_map.MapController();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final TextEditingController _textEditingController = TextEditingController();
-  final List<int> _positions = [];
   final int _maxCameras = 8;
   bool _showList = true;
   bool _isFiltered = false;
   bool _showSearchBox = false;
   bool _sortedByName = true;
-  int _selectedIndex = -1;
   SharedPreferences? _prefs;
   List<Camera> _allCameras = [];
   List<Camera> _displayedCameras = [];
@@ -46,8 +49,13 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    _setLocale();
     future = _downloadAll();
     super.initState();
+  }
+
+  void _setLocale() async {
+    BilingualObject.locale =  await findSystemLocale();
   }
 
   @override
@@ -57,7 +65,8 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: _getTitleBar(),
         actions: getAppBarActions(),
-        backgroundColor: _selectedCameras.isEmpty ? null : Colors.blue,
+        backgroundColor:
+            _selectedCameras.isEmpty ? null : Constants.accentColour,
       ),
       body: FutureBuilder<List<Camera>>(
         future: future,
@@ -91,7 +100,7 @@ class _HomePageState extends State<HomePage> {
     return TextField(
       controller: _textEditingController,
       textAlignVertical: TextAlignVertical.center,
-      textInputAction: TextInputAction.done,
+      textInputAction: TextInputAction.search,
       onChanged: _filterDisplayedCamerasWithString,
       decoration: InputDecoration(
         icon: IconButton(
@@ -218,7 +227,7 @@ class _HomePageState extends State<HomePage> {
       visible: _selectedCameras.isEmpty,
       child: IconButton(
         onPressed: () => _showCameras(
-          _allCameras.where((element) => !element.isVisible).toList(),
+          _allCameras.where((element) => element.isVisible).toList(),
           shuffle: true,
         ),
         icon: const Icon(Icons.shuffle),
@@ -292,7 +301,7 @@ class _HomePageState extends State<HomePage> {
   String getHiddenTooltip() {
     if (_selectedCameras.isEmpty) {
       return AppLocalizations.of(context)!.hidden;
-    } else if (_selectedCameras.every((camera) => camera.isVisible)) {
+    } else if (_selectedCameras.every((camera) => !camera.isVisible)) {
       return AppLocalizations.of(context)!.unhide;
     }
     return AppLocalizations.of(context)!.hide;
@@ -307,7 +316,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Icon getHiddenIcon() {
-    if (_selectedCameras.isEmpty || _selectedCameras.any((c) => !c.isVisible)) {
+    if (_selectedCameras.isEmpty || _selectedCameras.any((c) => c.isVisible)) {
       return const Icon(Icons.visibility_off);
     }
     return const Icon(Icons.visibility);
@@ -331,72 +340,57 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget getListView() {
+    debugPrint('building listview');
     return Row(children: [
       if (!_isFiltered && _sortedByName)
         Flexible(
           flex: 0,
-          child: getSectionIndex(),
+          child: SectionIndex(
+            data: _displayedCameras.map((cam) => cam.sortableName).toList(),
+            callback: _moveToListPosition,
+          ),
         ),
       Expanded(
-        child: getListViewBuilder(),
-      ),
-    ]);
-  }
-
-  Widget getSectionIndex() {
-    List<Widget> result = [];
-    Set<String> indices = {};
-    for (int i = 0; i < _displayedCameras.length; i++) {
-      var letter = _displayedCameras[i].sortableName[0];
-      if (!indices.contains(letter)) {
-        indices.add(letter);
-        if (!_positions.contains(i)) {
-          _positions.add(i);
-        }
-        result.add(
-          Expanded(
-            child: Container(
-              color: Colors.transparent,
-              width: 20,
-              child: Center(
-                child: Text(
-                  letter,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _selectedIndex == i ? Colors.blue : null,
+        child: ScrollablePositionedList.builder(
+          itemScrollController: _itemScrollController,
+          itemCount: _displayedCameras.length + 1,
+          itemBuilder: (context, i) {
+            if (i == _displayedCameras.length) {
+              return ListTile(
+                title: Center(
+                  child: Text(
+                    AppLocalizations.of(context)!
+                        .cameras(_displayedCameras.length),
                   ),
                 ),
-              ),
-            ),
-          ),
-        );
-      }
-    }
-    return GestureDetector(
-      child: Column(children: result),
-      onTapDown: (details) => _scrollFromPointer(details.globalPosition.dy),
-      onTapUp: (details) => _resetSelectedIndex(),
-      onVerticalDragUpdate: (details) =>
-          _scrollFromPointer(details.globalPosition.dy),
-      onVerticalDragEnd: (details) => _resetSelectedIndex(),
-    );
-  }
-
-  void _resetSelectedIndex() {
-    setState(() => _selectedIndex = -1);
-  }
-
-  void _scrollFromPointer(double yPosition) {
-    var mediaQuery = MediaQuery.of(context);
-    var topSection = mediaQuery.padding.top + AppBar().preferredSize.height;
-    var yPos = yPosition - topSection;
-    var sectionIndexHeight = mediaQuery.size.height - topSection;
-    int listIndex = (yPos / sectionIndexHeight * _positions.length).toInt();
-
-    setState(() {
-      _moveToListPosition(_positions[listIndex]);
-      _selectedIndex = _positions[listIndex];
-    });
+              );
+            }
+            var camera = _displayedCameras[i];
+            return CameraListTile(
+                camera: camera,
+                onTap: () {
+                  if (_selectedCameras.isEmpty) {
+                    _showCameras([camera]);
+                  } else {
+                    _selectCamera(camera);
+                  }
+                },
+                onLongPress: () => _selectCamera(camera),
+                onFavouriteTapped: (isFavourite) {
+                  camera.isFavourite = !camera.isFavourite;
+                  _writeSharedPrefs();
+                },
+                onDismissed: (_) {
+                  setState(() {
+                    camera.isVisible = !camera.isVisible;
+                    _writeSharedPrefs();
+                    _resetDisplayedCameras();
+                  });
+                });
+          },
+        ),
+      ),
+    ]);
   }
 
   void _moveToListPosition(int index) {
@@ -525,7 +519,7 @@ class _HomePageState extends State<HomePage> {
                         Icons.location_pin,
                         size: 48,
                         color: _selectedCameras.contains(camera)
-                            ? Colors.blue
+                            ? Constants.accentColour
                             : camera.isFavourite
                                 ? Colors.yellow
                                 : Colors.red,
@@ -584,7 +578,7 @@ class _HomePageState extends State<HomePage> {
         .toSet();
   }
 
-  /*Widget getSearchBox() {
+  Widget getSearchBox() {
     return Autocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
         if (textEditingValue.text.isEmpty) {
@@ -602,13 +596,15 @@ class _HomePageState extends State<HomePage> {
         });
       },
     );
-  }*/
+  }
 
   Future<List<Camera>> _downloadAll() async {
     if (_allCameras.isNotEmpty) return _allCameras;
-
     _prefs = await SharedPreferences.getInstance();
+
     _allCameras = await DownloadService.downloadCameras();
+    _allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
+
     _neighbourhoods = await DownloadService.downloadNeighbourhoods();
 
     for (var camera in _allCameras) {
@@ -706,10 +702,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _hideSelectedCameras() {
-    // if any of the selected cameras is not visible, hide the selected cameras
-    var anyNotVisible = _selectedCameras.any((camera) => !camera.isVisible);
+    var allHidden = _selectedCameras.every((camera) => !camera.isVisible);
     for (var camera in _selectedCameras) {
-      camera.isVisible = !anyNotVisible;
+      camera.isVisible = !allHidden;
     }
     _writeSharedPrefs();
   }
@@ -721,14 +716,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// Adds/removes a [Camera] to/from the selected camera list.
-  /// Returns [true] if the [Camera] was added, or [false] if it was removed.
-  bool _selectCamera(Camera camera) {
-    if (_selectedCameras.contains(camera)) {
-      _selectedCameras.remove(camera);
-      return false;
-    }
-    _selectedCameras.add(camera);
-    return true;
+  void _selectCamera(Camera camera) {
+    setState(() {
+      if (_selectedCameras.contains(camera)) {
+        _selectedCameras.remove(camera);
+      } else {
+        _selectedCameras.add(camera);
+      }
+    });
   }
 
   void _showCameras(List<Camera> cameras, {shuffle = false}) {

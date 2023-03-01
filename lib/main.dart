@@ -10,7 +10,7 @@ void main() {
 }
 
 class StreetCamsApp extends StatelessWidget {
-  const StreetCamsApp({Key? key}) : super(key: key);
+  const StreetCamsApp({super.key});
 
   // This widget is the root of your application.
   @override
