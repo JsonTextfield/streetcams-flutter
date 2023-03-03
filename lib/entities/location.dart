@@ -11,8 +11,8 @@ class Location {
 
   factory Location.fromJson(Map<String, dynamic> json) {
     return Location(
-      lat: json['latitude'],
-      lon: json['longitude'],
+      lat: json['latitude'] ?? 0.0,
+      lon: json['longitude'] ?? 0.0,
     );
   }
 
@@ -20,6 +20,13 @@ class Location {
     return Location(
       lat: json[1],
       lon: json[0],
+    );
+  }
+
+  factory Location.fromPosition(Position position) {
+    return Location(
+      lat: position.latitude,
+      lon: position.longitude,
     );
   }
 

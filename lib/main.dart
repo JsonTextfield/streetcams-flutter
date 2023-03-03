@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'blocs/camera_bloc.dart';
 import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
 
@@ -16,7 +18,10 @@ class StreetCamsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const HomePage(),
+      home: BlocProvider(
+        create: (_) => CameraBloc()..add(CameraLoaded()),
+        child: const HomePage(),
+      ),
       routes: {
         CameraPage.routeName: (context) => const CameraPage(),
       },

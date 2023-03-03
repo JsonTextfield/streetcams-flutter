@@ -1,26 +1,25 @@
+import 'package:flutter/widgets.dart';
+
+import 'blocs/camera_bloc.dart';
 import 'entities/camera.dart';
 import 'entities/location.dart';
 
-enum CameraSortingEnum { name, distance, neighbourhood }
 
-class CameraModel {
-  final List<Camera> _allCameras;
+class CameraModel extends ChangeNotifier {
+  final List<Camera> _allCameras = [];
   final List<Camera> _selectedCameras = [];
-  List<Camera> _displayedCameras = [];
+  List<Camera> displayedCameras = [];
   bool isFiltered = false;
-  CameraSortingEnum sortingMethod = CameraSortingEnum.name;
-
-  CameraModel(this._allCameras) {
-    resetDisplayedCameras();
-  }
+  CameraSortingMethod sortingMethod = CameraSortingMethod.name;
 
   void sortByName() {
-    _displayedCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
-    sortingMethod = CameraSortingEnum.name;
+    displayedCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
+    sortingMethod = CameraSortingMethod.name;
+    notifyListeners();
   }
 
   void sortByDistance(Location location) {
-    _displayedCameras.sort((a, b) {
+    displayedCameras.sort((a, b) {
       int result = location
           .distanceTo(a.location)
           .compareTo(location.distanceTo(b.location));
@@ -29,42 +28,46 @@ class CameraModel {
       }
       return result;
     });
-    sortingMethod = CameraSortingEnum.distance;
+    sortingMethod = CameraSortingMethod.distance;
+    notifyListeners();
   }
 
   void sortByNeighbourhood() {
-    _displayedCameras.sort((a, b) {
+    displayedCameras.sort((a, b) {
       int result = a.neighbourhood.compareTo(b.neighbourhood);
       if (a.neighbourhood.compareTo(b.neighbourhood) == 0) {
         return a.sortableName.compareTo(b.sortableName);
       }
       return result;
     });
-    sortingMethod = CameraSortingEnum.neighbourhood;
+    sortingMethod = CameraSortingMethod.neighbourhood;
+    notifyListeners();
   }
 
-  bool _selectCamera(Camera camera) {
+  void _selectCamera(Camera camera) {
     if (_selectedCameras.contains(camera)) {
       _selectedCameras.remove(camera);
-      return false;
+    } else {
+      _selectedCameras.add(camera);
     }
-    _selectedCameras.add(camera);
-    return true;
+    notifyListeners();
   }
 
   void clearSelectedCameras() {
     _selectedCameras.clear();
+    notifyListeners();
   }
 
-  CameraModel filterDisplayedCameras(bool Function(Camera) predicate) {
-    _displayedCameras = _displayedCameras.where(predicate).toList();
+  void filterDisplayedCameras(bool Function(Camera) predicate) {
+    displayedCameras = displayedCameras.where(predicate).toList();
     isFiltered = true;
-    return this;
+    notifyListeners();
   }
 
   void resetDisplayedCameras() {
-    _displayedCameras =
-        _allCameras.where((camera) => !camera.isVisible).toList();
+    displayedCameras =
+        _allCameras.where((camera) => camera.isVisible).toList();
+    notifyListeners();
   }
 
   void favouriteSelectedCameras() {
@@ -72,6 +75,7 @@ class CameraModel {
     for (var camera in _selectedCameras) {
       camera.isFavourite = !allFavourite;
     }
+    notifyListeners();
   }
 
   void hideSelectedCameras() {
@@ -79,5 +83,6 @@ class CameraModel {
     for (var camera in _selectedCameras) {
       camera.isVisible = !allHidden;
     }
+    notifyListeners();
   }
 }

@@ -13,6 +13,7 @@
   "sortName": "Sort by name",
   "sortDistance": "Sort by distance",
   "sortNeighbourhood": "Sort by neighbourhood",
+  "searchNeighbourhood": "Search by neighbourhood",
   "sort": "Sort",
   "list": "List",
   "map": "Map",
@@ -35,6 +36,14 @@
   },
   "searchCameras": "Search from {count,plural, =0{{count} cameras} =1{1 camera} other{{count} cameras}}",
   "@searchCameras": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchNeighbourhoods": "Search from {count,plural, =0{{count} neighbourhoods} =1{1 neighbourhood} other{{count} neighbourhoods}}",
+  "@searchNeighbourhoods": {
     "placeholders": {
       "count": {
         "type": "int"

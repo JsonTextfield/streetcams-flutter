@@ -21,12 +21,12 @@ class Camera extends BilingualObject {
 
   factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
-      num: json['number'],
+      num: json['number'] ?? 0,
       location: Location.fromJson(json),
-      type: json['type'],
-      id: json['id'],
-      nameEn: json['description'],
-      nameFr: json['descriptionFr'],
+      type: json['type'] ?? '',
+      id: json['id'] ?? 0,
+      nameEn: json['description'] ?? '',
+      nameFr: json['descriptionFr'] ?? '',
     );
   }
 
@@ -46,4 +46,7 @@ class Camera extends BilingualObject {
     result = prime * result + id.hashCode;
     return result;
   }
+
+  @override
+  String toString() => name;
 }

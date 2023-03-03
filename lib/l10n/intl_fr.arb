@@ -10,6 +10,7 @@
   "sortName": "Trier par nom",
   "sortDistance": "Trier par distance",
   "sortNeighbourhood": "Trier par quartier",
+  "searchNeighbourhood": "Chercher par quartier",
   "sort": "Trier",
   "list": "Liste",
   "map": "Carte",
@@ -32,6 +33,14 @@
   },
   "searchCameras": "Chercher de {count,plural, =0{{count} caméras} =1{1 caméra} other{{count} caméras}}",
   "@searchCameras": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchNeighbourhoods": "Chercher de {count,plural, =0{{count} quartiers} =1{1 quartier} other{{count} quartiers}}",
+  "@searchNeighbourhoods": {
     "placeholders": {
       "count": {
         "type": "int"

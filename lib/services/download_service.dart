@@ -14,11 +14,13 @@ class DownloadService {
 
   static List<Camera> _parseCameraJson(String jsonString) {
     List jsonArray = json.decode(jsonString);
-    return jsonArray.map((json) => Camera.fromJson(json)).toList();
+    return jsonArray.map((json) => Camera.fromJson(json)).toList()
+      ..sort((a, b) => a.sortableName.compareTo(b.sortableName));
   }
 
   static Future<List<Neighbourhood>> downloadNeighbourhoods() async {
-    Uri url = Uri.parse('https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson');
+    Uri url = Uri.parse(
+        'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson');
     return compute(_parseNeighbourhoodJson, await http.read(url));
   }
 
@@ -26,4 +28,21 @@ class DownloadService {
     List jsonArray = json.decode(jsonString)['features'];
     return jsonArray.map((json) => Neighbourhood.fromJson(json)).toList();
   }
+
+  static Future<List<Camera>> downloadAll() async {
+    var cameras = await downloadCameras();
+    cameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
+
+    var neighbourhoods = await downloadNeighbourhoods();
+
+    for (var camera in cameras) {
+      for (var neighbourhood in neighbourhoods) {
+        if (neighbourhood.containsCamera(camera)) {
+          camera.neighbourhood = neighbourhood.name;
+        }
+      }
+    }
+    return cameras;
+  }
+
 }
