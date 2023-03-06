@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -8,19 +7,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_map/flutter_map.dart' as flutter_map;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl_standalone.dart';
-import 'package:latlong2/latlong.dart' as latlon;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
-import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/widgets/camera_list_tile.dart';
 
 import '../constants.dart';
 import '../entities/camera.dart';
 import '../entities/neighbourhood.dart';
 import '../services/location_service.dart';
+import '../widgets/camera_search_bar.dart';
 import '../widgets/section_index.dart';
 import 'camera_page.dart';
 
@@ -32,76 +28,71 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  SearchMode searchMode = SearchMode.none;
   String _darkMapStyle = '';
   final flutter_map.MapController flutterMapController =
       flutter_map.MapController();
   final ItemScrollController _itemScrollController = ItemScrollController();
   final TextEditingController _textEditingController = TextEditingController();
-  final int _maxCameras = 8;
-  bool _showList = true;
-  bool _isFiltered = false;
-  SharedPreferences? _prefs;
-  List<Camera> _allCameras = [];
-  List<Camera> _displayedCameras = [];
-  List<Camera> _selectedCameras = [];
-  List<Neighbourhood> _neighbourhoods = [];
 
   @override
   void initState() {
-    _setLocale();
-    _downloadAll();
+    _loadMapStyle();
     super.initState();
   }
 
-  void _setLocale() async {
-    BilingualObject.locale = await findSystemLocale();
+  void _loadMapStyle() async {
+    _darkMapStyle = await rootBundle.loadString('assets/dark_mode.json');
   }
 
   List<Widget> getAppBarActions() {
+    var selectedCameras = context.read<CameraBloc>().state.selectedCameras;
     var clear = Visibility(
-      visible: _selectedCameras.isNotEmpty,
+      visible: selectedCameras.isNotEmpty,
       child: IconButton(
         tooltip: AppLocalizations.of(context)!.clear,
-        onPressed: () => setState(_selectedCameras.clear),
+        onPressed: () => setState(selectedCameras.clear),
         icon: const Icon(Icons.close),
       ),
     );
     var search = Visibility(
-      visible: _selectedCameras.isEmpty && searchMode != SearchMode.camera,
+      visible: selectedCameras.isEmpty &&
+          context.read<CameraBloc>().state.searchMode != SearchMode.camera,
       child: IconButton(
         tooltip: AppLocalizations.of(context)!.search,
         onPressed: () {
-          setState(() {
-            searchMode = SearchMode.camera;
-          });
+          context
+              .read<CameraBloc>()
+              .add(SearchCameras(searchMode: SearchMode.camera));
         },
         icon: const Icon(Icons.search),
       ),
     );
     var showCameras = Visibility(
-      visible:
-          _selectedCameras.isNotEmpty && _selectedCameras.length <= _maxCameras,
+      visible: selectedCameras.isNotEmpty && selectedCameras.length <= 8,
       child: IconButton(
         tooltip: AppLocalizations.of(context)!.showCameras,
-        onPressed: () => _showCameras(_selectedCameras),
+        onPressed: () => _showCameras(selectedCameras),
         icon: const Icon(Icons.camera_alt),
       ),
     );
     var switchView = Visibility(
       visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
       child: IconButton(
-        onPressed: (() => setState(() => _showList = !_showList)),
-        icon: Icon(_showList ? Icons.map : Icons.list),
-        tooltip: _showList
+        onPressed: () {
+          context.read<CameraBloc>().add(CameraLoaded(
+              showList: !context.read<CameraBloc>().state.showList));
+        },
+        icon: Icon(
+            context.read<CameraBloc>().state.showList ? Icons.map : Icons.list),
+        tooltip: context.read<CameraBloc>().state.showList
             ? AppLocalizations.of(context)!.map
             : AppLocalizations.of(context)!.list,
       ),
     );
     var sort = Visibility(
-      visible: _selectedCameras.isEmpty &&
-          _showList &&
-          searchMode == SearchMode.none,
+      visible: selectedCameras.isEmpty &&
+          context.read<CameraBloc>().state.showList &&
+          context.read<CameraBloc>().state.searchMode == SearchMode.none,
       child: BlocBuilder<CameraBloc, CameraState>(
         builder: (context, state) {
           return PopupMenuButton(
@@ -113,11 +104,11 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     context
                         .read<CameraBloc>()
-                        .add(SortCameras(method: CameraSortingMethod.name));
+                        .add(SortCameras(method: SortMode.name));
                   },
                   child: ListTile(
                     title: Text(AppLocalizations.of(context)!.sortName),
-                    trailing: state.sortingMethod == CameraSortingMethod.name
+                    trailing: state.sortingMethod == SortMode.name
                         ? const Icon(Icons.check)
                         : null,
                   ),
@@ -127,28 +118,28 @@ class _HomePageState extends State<HomePage> {
                   onTap: () {
                     context
                         .read<CameraBloc>()
-                        .add(SortCameras(method: CameraSortingMethod.distance));
+                        .add(SortCameras(method: SortMode.distance));
                   },
                   child: ListTile(
                     title: Text(AppLocalizations.of(context)!.sortDistance),
-                    trailing:
-                        state.sortingMethod == CameraSortingMethod.distance
-                            ? const Icon(Icons.check)
-                            : null,
+                    trailing: state.sortingMethod == SortMode.distance
+                        ? const Icon(Icons.check)
+                        : null,
                   ),
                 ),
                 PopupMenuItem(
                   padding: const EdgeInsets.all(0),
                   onTap: () {
-                    context.read<CameraBloc>().add(
-                        SortCameras(method: CameraSortingMethod.neighbourhood));
+                    context
+                        .read<CameraBloc>()
+                        .add(SortCameras(method: SortMode.neighbourhood));
                   },
                   child: ListTile(
-                    title: Text(AppLocalizations.of(context)!.sortNeighbourhood),
-                    trailing:
-                        state.sortingMethod == CameraSortingMethod.neighbourhood
-                            ? const Icon(Icons.check)
-                            : null,
+                    title:
+                        Text(AppLocalizations.of(context)!.sortNeighbourhood),
+                    trailing: state.sortingMethod == SortMode.neighbourhood
+                        ? const Icon(Icons.check)
+                        : null,
                   ),
                 ),
               ];
@@ -162,30 +153,32 @@ class _HomePageState extends State<HomePage> {
     var favourite = Visibility(
       child: IconButton(
         onPressed: () => setState(_favouriteOptionClicked),
-        icon: getFavouriteIcon(),
+        icon: Icon(getFavouriteIcon()),
         tooltip: _getFavouriteTooltip(),
       ),
     );
     var hidden = Visibility(
       child: IconButton(
         onPressed: () => setState(_hideOptionClicked),
-        icon: getHiddenIcon(),
+        icon: Icon(getHiddenIcon()),
         tooltip: getHiddenTooltip(),
       ),
     );
     var selectAll = Visibility(
-      visible: _selectedCameras.isNotEmpty &&
-          _selectedCameras.length < _displayedCameras.length,
+      visible: selectedCameras.isNotEmpty &&
+          selectedCameras.length <
+              context.read<CameraBloc>().state.displayedCameras.length,
       child: IconButton(
         onPressed: () {
-          setState(() => _selectedCameras = _displayedCameras.toList());
+          setState(() => selectedCameras =
+              context.read<CameraBloc>().state.displayedCameras.toList());
         },
         icon: const Icon(Icons.select_all),
         tooltip: AppLocalizations.of(context)!.selectAll,
       ),
     );
     var random = Visibility(
-      visible: _selectedCameras.isEmpty,
+      visible: selectedCameras.isEmpty,
       child: IconButton(
         onPressed: _showRandomCamera,
         icon: const Icon(Icons.casino),
@@ -193,10 +186,10 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     var shuffle = Visibility(
-      visible: _selectedCameras.isEmpty,
+      visible: selectedCameras.isEmpty,
       child: IconButton(
         onPressed: () => _showCameras(
-          _allCameras.where((element) => element.isVisible).toList(),
+          context.read<CameraBloc>().state.visibleCameras,
           shuffle: true,
         ),
         icon: const Icon(Icons.shuffle),
@@ -204,7 +197,7 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     var about = Visibility(
-      visible: _selectedCameras.isEmpty,
+      visible: selectedCameras.isEmpty,
       child: IconButton(
         tooltip: AppLocalizations.of(context)!.about,
         icon: const Icon(Icons.info),
@@ -212,12 +205,17 @@ class _HomePageState extends State<HomePage> {
       ),
     );
     var searchNeighbourhood = Visibility(
-      visible:
-          _selectedCameras.isEmpty && searchMode != SearchMode.neighbourhood,
+      visible: selectedCameras.isEmpty &&
+          context.read<CameraBloc>().state.searchMode !=
+              SearchMode.neighbourhood,
       child: IconButton(
         tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
         icon: const Icon(Icons.location_city),
-        onPressed: () => setState(() => searchMode = SearchMode.neighbourhood),
+        onPressed: () {
+          context
+              .read<CameraBloc>()
+              .add(SearchCameras(searchMode: SearchMode.neighbourhood));
+        },
       ),
     );
 
@@ -253,10 +251,20 @@ class _HomePageState extends State<HomePage> {
             tooltip: AppLocalizations.of(context)!.more,
             position: PopupMenuPosition.under,
             itemBuilder: (context) {
-              return overflowActions
-                  .map((visibility) =>
-                      _convertToOverflowAction(visibility.child as IconButton))
-                  .toList();
+              return overflowActions.map((visibility) {
+                IconButton iconButton = visibility.child as IconButton;
+                return PopupMenuItem(
+                  padding: const EdgeInsets.all(0),
+                  child: ListTile(
+                    leading: iconButton.icon,
+                    title: Text(iconButton.tooltip ?? ''),
+                    onTap: () {
+                      Navigator.pop(context);
+                      iconButton.onPressed?.call();
+                    },
+                  ),
+                );
+              }).toList();
             },
           ),
         ),
@@ -274,26 +282,39 @@ class _HomePageState extends State<HomePage> {
           appBar: AppBar(
             title: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
-                if (true) {
+                if (state.searchMode == SearchMode.none) {
                   return GestureDetector(
-                    child: Text(_selectedCameras.isEmpty
+                    child: Text(state.selectedCameras.isEmpty
                         ? AppLocalizations.of(context)!.appName
-                        : '${_selectedCameras.length} selected'),
+                        : '${state.selectedCameras.length} selected'),
                     onTap: () => _moveToListPosition(0),
                   );
-                } else if (searchMode == SearchMode.camera) {
-                  return FilterTextField(
+                } else if (state.searchMode == SearchMode.camera) {
+                  return CameraSearchBar(
                     controller: _textEditingController,
                     hintText: AppLocalizations.of(context)!
-                        .searchCameras(_displayedCameras.length),
-                    onChanged: _filterDisplayedCamerasWithString,
-                    onBackPressed: _closeSearchBar,
+                        .searchCameras(state.visibleCameras.length),
+                    onChanged: (query) {
+                      context.read<CameraBloc>().add(SearchCameras(
+                          searchMode: SearchMode.camera, query: query));
+                    },
+                    onBackPressed: () {
+                      _textEditingController.clear();
+                      context
+                          .read<CameraBloc>()
+                          .add(SearchCameras(searchMode: SearchMode.none));
+                    },
                     onClearPressed: _textEditingController.clear,
                   );
                 }
                 //searchMode is SearchMode.neighbourhood
                 return Autocomplete<String>(
-                  optionsBuilder: getAutoCompleteOptions,
+                  optionsBuilder: (textEditingController) {
+                    return getAutoCompleteOptions(
+                      textEditingController,
+                      context.read<CameraBloc>().neighbourhoods,
+                    );
+                  },
                   fieldViewBuilder:
                       (context, controller, focusNode, onFieldSubmitted) {
                     return TextField(
@@ -301,11 +322,20 @@ class _HomePageState extends State<HomePage> {
                       controller: controller,
                       textAlignVertical: TextAlignVertical.center,
                       textInputAction: TextInputAction.search,
-                      onChanged: _filterDisplayedCamerasByNeighbourhood,
+                      onChanged: (query) {
+                        context.read<CameraBloc>().add(SearchCameras(
+                              searchMode: SearchMode.neighbourhood,
+                              query: query,
+                            ));
+                      },
                       decoration: InputDecoration(
                         icon: IconButton(
                           icon: const Icon(Icons.arrow_back),
-                          onPressed: _closeSearchBar,
+                          onPressed: () {
+                            controller.clear();
+                            context.read<CameraBloc>().add(
+                                SearchCameras(searchMode: SearchMode.none));
+                          },
                         ),
                         suffixIcon: controller.text.isNotEmpty
                             ? IconButton(
@@ -314,7 +344,7 @@ class _HomePageState extends State<HomePage> {
                               )
                             : null,
                         hintText: AppLocalizations.of(context)!
-                            .searchNeighbourhoods(_neighbourhoods.length),
+                            .searchNeighbourhoods(state.neighbourhoods.length),
                       ),
                     );
                   },
@@ -323,7 +353,7 @@ class _HomePageState extends State<HomePage> {
             ),
             actions: getAppBarActions(),
             backgroundColor:
-                _selectedCameras.isEmpty ? null : Constants.accentColour,
+                state.selectedCameras.isEmpty ? null : Constants.accentColour,
           ),
           body: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
@@ -334,10 +364,10 @@ class _HomePageState extends State<HomePage> {
                   );
                 case CameraStatus.success:
                   return IndexedStack(
-                    index: _showList ? 0 : 1,
+                    index: state.showList ? 0 : 1,
                     children: [
-                      getListView(state.allCameras),
-                      getMapView(state.allCameras),
+                      getListView(state.displayedCameras),
+                      getMapView(state.displayedCameras),
                     ],
                   );
                 default:
@@ -350,95 +380,61 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _getTitleBar() {
-    return TextField(
-      controller: _textEditingController,
-      textAlignVertical: TextAlignVertical.center,
-      textInputAction: TextInputAction.search,
-      onChanged: _filterDisplayedCamerasWithString,
-      decoration: InputDecoration(
-        icon: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: _closeSearchBar,
-        ),
-        suffixIcon: _textEditingController.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  setState(() {
-                    _textEditingController.clear();
-                    _filterDisplayedCamerasWithString('');
-                  });
-                },
-              )
-            : null,
-        hintText: AppLocalizations.of(context)!
-            .searchCameras(_displayedCameras.length),
-      ),
-    );
-  }
-
-  PopupMenuItem _convertToOverflowAction(IconButton iconButton) {
-    return PopupMenuItem(
-      padding: const EdgeInsets.all(0),
-      child: ListTile(
-        leading: iconButton.icon,
-        title: Text(iconButton.tooltip ?? ''),
-        onTap: () {
-          Navigator.pop(context);
-          iconButton.onPressed?.call();
-        },
-      ),
-    );
-  }
-
   void showAbout(BuildContext context) async {
     var packageInfo = await PackageInfo.fromPlatform();
-    showAboutDialog(
-      context: context,
-      applicationName: AppLocalizations.of(context)!.appName,
-      applicationVersion: 'Version ${packageInfo.version}',
-    );
+    if (mounted) {
+      showAboutDialog(
+        context: context,
+        applicationName: AppLocalizations.of(context)!.appName,
+        applicationVersion: 'Version ${packageInfo.version}',
+      );
+    }
   }
 
   String _getFavouriteTooltip() {
-    if (_selectedCameras.isEmpty) {
+    List<Camera> selectedCameras =
+        context.read<CameraBloc>().state.selectedCameras;
+    if (selectedCameras.isEmpty) {
       return AppLocalizations.of(context)!.favourites;
-    } else if (_selectedCameras.every((camera) => camera.isFavourite)) {
+    } else if (selectedCameras.every((camera) => camera.isFavourite)) {
       return AppLocalizations.of(context)!.unfavourite;
     }
     return AppLocalizations.of(context)!.favourite;
   }
 
   String getHiddenTooltip() {
-    if (_selectedCameras.isEmpty) {
+    List<Camera> selectedCameras =
+        context.read<CameraBloc>().state.selectedCameras;
+    if (selectedCameras.isEmpty) {
       return AppLocalizations.of(context)!.hidden;
-    } else if (_selectedCameras.every((camera) => !camera.isVisible)) {
+    } else if (selectedCameras.every((camera) => !camera.isVisible)) {
       return AppLocalizations.of(context)!.unhide;
     }
     return AppLocalizations.of(context)!.hide;
   }
 
-  Icon getFavouriteIcon() {
-    if (_selectedCameras.isEmpty ||
-        _selectedCameras.any((camera) => !camera.isFavourite)) {
-      return const Icon(Icons.star);
+  IconData getFavouriteIcon() {
+    var selectedCameras = context.read<CameraBloc>().state.selectedCameras;
+    if (selectedCameras.isEmpty || selectedCameras.any((c) => !c.isFavourite)) {
+      return Icons.star;
     }
-    return const Icon(Icons.star_border);
+    return Icons.star_border;
   }
 
-  Icon getHiddenIcon() {
-    if (_selectedCameras.isEmpty || _selectedCameras.any((c) => c.isVisible)) {
-      return const Icon(Icons.visibility_off);
+  IconData getHiddenIcon() {
+    var selectedCameras = context.read<CameraBloc>().state.selectedCameras;
+    if (selectedCameras.isEmpty || selectedCameras.any((c) => c.isVisible)) {
+      return Icons.visibility_off;
     }
-    return const Icon(Icons.visibility);
+    return Icons.visibility;
   }
 
   Widget getListView(List<Camera> cameras) {
     debugPrint('building listview');
     return BlocBuilder<CameraBloc, CameraState>(builder: (context, state) {
       return Row(children: [
-        if (!_isFiltered && state.sortingMethod == CameraSortingMethod.name)
+        if (state.filterMode == FilterMode.visible &&
+            state.sortingMethod == SortMode.name)
           Flexible(
             flex: 0,
             child: SectionIndex(
@@ -464,7 +460,11 @@ class _HomePageState extends State<HomePage> {
               return CameraListTile(
                   camera: camera,
                   onTap: () {
-                    if (_selectedCameras.isEmpty) {
+                    if (context
+                        .read<CameraBloc>()
+                        .state
+                        .selectedCameras
+                        .isEmpty) {
                       _showCameras([camera]);
                     } else {
                       _selectCamera(camera);
@@ -473,14 +473,13 @@ class _HomePageState extends State<HomePage> {
                   onLongPress: () => _selectCamera(camera),
                   onFavouriteTapped: (isFavourite) {
                     camera.isFavourite = !camera.isFavourite;
-                    _writeSharedPrefs();
+                    context.read<CameraBloc>().writeSharedPrefs();
+                    _resetDisplayedCameras();
                   },
                   onDismissed: (_) {
-                    setState(() {
-                      camera.isVisible = !camera.isVisible;
-                      _writeSharedPrefs();
-                      _resetDisplayedCameras();
-                    });
+                    camera.isVisible = !camera.isVisible;
+                    context.read<CameraBloc>().writeSharedPrefs();
+                    _resetDisplayedCameras();
                   });
             },
           ),
@@ -493,66 +492,9 @@ class _HomePageState extends State<HomePage> {
     _itemScrollController.jumpTo(index: index);
   }
 
-  Widget getListViewBuilder() {
-    return ScrollablePositionedList.builder(
-      itemScrollController: _itemScrollController,
-      itemCount: _displayedCameras.length + 1,
-      itemBuilder: (context, i) {
-        if (i == _displayedCameras.length) {
-          return ListTile(
-            title: Center(
-              child: Text(
-                AppLocalizations.of(context)!.cameras(_displayedCameras.length),
-              ),
-            ),
-          );
-        }
-        return getCameraListTile(i);
-      },
-    );
-  }
-
-  Widget getCameraListTile(int i) {
-    return ListTile(
-      tileColor:
-          _selectedCameras.contains(_displayedCameras[i]) ? Colors.blue : null,
-      dense: true,
-      title: Text(
-        _displayedCameras[i].name,
-        style: const TextStyle(fontSize: 16),
-      ),
-      subtitle: _displayedCameras[i].neighbourhood.isNotEmpty
-          ? Text(_displayedCameras[i].neighbourhood)
-          : null,
-      trailing: IconButton(
-        icon: Icon(
-          _displayedCameras[i].isFavourite ? Icons.star : Icons.star_border,
-        ),
-        color: _displayedCameras[i].isFavourite ? Colors.yellow : null,
-        onPressed: () {
-          setState(() {
-            _displayedCameras[i].isFavourite =
-                !_displayedCameras[i].isFavourite;
-            _writeSharedPrefs();
-          });
-        },
-      ),
-      onTap: () {
-        if (_selectedCameras.isEmpty) {
-          _showCameras([_displayedCameras[i]]);
-        } else {
-          setState(() => _selectCamera(_displayedCameras[i]));
-        }
-      },
-      onLongPress: () => setState(() => _selectCamera(_displayedCameras[i])),
-    );
-  }
-
   Widget getMapView(List<Camera> cameras) {
     LatLngBounds? bounds;
     LatLng initialCameraPosition = const LatLng(45.4, -75.7);
-    flutter_map.LatLngBounds? boundsFlutterMaps;
-    latlon.LatLng initCamPos = latlon.LatLng(45.4, -75.7);
     if (cameras.isNotEmpty) {
       var minLat = cameras[0].location.lat;
       var maxLat = cameras[0].location.lat;
@@ -572,71 +514,7 @@ class _HomePageState extends State<HomePage> {
         southwest: LatLng(minLat, minLon),
         northeast: LatLng(maxLat, maxLon),
       );
-      initCamPos = latlon.LatLng(
-        (minLat + maxLat) / 2,
-        (minLon + maxLon) / 2,
-      );
-      boundsFlutterMaps = flutter_map.LatLngBounds.fromPoints([
-        latlon.LatLng(minLat, minLon),
-        latlon.LatLng(maxLat, maxLon),
-      ]);
     }
-    /*if (defaultTargetPlatform == TargetPlatform.windows) {
-      return flutter_map.FlutterMap(
-        mapController: flutterMapController,
-        options: flutter_map.MapOptions(
-          onMapReady: () {
-            if (boundsFlutterMaps != null) {
-              flutterMapController.fitBounds(boundsFlutterMaps);
-            }
-          },
-          bounds: boundsFlutterMaps,
-          boundsOptions: const flutter_map_api.FitBoundsOptions(inside: true),
-          center: initCamPos,
-          minZoom: 9,
-          maxZoom: 16,
-        ),
-        children: [
-          flutter_map.TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.jsontextfield.streetcams_flutter',
-          ),
-          flutter_map.MarkerLayer(
-            markers: _displayedCameras.map((camera) {
-              return flutter_map.Marker(
-                point: latlon.LatLng(camera.location.lat, camera.location.lon),
-                anchorPos: flutter_map.AnchorPos.exactly(
-                  flutter_map.Anchor(5.0, -20.0),
-                ),
-                builder: (context) => GestureDetector(
-                  child: Stack(
-                    children: [
-                      Icon(
-                        Icons.location_pin,
-                        size: 48,
-                        color: _selectedCameras.contains(camera)
-                            ? Constants.accentColour
-                            : camera.isFavourite
-                                ? Colors.yellow
-                                : Colors.red,
-                      ),
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 48,
-                      ),
-                    ],
-                  ),
-                  onTap: () => _selectedCameras.isNotEmpty
-                      ? setState(() => _selectCamera(camera))
-                      : _showCameras([camera]),
-                  onLongPress: () => setState(() => _selectCamera(camera)),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      );
-    }*/
     return FutureBuilder(
       future: LocationService.getCurrentLocation(),
       builder: (context, data) {
@@ -661,7 +539,6 @@ class _HomePageState extends State<HomePage> {
   Set<Marker> getMapMarkers(List<Camera> cameras) {
     return cameras
         .map((camera) => Marker(
-              icon: _getMarkerIcon(camera),
               markerId: MarkerId(camera.id.toString()),
               position: LatLng(camera.location.lat, camera.location.lon),
               infoWindow: InfoWindow(
@@ -672,150 +549,58 @@ class _HomePageState extends State<HomePage> {
         .toSet();
   }
 
-  Iterable<String> getAutoCompleteOptions(TextEditingValue value) {
+  Iterable<String> getAutoCompleteOptions(
+    TextEditingValue value,
+    List<Neighbourhood> neighbourhoods,
+  ) {
     if (value.text.isEmpty) {
-      setState(_resetDisplayedCameras);
       return [];
     }
-    return _neighbourhoods.map((n) => n.name).where(
+    return neighbourhoods.map((n) => n.name).where(
       (name) {
         return name.toLowerCase().contains(value.text.trim().toLowerCase());
       },
     );
   }
 
-  Future<void> _downloadAll() async {
-    _darkMapStyle = await rootBundle.loadString('assets/dark_mode.json');
-    _prefs = await SharedPreferences.getInstance();
-    /*
-    _allCameras = await DownloadService.downloadCameras();
-    _allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
-
-    _neighbourhoods = await DownloadService.downloadNeighbourhoods();
-
-    for (var camera in _allCameras) {
-      for (var neighbourhood in _neighbourhoods) {
-        if (neighbourhood.containsCamera(camera)) {
-          camera.neighbourhood = neighbourhood.name;
-        }
-      }
-    }
-    _readSharedPrefs();
-    _resetDisplayedCameras();
-    return _allCameras;
-    */
-  }
-
-  void _closeSearchBar() {
-    _resetDisplayedCameras();
-    _textEditingController.clear();
-    setState(() {
-      searchMode = SearchMode.none;
-      _isFiltered = false;
-    });
-  }
-
   void _showRandomCamera() {
-    var visibleCameras =
-        _allCameras.where((camera) => camera.isVisible).toList();
+    var visibleCameras = context.read<CameraBloc>().state.visibleCameras;
     if (visibleCameras.isNotEmpty) {
-      _showCameras([visibleCameras[Random().nextInt(_allCameras.length)]]);
+      _showCameras([visibleCameras[Random().nextInt(visibleCameras.length)]]);
     }
   }
 
   void _favouriteOptionClicked() {
-    if (_selectedCameras.isEmpty) {
-      _filterDisplayedCameras((camera) => camera.isFavourite);
+    if (context.read<CameraBloc>().state.selectedCameras.isEmpty) {
+      var filterMode =
+          context.read<CameraBloc>().state.filterMode == FilterMode.favourite
+              ? FilterMode.visible
+              : FilterMode.favourite;
+      context.read<CameraBloc>().add(FilterCamera(filterMode: filterMode));
     } else {
-      _favouriteSelectedCameras();
+      context.read<CameraBloc>().favouriteSelectedCameras();
     }
-  }
-
-  void _favouriteSelectedCameras() {
-    var allFave = _selectedCameras.every((camera) => camera.isFavourite);
-    for (var element in _selectedCameras) {
-      element.isFavourite = !allFave;
-    }
-    _writeSharedPrefs();
-  }
-
-  void _filterDisplayedCameras(bool Function(Camera) predicate) {
-    if (_isFiltered) {
-      _resetDisplayedCameras();
-    } else {
-      _displayedCameras = _allCameras.where(predicate).toList();
-      _isFiltered = true;
-    }
-  }
-
-  void _filterDisplayedCamerasByNeighbourhood(String query) {
-    setState(() {
-      _displayedCameras = _allCameras.where((cam) {
-        return cam.isVisible &&
-            cam.neighbourhood.toLowerCase().contains(query.toLowerCase());
-      }).toList();
-      _isFiltered = true;
-    });
-  }
-
-  void _filterDisplayedCamerasWithString(String query) {
-    List<Camera> result = _allCameras.where((cam) => cam.isVisible).toList();
-    String q = query.toLowerCase();
-    if (q.startsWith('f:')) {
-      q = q.substring(2).trim();
-      result.removeWhere((camera) => !camera.isFavourite);
-    } else if (q.startsWith('h:')) {
-      q = q.substring(2).trim();
-      result.removeWhere((camera) => camera.isVisible);
-    }
-    result.removeWhere((camera) => !camera.name.toLowerCase().contains(q));
-    setState(() {
-      _displayedCameras = result;
-      _isFiltered = true;
-    });
-  }
-
-  BitmapDescriptor _getMarkerIcon(Camera camera) {
-    if (_selectedCameras.contains(camera)) {
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure);
-    }
-    if (camera.isFavourite) {
-      return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
-    }
-    return BitmapDescriptor.defaultMarker;
   }
 
   void _hideOptionClicked() {
-    if (_selectedCameras.isEmpty) {
-      _filterDisplayedCameras((camera) => !camera.isVisible);
+    if (context.read<CameraBloc>().state.selectedCameras.isEmpty) {
+      var filterMode =
+          context.read<CameraBloc>().state.filterMode == FilterMode.hidden
+              ? FilterMode.visible
+              : FilterMode.hidden;
+      context.read<CameraBloc>().add(FilterCamera(filterMode: filterMode));
     } else {
-      _hideSelectedCameras();
+      context.read<CameraBloc>().hideSelectedCameras();
     }
-  }
-
-  void _hideSelectedCameras() {
-    var allHidden = _selectedCameras.every((camera) => !camera.isVisible);
-    for (var camera in _selectedCameras) {
-      camera.isVisible = !allHidden;
-    }
-    _writeSharedPrefs();
   }
 
   void _resetDisplayedCameras() {
-    _selectedCameras.clear();
-    _displayedCameras = _allCameras.where((cam) => cam.isVisible).toList();
-    _isFiltered = false;
+    context.read<CameraBloc>().add(SearchCameras());
   }
 
   /// Adds/removes a [Camera] to/from the selected camera list.
   void _selectCamera(Camera camera) {
-    setState(() {
-      if (_selectedCameras.contains(camera)) {
-        _selectedCameras.remove(camera);
-      } else {
-        _selectedCameras.add(camera);
-      }
-    });
+    context.read<CameraBloc>().add(SelectCamera(camera: camera));
   }
 
   void _showCameras(List<Camera> cameras, {shuffle = false}) {
@@ -826,64 +611,5 @@ class _HomePageState extends State<HomePage> {
         arguments: [cameras, shuffle],
       );
     }
-  }
-
-  void _writeSharedPrefs() {
-    for (var camera in _allCameras) {
-      _prefs?.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
-      _prefs?.setBool('${camera.sortableName}.isVisible', camera.isVisible);
-    }
-  }
-
-  void _readSharedPrefs() {
-    for (var c in _allCameras) {
-      c.isFavourite = _prefs?.getBool('${c.sortableName}.isFavourite') ?? false;
-      c.isVisible = _prefs?.getBool('${c.sortableName}.isVisible') ?? true;
-    }
-  }
-}
-
-enum SearchMode { none, camera, neighbourhood }
-
-class FilterTextField extends StatelessWidget {
-  final String hintText;
-  final TextEditingController controller;
-  final void Function(String) onChanged;
-  final void Function() onBackPressed;
-  final void Function() onClearPressed;
-
-  const FilterTextField({
-    super.key,
-    required this.controller,
-    required this.hintText,
-    required this.onChanged,
-    required this.onBackPressed,
-    required this.onClearPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      textAlignVertical: TextAlignVertical.center,
-      textInputAction: TextInputAction.search,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        icon: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: onBackPressed,
-        ),
-        suffixIcon: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () {
-                  controller.clear();
-                  onClearPressed.call();
-                },
-              )
-            : null,
-        hintText: hintText,
-      ),
-    );
   }
 }
