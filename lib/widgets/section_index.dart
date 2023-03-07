@@ -15,6 +15,7 @@ class SectionIndex extends StatefulWidget {
 }
 
 class _SectionIndexState extends State<SectionIndex> {
+  GlobalKey key = GlobalKey();
   int _selectedIndex = -1;
   final List<int> _positions = [];
 
@@ -51,13 +52,15 @@ class _SectionIndexState extends State<SectionIndex> {
         );
       }
     }
+
     return GestureDetector(
+      key: key,
       child: Column(children: result),
       onTapDown: (details) =>
-          _selectIndexFromPointer(details.globalPosition.dy),
+          _selectIndexFromPointer(details.localPosition.dy),
       onTapUp: (details) => _resetSelectedIndex(),
       onVerticalDragUpdate: (details) =>
-          _selectIndexFromPointer(details.globalPosition.dy),
+          _selectIndexFromPointer(details.localPosition.dy),
       onVerticalDragEnd: (details) => _resetSelectedIndex(),
     );
   }
@@ -67,11 +70,11 @@ class _SectionIndexState extends State<SectionIndex> {
   }
 
   void _selectIndexFromPointer(double yPosition) {
-    var mediaQuery = MediaQuery.of(context);
-    var topSection = mediaQuery.padding.top + AppBar().preferredSize.height;
-    var yPos = yPosition - topSection;
-    var sectionIndexHeight = mediaQuery.size.height - topSection;
-    int listIndex = (yPos / sectionIndexHeight * _positions.length).toInt();
+    var box = key.currentContext?.findRenderObject() as RenderBox;
+    var sectionIndexHeight = box.constraints.maxHeight;
+    int listIndex = (yPosition / sectionIndexHeight * _positions.length)
+        .toInt()
+        .clamp(0, _positions.length - 1);
 
     if (_positions[listIndex] != _selectedIndex) {
       setState(() {

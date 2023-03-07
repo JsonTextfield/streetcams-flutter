@@ -23,12 +23,23 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       _prefs = await SharedPreferences.getInstance();
       allCameras = await DownloadService.downloadAll();
       neighbourhoods = await DownloadService.downloadNeighbourhoods();
+      readSharedPrefs();
       return emit(CameraState(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
         neighbourhoods: neighbourhoods,
         allCameras: allCameras,
         status: CameraStatus.success,
+      ));
+    });
+
+    on<ReloadCameras>((event, emit) async {
+      readSharedPrefs();
+      return emit(CameraState(
         showList: event.showList,
+        displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
+        neighbourhoods: neighbourhoods,
+        allCameras: allCameras,
+        status: CameraStatus.success,
       ));
     });
 
@@ -48,6 +59,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           break;
       }
       return emit(CameraState(
+        allCameras: allCameras,
         displayedCameras: state.displayedCameras,
         status: CameraStatus.success,
         sortingMethod: event.method,
@@ -63,10 +75,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         case SearchMode.neighbourhood:
           result = searchByNeighbourhood(event.query);
           break;
+        case SearchMode.none:
         default:
           break;
       }
       return emit(CameraState(
+        allCameras: allCameras,
         neighbourhoods: neighbourhoods,
         displayedCameras: result,
         status: CameraStatus.success,
@@ -93,6 +107,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           break;
       }
       return emit(CameraState(
+        allCameras: allCameras,
         status: CameraStatus.success,
         filterMode: event.filterMode,
         displayedCameras: displayedCameras,
@@ -100,13 +115,35 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SelectCamera>((event, emit) async {
-      if (state.selectedCameras.contains(event.camera)) {
-        state.selectedCameras.remove(event.camera);
+      var selectedCameras = state.selectedCameras.toList();
+      if (selectedCameras.contains(event.camera)) {
+        selectedCameras.remove(event.camera);
       } else {
-        state.selectedCameras.add(event.camera);
+        selectedCameras.add(event.camera);
       }
       return emit(CameraState(
-        selectedCameras: state.selectedCameras,
+        status: CameraStatus.success,
+        allCameras: allCameras,
+        displayedCameras: state.displayedCameras,
+        selectedCameras: selectedCameras,
+      ));
+    });
+
+    on<SelectAll>((event, emit) async {
+      return emit(CameraState(
+        displayedCameras: state.displayedCameras,
+        allCameras: allCameras,
+        selectedCameras: state.displayedCameras,
+        status: CameraStatus.success,
+      ));
+    });
+
+    on<ClearSelection>((event, emit) async {
+      return emit(CameraState(
+        displayedCameras: state.displayedCameras,
+        allCameras: allCameras,
+        selectedCameras: const [],
+        status: CameraStatus.success,
       ));
     });
   }
@@ -168,6 +205,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     for (var element in state.selectedCameras) {
       element.isFavourite = !allFave;
     }
+    writeSharedPrefs();
   }
 
   void hideSelectedCameras() {
@@ -175,6 +213,19 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     for (var camera in state.selectedCameras) {
       camera.isVisible = !allHidden;
     }
+    writeSharedPrefs();
+  }
+
+  void favouriteCamera(Camera camera) {
+    camera.isFavourite = !camera.isFavourite;
+    writeSharedPrefs();
+    add(ReloadCameras());
+  }
+
+  void hideCamera(Camera camera) {
+    camera.isVisible = !camera.isVisible;
+    writeSharedPrefs();
+    add(ReloadCameras());
   }
 
   void writeSharedPrefs() {

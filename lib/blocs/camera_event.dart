@@ -5,10 +5,15 @@ abstract class CameraEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class CameraLoaded extends CameraEvent {
+class CameraLoaded extends CameraEvent {}
+
+class ReloadCameras extends CameraEvent {
   final bool showList;
 
-  CameraLoaded({this.showList = true});
+  ReloadCameras({this.showList = true});
+
+  @override
+  List<Object?> get props => [showList];
 }
 
 class SortCameras extends CameraEvent {
@@ -39,6 +44,10 @@ class SelectCamera extends CameraEvent {
   @override
   List<Object?> get props => [camera, selectedCameras];
 }
+
+class ClearSelection extends CameraEvent {}
+
+class SelectAll extends CameraEvent {}
 
 class FilterCamera extends CameraEvent {
   final FilterMode filterMode;

@@ -10,6 +10,7 @@ import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
 
 void main() {
+  _setLocale();
   runApp(const StreetCamsApp());
 }
 
@@ -23,7 +24,6 @@ class StreetCamsApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    _setLocale();
     return MaterialApp(
       home: BlocProvider(
         create: (_) => CameraBloc()..add(CameraLoaded()),
