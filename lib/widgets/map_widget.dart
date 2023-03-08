@@ -60,36 +60,39 @@ class MapWidget extends StatelessWidget {
         ],
       );
     }
-    LatLngBounds bounds = LatLngBounds(
-      southwest: const LatLng(45.4, -75.7),
-      northeast: const LatLng(45.4, -75.7),
-    );
-    return FutureBuilder<String>(
-      future: _loadMapStyle(),
-      builder: (context, mapSnapshot) {
-        return FutureBuilder<Position>(
-          future: LocationService.getCurrentLocation(),
-          builder: (context, data) {
-            LatLng initialCameraPosition = const LatLng(45.4, -75.7);
-            _getCameraPositionAndBounds(initialCameraPosition, bounds);
-            bool showLocation = data.hasData;
-            Set<Marker> markers = {};
-            _getMapMarkers(context, markers);
-            return GoogleMap(
-              myLocationButtonEnabled: showLocation,
-              myLocationEnabled: showLocation,
-              cameraTargetBounds: CameraTargetBounds(bounds),
-              initialCameraPosition:
-                  CameraPosition(target: initialCameraPosition),
-              minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
-              markers: markers,
-              onMapCreated: (controller) {
-                if (Theme.of(context).brightness == Brightness.dark &&
-                    mapSnapshot.hasData) {
-                  controller.setMapStyle(mapSnapshot.data);
-                }
-              },
-            );
+    return FutureBuilder<Position>(
+      future: LocationService.getCurrentLocation(),
+      builder: (context, data) {
+        return FutureBuilder<String>(
+          future: rootBundle.loadString('assets/dark_mode.json'),
+          builder: (context, mapSnapshot) {
+            if (mapSnapshot.hasData) {
+              LatLng initialCameraPosition = const LatLng(45.4, -75.7);
+              LatLngBounds bounds = LatLngBounds(
+                southwest: initialCameraPosition,
+                northeast: initialCameraPosition,
+              );
+              _getCameraPositionAndBounds(initialCameraPosition, bounds);
+              bool showLocation = data.hasData;
+              Set<Marker> markers = {};
+              _getMapMarkers(context, markers);
+              return GoogleMap(
+                myLocationButtonEnabled: showLocation,
+                myLocationEnabled: showLocation,
+                cameraTargetBounds: CameraTargetBounds(bounds),
+                initialCameraPosition:
+                CameraPosition(target: initialCameraPosition),
+                minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
+                markers: markers,
+                onMapCreated: (controller) {
+                  if (Theme.of(context).brightness == Brightness.dark &&
+                      mapSnapshot.hasData) {
+                    controller.setMapStyle(mapSnapshot.data);
+                  }
+                },
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
           },
         );
       },
