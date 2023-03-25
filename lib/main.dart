@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl_standalone.dart';
+import 'package:intl/intl_standalone.dart'
+    if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
 
 import 'blocs/camera_bloc.dart';
 import 'entities/bilingual_object.dart';
@@ -15,7 +16,7 @@ void main() {
 }
 
 void _setLocale() async {
-  BilingualObject.locale = await findSystemLocale();
+  BilingualObject.locale = await intl.findSystemLocale();
 }
 
 class StreetCamsApp extends StatelessWidget {
@@ -27,7 +28,7 @@ class StreetCamsApp extends StatelessWidget {
     return MaterialApp(
       home: BlocProvider(
         create: (_) => CameraBloc()..add(CameraLoaded()),
-        child: const HomePage(),
+        child: HomePage(),
       ),
       routes: {
         CameraPage.routeName: (context) => const CameraPage(),

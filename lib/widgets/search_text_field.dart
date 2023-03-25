@@ -19,8 +19,15 @@ class SearchTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('building search bar');
     clear() {
       controller.clear();
+      context.read<CameraBloc>().add(
+            SearchCameras(
+              searchMode: searchMode,
+              query: controller.text,
+            ),
+          );
     }
 
     back() {
@@ -44,15 +51,9 @@ class SearchTextField extends StatelessWidget {
             );
       },
       decoration: InputDecoration(
-        icon: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: back,
-        ),
+        icon: IconButton(icon: const Icon(Icons.arrow_back), onPressed: back),
         suffixIcon: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: clear,
-              )
+            ? IconButton(icon: const Icon(Icons.clear), onPressed: clear)
             : null,
         hintText: hintText,
       ),

@@ -15,21 +15,11 @@ class ActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('building action bar');
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
-        void showCameras(List<Camera> cameras, {shuffle = false}) {
-          if (cameras.isNotEmpty) {
-            Navigator.pushNamed(
-              context,
-              CameraPage.routeName,
-              arguments: [cameras, shuffle],
-            );
-          }
-        }
-
+        List<Camera> selectedCameras = state.selectedCameras;
         String getFavouriteTooltip() {
-          List<Camera> selectedCameras =
-              context.read<CameraBloc>().state.selectedCameras;
           if (selectedCameras.isEmpty) {
             return AppLocalizations.of(context)!.favourites;
           } else if (selectedCameras.every((camera) => camera.isFavourite)) {
@@ -39,8 +29,6 @@ class ActionBar extends StatelessWidget {
         }
 
         String getHiddenTooltip() {
-          List<Camera> selectedCameras =
-              context.read<CameraBloc>().state.selectedCameras;
           if (selectedCameras.isEmpty) {
             return AppLocalizations.of(context)!.hidden;
           } else if (selectedCameras.every((camera) => !camera.isVisible)) {
@@ -50,8 +38,6 @@ class ActionBar extends StatelessWidget {
         }
 
         IconData getFavouriteIcon() {
-          var selectedCameras =
-              context.read<CameraBloc>().state.selectedCameras;
           if (selectedCameras.isEmpty ||
               selectedCameras.any((c) => !c.isFavourite)) {
             return Icons.star;
@@ -60,8 +46,6 @@ class ActionBar extends StatelessWidget {
         }
 
         IconData getHiddenIcon() {
-          var selectedCameras =
-              context.read<CameraBloc>().state.selectedCameras;
           if (selectedCameras.isEmpty ||
               selectedCameras.any((c) => c.isVisible)) {
             return Icons.visibility_off;
@@ -70,54 +54,37 @@ class ActionBar extends StatelessWidget {
         }
 
         void showRandomCamera() {
-          var visibleCameras = context.read<CameraBloc>().state.visibleCameras;
+          List<Camera> visibleCameras = state.visibleCameras;
           if (visibleCameras.isNotEmpty) {
             showCameras(
+              context,
               [visibleCameras[Random().nextInt(visibleCameras.length)]],
             );
           }
         }
 
+        void filterCameras(FilterMode filterMode) {
+          var mode =
+              state.filterMode == filterMode ? FilterMode.visible : filterMode;
+          context.read<CameraBloc>().add(FilterCamera(filterMode: mode));
+        }
+
         void favouriteOptionClicked() {
-          if (context.read<CameraBloc>().state.selectedCameras.isEmpty) {
-            var filterMode = context.read<CameraBloc>().state.filterMode ==
-                    FilterMode.favourite
-                ? FilterMode.visible
-                : FilterMode.favourite;
-            context
-                .read<CameraBloc>()
-                .add(FilterCamera(filterMode: filterMode));
+          if (state.selectedCameras.isEmpty) {
+            filterCameras(FilterMode.favourite);
           } else {
             context.read<CameraBloc>().favouriteSelectedCameras();
           }
         }
 
         void hideOptionClicked() {
-          if (context.read<CameraBloc>().state.selectedCameras.isEmpty) {
-            var filterMode =
-                context.read<CameraBloc>().state.filterMode == FilterMode.hidden
-                    ? FilterMode.visible
-                    : FilterMode.hidden;
-            context
-                .read<CameraBloc>()
-                .add(FilterCamera(filterMode: filterMode));
+          if (state.selectedCameras.isEmpty) {
+            filterCameras(FilterMode.hidden);
           } else {
             context.read<CameraBloc>().hideSelectedCameras();
           }
         }
 
-        void showAbout(BuildContext context) async {
-          var packageInfo = await PackageInfo.fromPlatform();
-          if (context.mounted) {
-            showAboutDialog(
-              context: context,
-              applicationName: AppLocalizations.of(context)!.appName,
-              applicationVersion: 'Version ${packageInfo.version}',
-            );
-          }
-        }
-
-        var selectedCameras = context.read<CameraBloc>().state.selectedCameras;
         var clear = Visibility(
           visible: selectedCameras.isNotEmpty,
           child: IconButton(
@@ -127,8 +94,8 @@ class ActionBar extends StatelessWidget {
           ),
         );
         var search = Visibility(
-          visible: selectedCameras.isEmpty &&
-              context.read<CameraBloc>().state.searchMode != SearchMode.camera,
+          visible:
+              selectedCameras.isEmpty && state.searchMode != SearchMode.camera,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.search,
             onPressed: () {
@@ -143,7 +110,7 @@ class ActionBar extends StatelessWidget {
           visible: selectedCameras.isNotEmpty && selectedCameras.length <= 8,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.showCameras,
-            onPressed: () => showCameras(selectedCameras),
+            onPressed: () => showCameras(context, selectedCameras),
             icon: const Icon(Icons.camera_alt),
           ),
         );
@@ -151,75 +118,59 @@ class ActionBar extends StatelessWidget {
           visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
           child: IconButton(
             onPressed: () {
-              context.read<CameraBloc>().add(ReloadCameras(
-                    showList: !context.read<CameraBloc>().state.showList,
-                  ));
+              context
+                  .read<CameraBloc>()
+                  .add(ReloadCameras(showList: !state.showList));
             },
-            icon: Icon(context.read<CameraBloc>().state.showList
-                ? Icons.map
-                : Icons.list),
-            tooltip: context.read<CameraBloc>().state.showList
+            icon: Icon(state.showList ? Icons.map : Icons.list),
+            tooltip: state.showList
                 ? AppLocalizations.of(context)!.map
                 : AppLocalizations.of(context)!.list,
           ),
         );
         var sort = Visibility(
           visible: selectedCameras.isEmpty &&
-              context.read<CameraBloc>().state.showList &&
-              context.read<CameraBloc>().state.searchMode == SearchMode.none,
+              state.showList &&
+              state.searchMode == SearchMode.none,
           child: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
-              return PopupMenuButton(
-                position: PopupMenuPosition.under,
-                itemBuilder: (context) {
-                  return [
-                    PopupMenuItem(
-                      padding: const EdgeInsets.all(0),
-                      onTap: () {
-                        context
-                            .read<CameraBloc>()
-                            .add(SortCameras(method: SortMode.name));
-                      },
-                      child: ListTile(
-                        title: Text(AppLocalizations.of(context)!.sortName),
-                        trailing: state.sortingMethod == SortMode.name
-                            ? const Icon(Icons.check)
-                            : null,
-                      ),
-                    ),
-                    PopupMenuItem(
-                      padding: const EdgeInsets.all(0),
-                      onTap: () {
-                        context
-                            .read<CameraBloc>()
-                            .add(SortCameras(method: SortMode.distance));
-                      },
-                      child: ListTile(
-                        title: Text(AppLocalizations.of(context)!.sortDistance),
-                        trailing: state.sortingMethod == SortMode.distance
-                            ? const Icon(Icons.check)
-                            : null,
-                      ),
-                    ),
-                    PopupMenuItem(
-                      padding: const EdgeInsets.all(0),
-                      onTap: () {
-                        context
-                            .read<CameraBloc>()
-                            .add(SortCameras(method: SortMode.neighbourhood));
-                      },
-                      child: ListTile(
-                        title: Text(
-                            AppLocalizations.of(context)!.sortNeighbourhood),
-                        trailing: state.sortingMethod == SortMode.neighbourhood
-                            ? const Icon(Icons.check)
-                            : null,
-                      ),
-                    ),
-                  ];
+              void sortCameras(SortMode sortMode) {
+                context.read<CameraBloc>().add(SortCameras(method: sortMode));
+              }
+
+              return MenuAnchor(
+                menuChildren: [
+                  RadioMenuButton<SortMode>(
+                    value: SortMode.name,
+                    groupValue: state.sortingMethod,
+                    onChanged: (_) => sortCameras(SortMode.name),
+                    child: Text(AppLocalizations.of(context)!.sortName),
+                  ),
+                  RadioMenuButton<SortMode>(
+                    value: SortMode.distance,
+                    groupValue: state.sortingMethod,
+                    onChanged: (_) => sortCameras(SortMode.distance),
+                    child: Text(AppLocalizations.of(context)!.sortDistance),
+                  ),
+                  RadioMenuButton<SortMode>(
+                    value: SortMode.neighbourhood,
+                    groupValue: state.sortingMethod,
+                    onChanged: (_) => sortCameras(SortMode.neighbourhood),
+                    child:
+                        Text(AppLocalizations.of(context)!.sortNeighbourhood),
+                  ),
+                ],
+                builder: (context, controller, child) {
+                  return IconButton(
+                    onPressed: () {
+                      controller.isOpen
+                          ? controller.close()
+                          : controller.open();
+                    },
+                    icon: const Icon(Icons.sort),
+                    tooltip: AppLocalizations.of(context)!.sort,
+                  );
                 },
-                icon: const Icon(Icons.sort),
-                tooltip: AppLocalizations.of(context)!.sort,
               );
             },
           ),
@@ -240,8 +191,7 @@ class ActionBar extends StatelessWidget {
         );
         var selectAll = Visibility(
           visible: selectedCameras.isNotEmpty &&
-              selectedCameras.length <
-                  context.read<CameraBloc>().state.displayedCameras.length,
+              selectedCameras.length < state.displayedCameras.length,
           child: IconButton(
             onPressed: () => context.read<CameraBloc>().add(SelectAll()),
             icon: const Icon(Icons.select_all),
@@ -260,7 +210,8 @@ class ActionBar extends StatelessWidget {
           visible: selectedCameras.isEmpty,
           child: IconButton(
             onPressed: () => showCameras(
-              context.read<CameraBloc>().state.visibleCameras,
+              context,
+              state.visibleCameras,
               shuffle: true,
             ),
             icon: const Icon(Icons.shuffle),
@@ -277,8 +228,7 @@ class ActionBar extends StatelessWidget {
         );
         var searchNeighbourhood = Visibility(
           visible: selectedCameras.isEmpty &&
-              context.read<CameraBloc>().state.searchMode !=
-                  SearchMode.neighbourhood,
+              state.searchMode != SearchMode.neighbourhood,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
             icon: const Icon(Icons.location_city),
@@ -346,5 +296,31 @@ class ActionBar extends StatelessWidget {
         );
       },
     );
+  }
+
+  void showAbout(BuildContext context) async {
+    var packageInfo = await PackageInfo.fromPlatform();
+    if (context.mounted) {
+      showAboutDialog(
+        context: context,
+        applicationIcon: const FlutterLogo(),
+        applicationName: AppLocalizations.of(context)!.appName,
+        applicationVersion: 'Version ${packageInfo.version}',
+      );
+    }
+  }
+
+  void showCameras(
+    BuildContext context,
+    List<Camera> cameras, {
+    shuffle = false,
+  }) {
+    if (cameras.isNotEmpty) {
+      Navigator.pushNamed(
+        context,
+        CameraPage.routeName,
+        arguments: [cameras, shuffle],
+      );
+    }
   }
 }

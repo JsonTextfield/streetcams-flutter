@@ -7,14 +7,20 @@ import '../blocs/camera_bloc.dart';
 import '../entities/neighbourhood.dart';
 
 class NeighbourhoodSearchBar extends StatelessWidget {
-
   const NeighbourhoodSearchBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('building neighbourhood search bar');
     List<Neighbourhood> neighbourhoods =
-        context.read<CameraBloc>().neighbourhoods;
+        context.read<CameraBloc>().state.neighbourhoods;
     return Autocomplete<String>(
+      onSelected: (value) => context.read<CameraBloc>().add(
+            SearchCameras(
+              searchMode: SearchMode.neighbourhood,
+              query: value,
+            ),
+          ),
       optionsBuilder: (value) => getAutoCompleteOptions(value, neighbourhoods),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
         return SearchTextField(
@@ -23,34 +29,6 @@ class NeighbourhoodSearchBar extends StatelessWidget {
           hintText: AppLocalizations.of(context)!
               .searchNeighbourhoods(neighbourhoods.length),
           searchMode: SearchMode.neighbourhood,
-        );
-        return TextField(
-          focusNode: focusNode,
-          controller: controller,
-          textAlignVertical: TextAlignVertical.center,
-          textInputAction: TextInputAction.search,
-          onChanged: (value) {
-            context.read<CameraBloc>().add(
-                  SearchCameras(
-                    searchMode: SearchMode.neighbourhood,
-                    query: value,
-                  ),
-                );
-          },
-          decoration: InputDecoration(
-            icon: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {},
-            ),
-            suffixIcon: controller.text.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => controller.clear(),
-                  )
-                : null,
-            hintText: AppLocalizations.of(context)!
-                .searchNeighbourhoods(neighbourhoods.length),
-          ),
         );
       },
     );

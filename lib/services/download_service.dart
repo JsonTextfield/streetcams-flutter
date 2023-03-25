@@ -20,7 +20,8 @@ class DownloadService {
 
   static Future<List<Neighbourhood>> downloadNeighbourhoods() async {
     Uri url = Uri.parse(
-        'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson');
+      'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson',
+    );
     return compute(_parseNeighbourhoodJson, await http.read(url));
   }
 
@@ -44,5 +45,4 @@ class DownloadService {
     }
     return cameras;
   }
-
 }

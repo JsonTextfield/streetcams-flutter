@@ -4,9 +4,9 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 import '../blocs/camera_bloc.dart';
+import '../constants.dart';
 import '../entities/camera.dart';
-import 'camera_list_tile.dart';
-import 'section_index.dart';
+import '../pages/camera_page.dart';
 
 class CameraListView extends StatelessWidget {
   final ItemScrollController? itemScrollController;
@@ -22,44 +22,91 @@ class CameraListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('building listview');
-    return BlocBuilder<CameraBloc, CameraState>(builder: (context, state) {
-      return Row(children: [
-        if (state.filterMode == FilterMode.visible &&
-            state.sortingMethod == SortMode.name)
-          Flexible(
-            flex: 0,
-            child: SectionIndex(
-              data: cameras.map((cam) => cam.sortableName).toList(),
-              callback: _moveToListPosition,
-            ),
-          ),
-        Expanded(
-          child: ScrollablePositionedList.builder(
-            itemScrollController: itemScrollController,
-            itemCount: cameras.length + 1,
-            itemBuilder: (context, i) {
-              if (i == cameras.length) {
-                return ListTile(
-                  title: Center(
-                    child: Text(
-                      AppLocalizations.of(context)!.cameras(cameras.length),
-                    ),
+    return BlocBuilder<CameraBloc, CameraState>(
+      builder: (context, state) {
+        debugPrint('building camera listview');
+        return ScrollablePositionedList.builder(
+          itemScrollController: itemScrollController,
+          itemCount: cameras.length + 1,
+          itemBuilder: (context, index) {
+            if (index == cameras.length) {
+              return ListTile(
+                title: Center(
+                  child: Text(
+                    AppLocalizations.of(context)!.cameras(cameras.length),
                   ),
-                );
-              }
-              return CameraListTile(
-                camera: cameras[i],
-                tapped: () => onTapped?.call(cameras[i]),
+                ),
               );
-            },
-          ),
-        ),
-      ]);
-    });
-  }
+            }
 
-  void _moveToListPosition(int index) {
-    itemScrollController?.jumpTo(index: index);
+            Camera camera = cameras[index];
+
+            hide() {
+              camera.isVisible = !camera.isVisible;
+              if (state.displayedCameras.contains(camera)) {
+                state.displayedCameras.remove(camera);
+              } else {
+                state.displayedCameras.insert(index, camera);
+              }
+              context.read<CameraBloc>().updateCamera(camera);
+            }
+
+            dismissed() {
+              hide();
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                content: Text(
+                  '${camera.name} ${camera.isVisible ? 'unhidden' : 'hidden'}',
+                ),
+                action: SnackBarAction(
+                  label: 'Undo',
+                  onPressed: hide,
+                ),
+              ));
+            }
+
+            return Dismissible(
+              key: UniqueKey(),
+              onDismissed: (direction) => dismissed(),
+              child: ListTile(
+                selected: state.selectedCameras.contains(camera),
+                selectedTileColor: Constants.accentColour,
+                selectedColor: Colors.white,
+                dense: true,
+                title: Text(camera.name, style: const TextStyle(fontSize: 16)),
+                subtitle: Text(camera.neighbourhood),
+                trailing: IconButton(
+                  icon:
+                      Icon(camera.isFavourite ? Icons.star : Icons.star_border),
+                  color: camera.isFavourite ? Colors.yellow : null,
+                  onPressed: () {
+                    camera.isFavourite = !camera.isFavourite;
+                    context.read<CameraBloc>().updateCamera(camera);
+                  },
+                ),
+                onTap: () {
+                  if (state.selectedCameras.isEmpty) {
+                    Navigator.pushNamed(
+                      context,
+                      CameraPage.routeName,
+                      arguments: [
+                        [camera],
+                        false,
+                      ],
+                    );
+                  } else {
+                    context
+                        .read<CameraBloc>()
+                        .add(SelectCamera(camera: camera));
+                  }
+                },
+                onLongPress: () {
+                  context.read<CameraBloc>().add(SelectCamera(camera: camera));
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }

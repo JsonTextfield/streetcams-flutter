@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/widgets/map_widget.dart';
@@ -12,19 +11,22 @@ import '../widgets/action_bar.dart';
 import '../widgets/camera_list_view.dart';
 import '../widgets/neighbourhood_search_bar.dart';
 import '../widgets/search_text_field.dart';
+import '../widgets/section_index.dart';
 import 'camera_page.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final TextEditingController textEditingController = TextEditingController();
+
+  HomePage({super.key});
+
+  void _moveToListPosition(int index) {
+    itemScrollController.jumpTo(index: index);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final ItemScrollController itemScrollController = ItemScrollController();
-    final TextEditingController textEditingController = TextEditingController();
-
-    void moveToListPosition(int index) {
-      itemScrollController.jumpTo(index: index);
-    }
+    debugPrint('building home page');
 
     void showCameras(List<Camera> cameras, {shuffle = false}) {
       if (cameras.isNotEmpty) {
@@ -32,17 +34,6 @@ class HomePage extends StatelessWidget {
           context,
           CameraPage.routeName,
           arguments: [cameras, shuffle],
-        );
-      }
-    }
-
-    void showAbout(BuildContext context) async {
-      var packageInfo = await PackageInfo.fromPlatform();
-      if (context.mounted) {
-        showAboutDialog(
-          context: context,
-          applicationName: AppLocalizations.of(context)!.appName,
-          applicationVersion: 'Version ${packageInfo.version}',
         );
       }
     }
@@ -60,26 +51,24 @@ class HomePage extends StatelessWidget {
               builder: (context, state) {
                 switch (state.searchMode) {
                   case SearchMode.camera:
-                    int count =
-                        context.read<CameraBloc>().state.allCameras.length;
                     return SearchTextField(
                       controller: textEditingController,
-                      hintText:
-                          AppLocalizations.of(context)!.searchCameras(count),
+                      hintText: AppLocalizations.of(context)!
+                          .searchCameras(state.allCameras.length),
                       searchMode: SearchMode.camera,
                     );
                   case SearchMode.neighbourhood:
-                    return NeighbourhoodSearchBar();
+                    return const NeighbourhoodSearchBar();
                   case SearchMode.none:
                   default:
                     return GestureDetector(
                       child: Text(state.selectedCameras.isEmpty
                           ? AppLocalizations.of(context)!.appName
-                          : '${state.selectedCameras.length} selected'),
-                      onTap: () => moveToListPosition(0),
+                          : AppLocalizations.of(context)!
+                              .selectedCameras(state.selectedCameras.length)),
+                      onTap: () => _moveToListPosition(0),
                     );
                 }
-                //searchMode is SearchMode.neighbourhood
               },
             ),
           ),
@@ -92,13 +81,27 @@ class HomePage extends StatelessWidget {
                   );
                 case CameraStatus.success:
                   return IndexedStack(
-                    index: context.read<CameraBloc>().state.showList ? 0 : 1,
+                    index: state.showList ? 0 : 1,
                     children: [
-                      CameraListView(
-                        itemScrollController: itemScrollController,
-                        cameras: state.displayedCameras,
-                        onTapped: (camera) => showCameras([camera]),
-                      ),
+                      Row(children: [
+                        if (state.showSectionIndex)
+                          Flexible(
+                            flex: 0,
+                            child: SectionIndex(
+                              data: state.visibleCameras
+                                  .map((cam) => cam.sortableName)
+                                  .toList(),
+                              callback: _moveToListPosition,
+                            ),
+                          ),
+                        Expanded(
+                          child: CameraListView(
+                            itemScrollController: itemScrollController,
+                            cameras: state.displayedCameras,
+                            onTapped: (camera) => showCameras([camera]),
+                          ),
+                        ),
+                      ]),
                       MapWidget(
                         cameras: state.displayedCameras,
                         onTapped: (camera) => showCameras([camera]),

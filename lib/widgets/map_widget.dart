@@ -29,23 +29,17 @@ class MapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (defaultTargetPlatform == TargetPlatform.windows) {
-      flutter_map.LatLngBounds boundsFlutterMaps = flutter_map.LatLngBounds();
-      latlon.LatLng initCamPos = latlon.LatLng(45.4, -75.7);
-      _getCameraPositionAndBounds(initCamPos, boundsFlutterMaps);
+    debugPrint('building map');
+    if (defaultTargetPlatform == TargetPlatform.windows && !kIsWeb) {
+      flutter_map.LatLngBounds? bounds = getBounds();
       List<flutter_map.Marker> markers = [];
       _getMapMarkers(context, markers);
       return flutter_map.FlutterMap(
         mapController: flutterMapController,
         options: flutter_map.MapOptions(
-          onMapReady: () {
-            if (boundsFlutterMaps != null) {
-              flutterMapController.fitBounds(boundsFlutterMaps);
-            }
-          },
-          bounds: boundsFlutterMaps,
+          bounds: bounds,
           boundsOptions: const flutter_map_api.FitBoundsOptions(inside: true),
-          center: initCamPos,
+          center: bounds?.center ?? latlon.LatLng(45.4, -75.7),
           minZoom: 9,
           maxZoom: 16,
         ),
@@ -54,9 +48,7 @@ class MapWidget extends StatelessWidget {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             userAgentPackageName: 'com.jsontextfield.streetcams_flutter',
           ),
-          flutter_map.MarkerLayer(
-            markers: markers,
-          ),
+          flutter_map.MarkerLayer(markers: markers),
         ],
       );
     }
@@ -67,12 +59,8 @@ class MapWidget extends StatelessWidget {
           future: rootBundle.loadString('assets/dark_mode.json'),
           builder: (context, mapSnapshot) {
             if (mapSnapshot.hasData) {
-              LatLng initialCameraPosition = const LatLng(45.4, -75.7);
-              LatLngBounds bounds = LatLngBounds(
-                southwest: initialCameraPosition,
-                northeast: initialCameraPosition,
-              );
-              _getCameraPositionAndBounds(initialCameraPosition, bounds);
+              LatLng cameraPosition = const LatLng(45.4, -75.7);
+              LatLngBounds? bounds = getBounds();
               bool showLocation = data.hasData;
               Set<Marker> markers = {};
               _getMapMarkers(context, markers);
@@ -80,8 +68,7 @@ class MapWidget extends StatelessWidget {
                 myLocationButtonEnabled: showLocation,
                 myLocationEnabled: showLocation,
                 cameraTargetBounds: CameraTargetBounds(bounds),
-                initialCameraPosition:
-                CameraPosition(target: initialCameraPosition),
+                initialCameraPosition: CameraPosition(target: cameraPosition),
                 minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
                 markers: markers,
                 onMapCreated: (controller) {
@@ -99,41 +86,42 @@ class MapWidget extends StatelessWidget {
     );
   }
 
-  void _getCameraPositionAndBounds(Object cameraPosition, Object bounds) {
+  List<double> getMinMaxLatLon() {
     if (cameras.isNotEmpty) {
-      var minLat = cameras[0].location.lat;
-      var maxLat = cameras[0].location.lat;
-      var minLon = cameras[0].location.lon;
-      var maxLon = cameras[0].location.lon;
-      for (var camera in cameras) {
+      double minLat = cameras.first.location.lat;
+      double maxLat = cameras.first.location.lat;
+      double minLon = cameras.first.location.lon;
+      double maxLon = cameras.first.location.lon;
+      for (Camera camera in cameras) {
         minLat = min(minLat, camera.location.lat);
         maxLat = max(maxLat, camera.location.lat);
         minLon = min(minLon, camera.location.lon);
         maxLon = max(maxLon, camera.location.lon);
       }
-      if (cameraPosition is LatLng) {
-        cameraPosition = LatLng(
-          (minLat + maxLat) / 2,
-          (minLon + maxLon) / 2,
-        );
-      } else if (cameraPosition is latlon.LatLng) {
-        cameraPosition = latlon.LatLng(
-          (minLat + maxLat) / 2,
-          (minLon + maxLon) / 2,
-        );
-      }
-      if (bounds is LatLngBounds) {
-        bounds = LatLngBounds(
-          southwest: LatLng(minLat, minLon),
-          northeast: LatLng(maxLat, maxLon),
-        );
-      } else if (bounds is flutter_map.LatLngBounds) {
-        bounds = flutter_map.LatLngBounds.fromPoints([
+      return [minLat, minLon, maxLat, maxLon];
+    }
+    return [];
+  }
+
+  dynamic getBounds() {
+    var boundsList = getMinMaxLatLon();
+    if (boundsList.isNotEmpty) {
+      double minLat = boundsList[0];
+      double minLon = boundsList[1];
+      double maxLat = boundsList[2];
+      double maxLon = boundsList[3];
+      if (defaultTargetPlatform == TargetPlatform.windows && !kIsWeb) {
+        return flutter_map.LatLngBounds(
           latlon.LatLng(minLat, minLon),
           latlon.LatLng(maxLat, maxLon),
-        ]);
+        );
       }
+      return LatLngBounds(
+        southwest: LatLng(minLat, minLon),
+        northeast: LatLng(maxLat, maxLon),
+      );
     }
+    return null;
   }
 
   void _getMapMarkers(BuildContext context, Iterable markers) {

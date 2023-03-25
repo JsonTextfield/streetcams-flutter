@@ -26,7 +26,7 @@
   "unfavourite": "Unfavourite",
   "error": "An error has occurred.",
   "more": "More",
-  "cameras": "{count,plural, =0{{count} cameras} =1{1 camera} other{{count} cameras}}",
+  "cameras": "{count,plural, =0{0 cameras} =1{1 camera} other{{count} cameras}}",
   "@cameras":  {
     "placeholders": {
       "count": {
@@ -34,7 +34,15 @@
       }
     }
   },
-  "searchCameras": "Search from {count,plural, =0{{count} cameras} =1{1 camera} other{{count} cameras}}",
+  "selectedCameras": "{count,plural, =0{0 cameras selected} =1{1 camera selected} other{{count} cameras selected}}",
+  "@selectedCameras":  {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchCameras": "Search from {count,plural, =0{0 cameras} =1{1 camera} other{{count} cameras}}",
   "@searchCameras": {
     "placeholders": {
       "count": {
@@ -42,7 +50,7 @@
       }
     }
   },
-  "searchNeighbourhoods": "Search from {count,plural, =0{{count} neighbourhoods} =1{1 neighbourhood} other{{count} neighbourhoods}}",
+  "searchNeighbourhoods": "Search from {count,plural, =0{0 neighbourhoods} =1{1 neighbourhood} other{{count} neighbourhoods}}",
   "@searchNeighbourhoods": {
     "placeholders": {
       "count": {

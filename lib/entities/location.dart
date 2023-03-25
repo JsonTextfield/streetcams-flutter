@@ -37,4 +37,7 @@ class Location {
   static double distanceBetween(Location a, Location b) {
     return Geolocator.distanceBetween(a.lat, a.lon, b.lat, b.lon);
   }
+
+  @override
+  String toString() => '$lat, $lon';
 }

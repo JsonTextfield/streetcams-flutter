@@ -18,6 +18,7 @@ class CameraState extends Equatable {
   final SearchMode searchMode;
   final FilterMode filterMode;
   final bool showList;
+  final int lastUpdated;
 
   List<Camera> get visibleCameras =>
       allCameras.where((camera) => camera.isVisible).toList();
@@ -27,6 +28,12 @@ class CameraState extends Equatable {
 
   List<Camera> get favouriteCameras =>
       allCameras.where((camera) => camera.isFavourite).toList();
+
+  bool get showSectionIndex =>
+      filterMode == FilterMode.visible &&
+      sortingMethod == SortMode.name &&
+      searchMode == SearchMode.none &&
+      showList;
 
   @override
   List<Object?> get props => [
@@ -39,6 +46,7 @@ class CameraState extends Equatable {
         searchMode,
         filterMode,
         showList,
+        lastUpdated,
       ];
 
   const CameraState({
@@ -51,5 +59,32 @@ class CameraState extends Equatable {
     this.searchMode = SearchMode.none,
     this.filterMode = FilterMode.visible,
     this.showList = true,
+    this.lastUpdated = 0,
   });
+
+  CameraState copyWith({
+    bool? showList,
+    List<Neighbourhood>? neighbourhoods,
+    List<Camera>? allCameras,
+    List<Camera>? displayedCameras,
+    List<Camera>? selectedCameras,
+    CameraStatus? status,
+    SortMode? sortingMethod,
+    SearchMode? searchMode,
+    FilterMode? filterMode,
+    int? lastUpdated,
+  }) {
+    return CameraState(
+      neighbourhoods: neighbourhoods ?? this.neighbourhoods,
+      allCameras: allCameras ?? this.allCameras,
+      displayedCameras: displayedCameras ?? this.displayedCameras,
+      selectedCameras: selectedCameras ?? this.selectedCameras,
+      status: status ?? this.status,
+      sortingMethod: sortingMethod ?? this.sortingMethod,
+      searchMode: searchMode ?? this.searchMode,
+      filterMode: filterMode ?? this.filterMode,
+      showList: showList ?? this.showList,
+      lastUpdated: lastUpdated ?? this.lastUpdated,
+    );
+  }
 }
