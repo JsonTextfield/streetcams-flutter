@@ -13,7 +13,6 @@ class CameraWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('building camera widget');
-    int time = DateTime.now().millisecondsSinceEpoch;
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height -
@@ -22,7 +21,7 @@ class CameraWidget extends StatelessWidget {
       child: Stack(
         children: [
           Image.network(
-            'https://traffic.ottawa.ca/beta/camera?id=${camera.num}&timems=$time',
+            camera.url,
             semanticLabel: camera.name,
             fit: BoxFit.contain,
             width: MediaQuery.of(context).size.width,

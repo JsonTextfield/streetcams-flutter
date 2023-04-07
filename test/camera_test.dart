@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:streetcams_flutter/entities/Cities.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/location.dart';
 
@@ -11,6 +12,7 @@ void main() {
     Location location = const Location(lat: 45.454545, lon: -75.696969);
 
     var camera1 = Camera(
+      city: Cities.ottawa,
       num: num,
       location: location,
       id: id,
@@ -19,6 +21,7 @@ void main() {
       nameFr: nameFr,
     );
     var camera2 = Camera(
+      city: Cities.ottawa,
       num: num,
       location: location,
       id: id,
@@ -36,6 +39,7 @@ void main() {
     Location location = const Location(lat: 45.454545, lon: -75.696969);
 
     var camera1 = Camera(
+      city: Cities.ottawa,
       num: num,
       location: location,
       id: id,
@@ -44,6 +48,7 @@ void main() {
       nameFr: 'Camera1F',
     );
     var camera2 = Camera(
+      city: Cities.ottawa,
       num: num,
       location: location,
       id: id,
@@ -62,6 +67,7 @@ void main() {
     Location location = const Location(lat: 45.454545, lon: -75.696969);
 
     var camera1 = Camera(
+      city: Cities.ottawa,
       num: 1337,
       location: location,
       id: id,
@@ -70,6 +76,7 @@ void main() {
       nameFr: nameFr,
     );
     var camera2 = Camera(
+      city: Cities.ottawa,
       num: 8347,
       location: location,
       id: id,
@@ -88,6 +95,7 @@ void main() {
     Location location = const Location(lat: 45.454545, lon: -75.696969);
 
     var camera1 = Camera(
+      city: Cities.ottawa,
       num: num,
       location: location,
       id: 9999,
@@ -96,6 +104,7 @@ void main() {
       nameFr: nameFr,
     );
     var camera2 = Camera(
+      city: Cities.ottawa,
       num: num,
       location: location,
       id: 1111,

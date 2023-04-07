@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
 
+import '../entities/Cities.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
@@ -15,21 +16,28 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   SharedPreferences? _prefs;
 
   CameraBloc() : super(const CameraState()) {
+    on<CameraLoading>((event, emit) async {
+      return emit(state.copyWith(
+        status: CameraStatus.initial,
+      ));
+    });
+
     on<CameraLoaded>((event, emit) async {
       _prefs = await SharedPreferences.getInstance();
-      List<Camera> allCameras = await DownloadService.downloadAll();
+      List<Camera> allCameras = await DownloadService.downloadAll(event.city);
       for (var c in allCameras) {
         c.isFavourite =
             _prefs!.getBool('${c.sortableName}.isFavourite') ?? false;
         c.isVisible = _prefs!.getBool('${c.sortableName}.isVisible') ?? true;
       }
       List<Neighbourhood> neighbourhoods =
-          await DownloadService.downloadNeighbourhoods();
+          await DownloadService.downloadNeighbourhoods(event.city);
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
         neighbourhoods: neighbourhoods,
         allCameras: allCameras,
         status: CameraStatus.success,
+        city: event.city,
       ));
     });
 

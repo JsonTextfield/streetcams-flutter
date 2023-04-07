@@ -36,6 +36,71 @@ class Neighbourhood extends BilingualObject {
       nameFr: json['properties']['Name_FR'],
     );
   }
+  factory Neighbourhood.fromJsonToronto(Map<String, dynamic> json) {
+    var areas = json['geometry']['coordinates'] as List<dynamic>;
+    var coordinates = json['geometry']['coordinates'];
+    bool hasMultipleParts = areas.length > 1;
+    List<List<Location>> tempLocations = [];
+
+    for (int i = 0; i < areas.length; i++) {
+      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
+          as List<dynamic>;
+      List<Location> locationList = geometry
+          .map((jsonArray) => Location.fromJsonArray(jsonArray))
+          .toList();
+      tempLocations.add(locationList);
+    }
+    return Neighbourhood(
+      boundaries: tempLocations,
+      id: json['properties']['AREA_ID'],
+      nameEn: json['properties']['AREA_NAME'],
+      nameFr: json['properties']['AREA_NAME'],
+    );
+  }
+
+  factory Neighbourhood.fromJsonMontreal(Map<String, dynamic> json) {
+    var areas = json['geometry']['coordinates'][0] as List<dynamic>;
+    var coordinates = json['geometry']['coordinates'][0];
+    bool hasMultipleParts = areas.length > 1;
+    List<List<Location>> tempLocations = [];
+
+    for (int i = 0; i < areas.length; i++) {
+      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
+          as List<dynamic>;
+      List<Location> locationList = geometry
+          .map((jsonArray) => Location.fromJsonArray(jsonArray))
+          .toList();
+      tempLocations.add(locationList);
+    }
+    return Neighbourhood(
+      boundaries: tempLocations,
+      id: int.parse(json['properties']['no_qr'], radix: 16),
+      nameEn: json['properties']['nom_qr'],
+      nameFr: json['properties']['nom_qr'],
+    );
+  }
+
+  factory Neighbourhood.fromJsonCalgary(Map<String, dynamic> json) {
+    var areas = json['multipolygon']['coordinates'][0] as List<dynamic>;
+    var coordinates = json['multipolygon']['coordinates'][0];
+    bool hasMultipleParts = areas.length > 1;
+    List<List<Location>> tempLocations = [];
+
+    for (int i = 0; i < areas.length; i++) {
+      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
+          as List<dynamic>;
+      List<Location> locationList = geometry
+          .map((jsonArray) => Location.fromJsonArray(jsonArray))
+          .toList();
+      tempLocations.add(locationList);
+    }
+    return Neighbourhood(
+      boundaries: tempLocations,
+      id: 0,
+      nameEn: json['name'],
+      nameFr: json['name'],
+    );
+  }
 
   //http://en.wikipedia.org/wiki/Point_in_polygon
   //https://stackoverflow.com/questions/26014312/identify-if-point-is-in-the-polygon

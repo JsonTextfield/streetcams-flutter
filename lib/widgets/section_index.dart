@@ -24,12 +24,13 @@ class _SectionIndexState extends State<SectionIndex> {
     debugPrint('building section index');
     List<Widget> result = [];
     Set<String> indices = {};
-
+    String letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    String numbers = '0123456789';
     for (int i = 0; i < widget.data.length; i++) {
-      var firstLetter = widget.data[i][0];
+      var firstChar = widget.data[i][0];
 
-      if (!indices.contains(firstLetter)) {
-        indices.add(firstLetter);
+      if (numbers.contains(firstChar) && !indices.contains('#')) {
+        indices.add('#');
         if (!_positions.contains(i)) {
           _positions.add(i);
         }
@@ -40,7 +41,54 @@ class _SectionIndexState extends State<SectionIndex> {
               width: 20,
               child: Center(
                 child: Text(
-                  firstLetter,
+                  '#',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _selectedIndex == i ? Constants.accentColour : null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      } else if (letters.contains(firstChar.toUpperCase()) &&
+          !indices.contains(firstChar)) {
+        indices.add(firstChar);
+        if (!_positions.contains(i)) {
+          _positions.add(i);
+        }
+        result.add(
+          Expanded(
+            child: Container(
+              color: Colors.transparent,
+              width: 20,
+              child: Center(
+                child: Text(
+                  firstChar,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _selectedIndex == i ? Constants.accentColour : null,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      } else if (!numbers.contains(firstChar) &&
+          !letters.contains(firstChar.toUpperCase()) &&
+          !indices.contains('*')) {
+        indices.add('*');
+        if (!_positions.contains(i)) {
+          _positions.add(i);
+        }
+        result.add(
+          Expanded(
+            child: Container(
+              color: Colors.transparent,
+              width: 20,
+              child: Center(
+                child: Text(
+                  '*',
                   style: TextStyle(
                     fontSize: 12,
                     color: _selectedIndex == i ? Constants.accentColour : null,
@@ -56,8 +104,7 @@ class _SectionIndexState extends State<SectionIndex> {
     return GestureDetector(
       key: key,
       child: Column(children: result),
-      onTapDown: (details) =>
-          _selectIndexFromPointer(details.localPosition.dy),
+      onTapDown: (details) => _selectIndexFromPointer(details.localPosition.dy),
       onTapUp: (details) => _resetSelectedIndex(),
       onVerticalDragUpdate: (details) =>
           _selectIndexFromPointer(details.localPosition.dy),

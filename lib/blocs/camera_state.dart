@@ -19,6 +19,7 @@ class CameraState extends Equatable {
   final FilterMode filterMode;
   final bool showList;
   final int lastUpdated;
+  final Cities city;
 
   List<Camera> get visibleCameras =>
       allCameras.where((camera) => camera.isVisible).toList();
@@ -47,6 +48,7 @@ class CameraState extends Equatable {
         filterMode,
         showList,
         lastUpdated,
+        city,
       ];
 
   const CameraState({
@@ -60,6 +62,7 @@ class CameraState extends Equatable {
     this.filterMode = FilterMode.visible,
     this.showList = true,
     this.lastUpdated = 0,
+    this.city = Cities.ottawa,
   });
 
   CameraState copyWith({
@@ -73,6 +76,7 @@ class CameraState extends Equatable {
     SearchMode? searchMode,
     FilterMode? filterMode,
     int? lastUpdated,
+    Cities? city,
   }) {
     return CameraState(
       neighbourhoods: neighbourhoods ?? this.neighbourhoods,
@@ -85,6 +89,7 @@ class CameraState extends Equatable {
       filterMode: filterMode ?? this.filterMode,
       showList: showList ?? this.showList,
       lastUpdated: lastUpdated ?? this.lastUpdated,
+      city: city ?? this.city,
     );
   }
 }

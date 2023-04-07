@@ -5,7 +5,16 @@ abstract class CameraEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class CameraLoaded extends CameraEvent {}
+class CameraLoading extends CameraEvent {}
+
+class CameraLoaded extends CameraEvent {
+  final Cities city;
+
+  CameraLoaded(this.city);
+
+  @override
+  List<Object?> get props => [city];
+}
 
 class ReloadCameras extends CameraEvent {
   final bool showList;

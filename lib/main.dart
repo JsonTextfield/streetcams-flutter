@@ -6,6 +6,7 @@ import 'package:intl/intl_standalone.dart'
     if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
 
 import 'blocs/camera_bloc.dart';
+import 'entities/Cities.dart';
 import 'entities/bilingual_object.dart';
 import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
@@ -27,7 +28,7 @@ class StreetCamsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: BlocProvider(
-        create: (_) => CameraBloc()..add(CameraLoaded()),
+        create: (_) => CameraBloc()..add(CameraLoaded(Cities.ottawa)),
         child: HomePage(),
       ),
       routes: {

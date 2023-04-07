@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../blocs/camera_bloc.dart';
+import '../entities/Cities.dart';
 import '../entities/camera.dart';
 import '../pages/camera_page.dart';
 
@@ -231,11 +232,63 @@ class ActionBar extends StatelessWidget {
               state.searchMode != SearchMode.neighbourhood,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
-            icon: const Icon(Icons.location_city),
+            icon: const Icon(Icons.travel_explore),
             onPressed: () {
               context
                   .read<CameraBloc>()
                   .add(SearchCameras(searchMode: SearchMode.neighbourhood));
+            },
+          ),
+        );
+        var changeCity = Visibility(
+          child: BlocBuilder<CameraBloc, CameraState>(
+            builder: (context, state) {
+              void changeCity(Cities city) {
+                context.read<CameraBloc>().add(CameraLoading());
+                context.read<CameraBloc>().add(CameraLoaded(city));
+              }
+
+              return MenuAnchor(
+                menuChildren: [
+                  RadioMenuButton<Cities>(
+                    value: Cities.ottawa,
+                    groupValue: state.city,
+                    onChanged: (_) => changeCity(Cities.ottawa),
+                    child: Text(AppLocalizations.of(context)!.ottawa),
+                  ),
+                  RadioMenuButton<Cities>(
+                    value: Cities.toronto,
+                    groupValue: state.city,
+                    onChanged: (_) => changeCity(Cities.toronto),
+                    child: Text(AppLocalizations.of(context)!.toronto),
+                  ),
+                  RadioMenuButton<Cities>(
+                    value: Cities.montreal,
+                    groupValue: state.city,
+                    onChanged: (_) => changeCity(Cities.montreal),
+                    child:
+                    Text(AppLocalizations.of(context)!.montreal),
+                  ),
+                  RadioMenuButton<Cities>(
+                    value: Cities.calgary,
+                    groupValue: state.city,
+                    onChanged: (_) => changeCity(Cities.calgary),
+                    child:
+                    Text(AppLocalizations.of(context)!.calgary),
+                  ),
+                ],
+                builder: (context, controller, child) {
+                  return IconButton(
+                    onPressed: () {
+                      controller.isOpen
+                          ? controller.close()
+                          : controller.open();
+                    },
+                    icon: const Icon(Icons.location_city),
+                    tooltip: AppLocalizations.of(context)!.city,
+                  );
+                },
+              );
             },
           ),
         );
@@ -252,6 +305,7 @@ class ActionBar extends StatelessWidget {
           selectAll,
           random,
           shuffle,
+          changeCity,
           about,
         ].where((action) => action.visible).toList();
         // the number of 48-width buttons that can fit in 1/4 the width of the window
@@ -259,7 +313,7 @@ class ActionBar extends StatelessWidget {
         if (visibleActions.length > maxActions) {
           List<Visibility> overflowActions = [];
           for (int i = maxActions; i < visibleActions.length; i++) {
-            if (visibleActions[i] == sort) {
+            if (visibleActions[i] == sort || visibleActions[i] == changeCity) {
               continue;
             } else {
               overflowActions.add(visibleActions[i]);
