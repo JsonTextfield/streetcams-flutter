@@ -10,11 +10,11 @@ class CameraModel extends ChangeNotifier {
   final List<Camera> _selectedCameras = [];
   List<Camera> displayedCameras = [];
   bool isFiltered = false;
-  SortMode sortingMethod = SortMode.name;
+  SortingMethod sortingMethod = SortingMethod.name;
 
   void sortByName() {
     displayedCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
-    sortingMethod = SortMode.name;
+    sortingMethod = SortingMethod.name;
     notifyListeners();
   }
 
@@ -28,7 +28,7 @@ class CameraModel extends ChangeNotifier {
       }
       return result;
     });
-    sortingMethod = SortMode.distance;
+    sortingMethod = SortingMethod.distance;
     notifyListeners();
   }
 
@@ -40,7 +40,7 @@ class CameraModel extends ChangeNotifier {
       }
       return result;
     });
-    sortingMethod = SortMode.neighbourhood;
+    sortingMethod = SortingMethod.neighbourhood;
     notifyListeners();
   }
 

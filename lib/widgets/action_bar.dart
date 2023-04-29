@@ -135,28 +135,28 @@ class ActionBar extends StatelessWidget {
               state.searchMode == SearchMode.none,
           child: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
-              void sortCameras(SortMode sortMode) {
-                context.read<CameraBloc>().add(SortCameras(method: sortMode));
+              void sortCameras(SortingMethod sortMode) {
+                context.read<CameraBloc>().add(SortCameras(sortingMethod: sortMode));
               }
 
               return MenuAnchor(
                 menuChildren: [
-                  RadioMenuButton<SortMode>(
-                    value: SortMode.name,
+                  RadioMenuButton<SortingMethod>(
+                    value: SortingMethod.name,
                     groupValue: state.sortingMethod,
-                    onChanged: (_) => sortCameras(SortMode.name),
+                    onChanged: (_) => sortCameras(SortingMethod.name),
                     child: Text(AppLocalizations.of(context)!.sortName),
                   ),
-                  RadioMenuButton<SortMode>(
-                    value: SortMode.distance,
+                  RadioMenuButton<SortingMethod>(
+                    value: SortingMethod.distance,
                     groupValue: state.sortingMethod,
-                    onChanged: (_) => sortCameras(SortMode.distance),
+                    onChanged: (_) => sortCameras(SortingMethod.distance),
                     child: Text(AppLocalizations.of(context)!.sortDistance),
                   ),
-                  RadioMenuButton<SortMode>(
-                    value: SortMode.neighbourhood,
+                  RadioMenuButton<SortingMethod>(
+                    value: SortingMethod.neighbourhood,
                     groupValue: state.sortingMethod,
-                    onChanged: (_) => sortCameras(SortMode.neighbourhood),
+                    onChanged: (_) => sortCameras(SortingMethod.neighbourhood),
                     child:
                         Text(AppLocalizations.of(context)!.sortNeighbourhood),
                   ),
@@ -241,11 +241,12 @@ class ActionBar extends StatelessWidget {
           ),
         );
         var changeCity = Visibility(
+          visible: selectedCameras.isEmpty,
           child: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
               void changeCity(Cities city) {
                 context.read<CameraBloc>().add(CameraLoading());
-                context.read<CameraBloc>().add(CameraLoaded(city));
+                context.read<CameraBloc>().add(CameraLoaded(city: city));
               }
 
               return MenuAnchor(

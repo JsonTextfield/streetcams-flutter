@@ -23,7 +23,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<CameraLoaded>((event, emit) async {
-      _prefs = await SharedPreferences.getInstance();
+      _prefs ??= await SharedPreferences.getInstance();
       List<Camera> allCameras = await DownloadService.downloadAll(event.city);
       for (var c in allCameras) {
         c.isFavourite =
@@ -38,6 +38,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         allCameras: allCameras,
         status: CameraStatus.success,
         city: event.city,
+        sortingMethod: SortingMethod.name,
+        filterMode: FilterMode.visible,
+        searchMode: SearchMode.none,
       ));
     });
 
@@ -55,23 +58,23 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SortCameras>((event, emit) async {
-      switch (event.method) {
-        case SortMode.distance:
+      switch (event.sortingMethod) {
+        case SortingMethod.distance:
           var position = await LocationService.getCurrentLocation();
           var location = Location.fromPosition(position);
           _sortByDistance(location);
           break;
-        case SortMode.neighbourhood:
+        case SortingMethod.neighbourhood:
           _sortByNeighbourhood();
           break;
-        case SortMode.name:
+        case SortingMethod.name:
         default:
           _sortByName();
           break;
       }
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
-        sortingMethod: event.method,
+        sortingMethod: event.sortingMethod,
       ));
     });
 
@@ -195,7 +198,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       camera.isFavourite = !allFave;
     }
     _writeSharedPrefs();
-    add(ReloadCameras());
+    add(ReloadCameras(showList: state.showList));
   }
 
   void hideSelectedCameras() {
@@ -204,7 +207,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       camera.isVisible = !allHidden;
     }
     _writeSharedPrefs();
-    add(ReloadCameras());
+    add(ReloadCameras(showList: state.showList));
   }
 
   void updateCamera(Camera camera) {

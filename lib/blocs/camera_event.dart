@@ -10,7 +10,7 @@ class CameraLoading extends CameraEvent {}
 class CameraLoaded extends CameraEvent {
   final Cities city;
 
-  CameraLoaded(this.city);
+  CameraLoaded({this.city = Cities.ottawa});
 
   @override
   List<Object?> get props => [city];
@@ -26,12 +26,12 @@ class ReloadCameras extends CameraEvent {
 }
 
 class SortCameras extends CameraEvent {
-  final SortMode method;
+  final SortingMethod sortingMethod;
 
-  SortCameras({this.method = SortMode.name});
+  SortCameras({this.sortingMethod = SortingMethod.name});
 
   @override
-  List<Object?> get props => [method];
+  List<Object?> get props => [sortingMethod];
 }
 
 class SearchCameras extends CameraEvent {

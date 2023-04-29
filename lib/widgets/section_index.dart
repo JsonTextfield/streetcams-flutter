@@ -34,23 +34,7 @@ class _SectionIndexState extends State<SectionIndex> {
         if (!_positions.contains(i)) {
           _positions.add(i);
         }
-        result.add(
-          Expanded(
-            child: Container(
-              color: Colors.transparent,
-              width: 20,
-              child: Center(
-                child: Text(
-                  '#',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _selectedIndex == i ? Constants.accentColour : null,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
+        result.add(SectionIndexItem(title: '#', selected: _selectedIndex == i));
       } else if (letters.contains(firstChar.toUpperCase()) &&
           !indices.contains(firstChar)) {
         indices.add(firstChar);
@@ -58,21 +42,7 @@ class _SectionIndexState extends State<SectionIndex> {
           _positions.add(i);
         }
         result.add(
-          Expanded(
-            child: Container(
-              color: Colors.transparent,
-              width: 20,
-              child: Center(
-                child: Text(
-                  firstChar,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _selectedIndex == i ? Constants.accentColour : null,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          SectionIndexItem(title: firstChar, selected: _selectedIndex == i),
         );
       } else if (!numbers.contains(firstChar) &&
           !letters.contains(firstChar.toUpperCase()) &&
@@ -81,23 +51,7 @@ class _SectionIndexState extends State<SectionIndex> {
         if (!_positions.contains(i)) {
           _positions.add(i);
         }
-        result.add(
-          Expanded(
-            child: Container(
-              color: Colors.transparent,
-              width: 20,
-              child: Center(
-                child: Text(
-                  '*',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: _selectedIndex == i ? Constants.accentColour : null,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
+        result.add(SectionIndexItem(title: '*', selected: _selectedIndex == i));
       }
     }
 
@@ -129,5 +83,34 @@ class _SectionIndexState extends State<SectionIndex> {
         widget.callback(_selectedIndex);
       });
     }
+  }
+}
+
+class SectionIndexItem extends StatelessWidget {
+  final bool selected;
+  final String title;
+
+  const SectionIndexItem({
+    super.key,
+    required this.selected,
+    required this.title,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        alignment: Alignment.center,
+        color: Colors.transparent,
+        child: Text(
+          title,
+          style: TextStyle(
+            fontSize: 10,
+            color: selected ? Constants.accentColour : null,
+          ),
+        ),
+      ),
+    );
   }
 }

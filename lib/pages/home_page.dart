@@ -104,7 +104,11 @@ class HomePage extends StatelessWidget {
                       ]),
                       MapWidget(
                         cameras: state.displayedCameras,
-                        onTapped: (camera) => showCameras([camera]),
+                        onTapped: (camera) {
+                          context
+                              .read<CameraBloc>()
+                              .add(SelectCamera(camera: camera));
+                        },
                       ),
                     ],
                   );

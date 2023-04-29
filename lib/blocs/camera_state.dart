@@ -4,7 +4,7 @@ enum CameraStatus { initial, success, failure }
 
 enum SearchMode { none, camera, neighbourhood }
 
-enum SortMode { name, distance, neighbourhood }
+enum SortingMethod { name, distance, neighbourhood }
 
 enum FilterMode { visible, hidden, favourite }
 
@@ -14,7 +14,7 @@ class CameraState extends Equatable {
   final List<Camera> selectedCameras;
   final List<Neighbourhood> neighbourhoods;
   final CameraStatus status;
-  final SortMode sortingMethod;
+  final SortingMethod sortingMethod;
   final SearchMode searchMode;
   final FilterMode filterMode;
   final bool showList;
@@ -32,7 +32,7 @@ class CameraState extends Equatable {
 
   bool get showSectionIndex =>
       filterMode == FilterMode.visible &&
-      sortingMethod == SortMode.name &&
+      sortingMethod == SortingMethod.name &&
       searchMode == SearchMode.none &&
       showList;
 
@@ -57,7 +57,7 @@ class CameraState extends Equatable {
     this.displayedCameras = const <Camera>[],
     this.selectedCameras = const <Camera>[],
     this.status = CameraStatus.initial,
-    this.sortingMethod = SortMode.name,
+    this.sortingMethod = SortingMethod.name,
     this.searchMode = SearchMode.none,
     this.filterMode = FilterMode.visible,
     this.showList = true,
@@ -72,7 +72,7 @@ class CameraState extends Equatable {
     List<Camera>? displayedCameras,
     List<Camera>? selectedCameras,
     CameraStatus? status,
-    SortMode? sortingMethod,
+    SortingMethod? sortingMethod,
     SearchMode? searchMode,
     FilterMode? filterMode,
     int? lastUpdated,

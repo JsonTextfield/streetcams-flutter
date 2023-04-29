@@ -92,6 +92,8 @@ class CameraListView extends StatelessWidget {
                 selectedTileColor: Constants.accentColour,
                 selectedColor: Colors.white,
                 dense: true,
+                contentPadding: const EdgeInsets.only(left: 5),
+                visualDensity: const VisualDensity(vertical: -2),
                 title: Text(camera.name, style: const TextStyle(fontSize: 16)),
                 subtitle: Text(camera.neighbourhood),
                 trailing: IconButton(

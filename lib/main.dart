@@ -28,7 +28,7 @@ class StreetCamsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: BlocProvider(
-        create: (_) => CameraBloc()..add(CameraLoaded(Cities.ottawa)),
+        create: (_) => CameraBloc()..add(CameraLoaded(city: Cities.ottawa)),
         child: HomePage(),
       ),
       routes: {
