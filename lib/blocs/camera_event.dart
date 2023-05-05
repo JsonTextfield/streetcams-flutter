@@ -7,14 +7,7 @@ abstract class CameraEvent extends Equatable {
 
 class CameraLoading extends CameraEvent {}
 
-class CameraLoaded extends CameraEvent {
-  final Cities city;
-
-  CameraLoaded({this.city = Cities.ottawa});
-
-  @override
-  List<Object?> get props => [city];
-}
+class CameraLoaded extends CameraEvent {}
 
 class ReloadCameras extends CameraEvent {
   final bool showList;

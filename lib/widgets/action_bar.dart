@@ -136,7 +136,9 @@ class ActionBar extends StatelessWidget {
           child: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
               void sortCameras(SortingMethod sortMode) {
-                context.read<CameraBloc>().add(SortCameras(sortingMethod: sortMode));
+                context
+                    .read<CameraBloc>()
+                    .add(SortCameras(sortingMethod: sortMode));
               }
 
               return MenuAnchor(
@@ -245,8 +247,7 @@ class ActionBar extends StatelessWidget {
           child: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
               void changeCity(Cities city) {
-                context.read<CameraBloc>().add(CameraLoading());
-                context.read<CameraBloc>().add(CameraLoaded(city: city));
+                context.read<CameraBloc>().changeCity(city);
               }
 
               return MenuAnchor(
@@ -267,15 +268,13 @@ class ActionBar extends StatelessWidget {
                     value: Cities.montreal,
                     groupValue: state.city,
                     onChanged: (_) => changeCity(Cities.montreal),
-                    child:
-                    Text(AppLocalizations.of(context)!.montreal),
+                    child: Text(AppLocalizations.of(context)!.montreal),
                   ),
                   RadioMenuButton<Cities>(
                     value: Cities.calgary,
                     groupValue: state.city,
                     onChanged: (_) => changeCity(Cities.calgary),
-                    child:
-                    Text(AppLocalizations.of(context)!.calgary),
+                    child: Text(AppLocalizations.of(context)!.calgary),
                   ),
                 ],
                 builder: (context, controller, child) {

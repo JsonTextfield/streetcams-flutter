@@ -41,20 +41,21 @@ class Camera extends BilingualObject {
   }
 
   factory Camera.fromJsonToronto(Map<String, dynamic> json) {
+    String jsonName = (json['properties']['MAINROAD'] +
+            ' & ' +
+            json['properties']['CROSSROAD']) ??
+        '';
+    String name = jsonName.toLowerCase().split(' ').map((word) {
+      return word.replaceFirst(word[0], word[0].toUpperCase());
+    }).join(' ');
     return Camera(
       city: Cities.toronto,
       num: json['properties']['REC_ID'] ?? 0,
       location: Location.fromJsonArray(json['geometry']['coordinates']),
       type: '',
       id: json['properties']['_id'] ?? 0,
-      nameEn: (json['properties']['MAINROAD'] +
-              ' & ' +
-              json['properties']['CROSSROAD']) ??
-          '',
-      nameFr: (json['properties']['MAINROAD'] +
-              ' & ' +
-              json['properties']['CROSSROAD']) ??
-          '',
+      nameEn: name,
+      nameFr: name,
     );
   }
 

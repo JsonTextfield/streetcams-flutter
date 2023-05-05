@@ -22,6 +22,20 @@ class CameraWidget extends StatelessWidget {
         children: [
           Image.network(
             camera.url,
+            errorBuilder: (
+              BuildContext context,
+              Object exception,
+              StackTrace? stackTrace,
+            ) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                width: MediaQuery.of(context).size.width,
+                child: const Text(
+                  'Could not load image 😢',
+                  textAlign: TextAlign.center,
+                ),
+              );
+            },
             semanticLabel: camera.name,
             fit: BoxFit.contain,
             width: MediaQuery.of(context).size.width,

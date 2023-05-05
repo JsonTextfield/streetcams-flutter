@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
@@ -17,27 +18,36 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
   CameraBloc() : super(const CameraState()) {
     on<CameraLoading>((event, emit) async {
+      _prefs ??= await SharedPreferences.getInstance();
       return emit(state.copyWith(
         status: CameraStatus.initial,
+        searchMode: SearchMode.none,
+        filterMode: FilterMode.visible,
       ));
     });
 
     on<CameraLoaded>((event, emit) async {
       _prefs ??= await SharedPreferences.getInstance();
-      List<Camera> allCameras = await DownloadService.downloadAll(event.city);
+      Cities city = Cities.ottawa;
+      if (_prefs?.getString('city') != null && _prefs!.getString('city')!.isNotEmpty) {
+        String str = _prefs!.getString('city')!;
+        city = Cities.values.firstWhere((e) => describeEnum(e) == str);
+      }
+      List<Camera> allCameras = await DownloadService.downloadAll(city);
       for (var c in allCameras) {
         c.isFavourite =
-            _prefs!.getBool('${c.sortableName}.isFavourite') ?? false;
-        c.isVisible = _prefs!.getBool('${c.sortableName}.isVisible') ?? true;
+            _prefs!.getBool('${c.sortableName}${c.id}.isFavourite') ?? false;
+        c.isVisible =
+            _prefs!.getBool('${c.sortableName}${c.id}.isVisible') ?? true;
       }
       List<Neighbourhood> neighbourhoods =
-          await DownloadService.downloadNeighbourhoods(event.city);
+          await DownloadService.downloadNeighbourhoods(city);
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
         neighbourhoods: neighbourhoods,
         allCameras: allCameras,
         status: CameraStatus.success,
-        city: event.city,
+        city: city,
         sortingMethod: SortingMethod.name,
         filterMode: FilterMode.visible,
         searchMode: SearchMode.none,
@@ -47,8 +57,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<ReloadCameras>((event, emit) async {
       for (var c in state.displayedCameras) {
         c.isFavourite =
-            _prefs!.getBool('${c.sortableName}.isFavourite') ?? false;
-        c.isVisible = _prefs!.getBool('${c.sortableName}.isVisible') ?? true;
+            _prefs!.getBool('${c.sortableName}${c.id}.isFavourite') ?? false;
+        c.isVisible =
+            _prefs!.getBool('${c.sortableName}${c.id}.isVisible') ?? true;
       }
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
@@ -92,6 +103,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           break;
       }
       return emit(state.copyWith(
+        filterMode: FilterMode.visible,
         displayedCameras: result,
         searchMode: event.searchMode,
       ));
@@ -114,6 +126,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           break;
       }
       return emit(state.copyWith(
+        searchMode: SearchMode.none,
         filterMode: event.filterMode,
         displayedCameras: displayedCameras,
       ));
@@ -221,10 +234,22 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     add(ReloadCameras());
   }
 
+  void changeCity(Cities city) {
+    add(CameraLoading());
+    _prefs?.setString('city', city.name);
+    add(CameraLoaded());
+  }
+
   void _writeSharedPrefs() {
     for (var camera in state.allCameras) {
-      _prefs!.setBool('${camera.sortableName}.isFavourite', camera.isFavourite);
-      _prefs!.setBool('${camera.sortableName}.isVisible', camera.isVisible);
+      _prefs!.setBool(
+        '${camera.sortableName}${camera.id}.isFavourite',
+        camera.isFavourite,
+      );
+      _prefs!.setBool(
+        '${camera.sortableName}${camera.id}.isVisible',
+        camera.isVisible,
+      );
     }
   }
 }

@@ -61,11 +61,24 @@ class HomePage extends StatelessWidget {
                     return const NeighbourhoodSearchBar();
                   case SearchMode.none:
                   default:
+                    String title = '';
+                    switch (state.filterMode) {
+                      case FilterMode.favourite:
+                        title = AppLocalizations.of(context)!.favourites;
+                        break;
+                      case FilterMode.hidden:
+                        title = AppLocalizations.of(context)!.hidden;
+                        break;
+                      case FilterMode.visible:
+                      default:
+                        title = state.selectedCameras.isEmpty
+                            ? AppLocalizations.of(context)!.appName
+                            : AppLocalizations.of(context)!
+                                .selectedCameras(state.selectedCameras.length);
+                        break;
+                    }
                     return GestureDetector(
-                      child: Text(state.selectedCameras.isEmpty
-                          ? AppLocalizations.of(context)!.appName
-                          : AppLocalizations.of(context)!
-                              .selectedCameras(state.selectedCameras.length)),
+                      child: Text(title),
                       onTap: () => _moveToListPosition(0),
                     );
                 }
