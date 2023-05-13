@@ -2,7 +2,7 @@
 
 ## Flutter version of StreetCams
 
-### This app shows live images from cameras around Ottawa.
+### This app shows live images from cameras around various cities.
 
 <table>
 <td>

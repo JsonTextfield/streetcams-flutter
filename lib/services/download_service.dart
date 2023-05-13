@@ -54,7 +54,7 @@ class DownloadService {
       case Cities.ottawa:
       default:
         List jsonArray = json.decode(arguments.last as String) as List;
-        return jsonArray.map((json) => Camera.fromJson(json)).toList()
+        return jsonArray.map((json) => Camera.fromJsonOttawa(json)).toList()
           ..sort((a, b) => a.sortableName.compareTo(b.sortableName));
     }
   }
@@ -108,7 +108,9 @@ class DownloadService {
       case Cities.ottawa:
       default:
         List jsonArray = json.decode(jsonString)['features'];
-        return jsonArray.map((json) => Neighbourhood.fromJson(json)).toList();
+        return jsonArray
+            .map((json) => Neighbourhood.fromJsonOttawa(json))
+            .toList();
     }
   }
 

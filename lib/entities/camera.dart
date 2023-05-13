@@ -10,7 +10,6 @@ class Camera extends BilingualObject {
   bool isFavourite = false;
   final int num;
   final Location location;
-  final String type;
   String neighbourhood = '';
   String _url = '';
   final Cities city;
@@ -18,7 +17,6 @@ class Camera extends BilingualObject {
   Camera({
     required this.num,
     required this.location,
-    required this.type,
     required this.city,
     required id,
     required nameEn,
@@ -28,12 +26,11 @@ class Camera extends BilingualObject {
     _url = url;
   }
 
-  factory Camera.fromJson(Map<String, dynamic> json) {
+  factory Camera.fromJsonOttawa(Map<String, dynamic> json) {
     return Camera(
       city: Cities.ottawa,
       num: json['number'] ?? 0,
       location: Location.fromJson(json),
-      type: json['type'] ?? '',
       id: json['id'] ?? 0,
       nameEn: json['description'] ?? '',
       nameFr: json['descriptionFr'] ?? '',
@@ -41,18 +38,13 @@ class Camera extends BilingualObject {
   }
 
   factory Camera.fromJsonToronto(Map<String, dynamic> json) {
-    String jsonName = (json['properties']['MAINROAD'] +
-            ' & ' +
-            json['properties']['CROSSROAD']) ??
-        '';
-    String name = jsonName.toLowerCase().split(' ').map((word) {
-      return word.replaceFirst(word[0], word[0].toUpperCase());
-    }).join(' ');
+    String mainRoad = json['properties']['MAINROAD'] ?? 'Main St';
+    String sideRoad = json['properties']['CROSSROAD'] ?? 'Cross Rd';
+    String name = '$mainRoad & $sideRoad'.toTitleCase();
     return Camera(
       city: Cities.toronto,
       num: json['properties']['REC_ID'] ?? 0,
-      location: Location.fromJsonArray(json['geometry']['coordinates']),
-      type: '',
+      location: Location.fromJsonArray(json['geometry']['coordinates'][0]),
       id: json['properties']['_id'] ?? 0,
       nameEn: name,
       nameFr: name,
@@ -64,7 +56,6 @@ class Camera extends BilingualObject {
       city: Cities.montreal,
       num: json['properties']['id-camera'] ?? 0,
       location: Location.fromJsonArray(json['geometry']['coordinates']),
-      type: '',
       id: json['properties']['id-camera'] ?? 0,
       nameEn: json['properties']['titre'] ?? '',
       nameFr: json['properties']['titre'] ?? '',
@@ -74,15 +65,28 @@ class Camera extends BilingualObject {
 
   factory Camera.fromJsonCalgary(Map<String, dynamic> json) {
     return Camera(
-      city: Cities.montreal,
+      city: Cities.calgary,
       num: Random().nextInt(1000000),
       location: Location.fromJsonArray(json['point']['coordinates']),
-      type: '',
       id: Random().nextInt(1000000),
       nameEn: json['camera_location'] ?? '',
       nameFr: json['camera_location'] ?? '',
       url: json['camera_url']['url'] ?? '',
     );
+  }
+
+  String get url {
+    switch (city) {
+      case Cities.toronto:
+        return 'http://opendata.toronto.ca/transportation/tmc/rescucameraimages/CameraImages/loc$num.jpg';
+      case Cities.montreal:
+      case Cities.calgary:
+        return _url;
+      case Cities.ottawa:
+      default:
+        int time = DateTime.now().millisecondsSinceEpoch;
+        return 'https://traffic.ottawa.ca/beta/camera?id=$num&timems=$time';
+    }
   }
 
   @override
@@ -91,19 +95,6 @@ class Camera extends BilingualObject {
       return num == other.num && id == other.id;
     }
     return false;
-  }
-
-  String get url {
-    switch (city) {
-      case Cities.toronto:
-        return 'http://opendata.toronto.ca/transportation/tmc/rescucameraimages/CameraImages/loc$num.jpg';
-      case Cities.montreal:
-        return _url;
-      case Cities.ottawa:
-      default:
-        int time = DateTime.now().millisecondsSinceEpoch;
-        return 'https://traffic.ottawa.ca/beta/camera?id=$num&timems=$time';
-    }
   }
 
   @override
@@ -117,4 +108,12 @@ class Camera extends BilingualObject {
 
   @override
   String toString() => name;
+}
+
+extension on String {
+  String toTitleCase() {
+    return toLowerCase().split(' ').map((word) {
+      return word.replaceFirst(word[0], word[0].toUpperCase());
+    }).join(' ');
+  }
 }

@@ -16,7 +16,6 @@ void main() {
       num: num,
       location: location,
       id: id,
-      type: '',
       nameEn: name,
       nameFr: nameFr,
     );
@@ -25,7 +24,6 @@ void main() {
       num: num,
       location: location,
       id: id,
-      type: '',
       nameEn: name,
       nameFr: nameFr,
     );
@@ -43,7 +41,6 @@ void main() {
       num: num,
       location: location,
       id: id,
-      type: '',
       nameEn: 'Camera1',
       nameFr: 'Camera1F',
     );
@@ -52,7 +49,6 @@ void main() {
       num: num,
       location: location,
       id: id,
-      type: '',
       nameEn: 'Camera2',
       nameFr: 'Camera2FR',
     );
@@ -71,7 +67,6 @@ void main() {
       num: 1337,
       location: location,
       id: id,
-      type: '',
       nameEn: name,
       nameFr: nameFr,
     );
@@ -80,7 +75,6 @@ void main() {
       num: 8347,
       location: location,
       id: id,
-      type: '',
       nameEn: name,
       nameFr: nameFr,
     );
@@ -99,7 +93,6 @@ void main() {
       num: num,
       location: location,
       id: 9999,
-      type: '',
       nameEn: name,
       nameFr: nameFr,
     );
@@ -108,7 +101,6 @@ void main() {
       num: num,
       location: location,
       id: 1111,
-      type: '',
       nameEn: name,
       nameFr: nameFr,
     );

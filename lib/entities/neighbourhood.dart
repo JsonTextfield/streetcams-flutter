@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
+import 'Cities.dart';
 import 'camera.dart';
 import 'location.dart';
 
@@ -15,43 +16,18 @@ class Neighbourhood extends BilingualObject {
     required nameFr,
   }) : super(id: id, nameEn: nameEn, nameFr: nameFr);
 
-  factory Neighbourhood.fromJson(Map<String, dynamic> json) {
-    var areas = json['geometry']['coordinates'] as List<dynamic>;
-    var coordinates = json['geometry']['coordinates'];
-    bool hasMultipleParts = areas.length > 1;
-    List<List<Location>> tempLocations = [];
-
-    for (int i = 0; i < areas.length; i++) {
-      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
-          as List<dynamic>;
-      List<Location> locationList = geometry
-          .map((jsonArray) => Location.fromJsonArray(jsonArray))
-          .toList();
-      tempLocations.add(locationList);
-    }
+  factory Neighbourhood.fromJsonOttawa(Map<String, dynamic> json) {
     return Neighbourhood(
-      boundaries: tempLocations,
+      boundaries: _getBoundaries(json, Cities.ottawa),
       id: json['properties']['ONS_ID'],
       nameEn: json['properties']['Name'],
       nameFr: json['properties']['Name_FR'],
     );
   }
-  factory Neighbourhood.fromJsonToronto(Map<String, dynamic> json) {
-    var areas = json['geometry']['coordinates'] as List<dynamic>;
-    var coordinates = json['geometry']['coordinates'];
-    bool hasMultipleParts = areas.length > 1;
-    List<List<Location>> tempLocations = [];
 
-    for (int i = 0; i < areas.length; i++) {
-      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
-          as List<dynamic>;
-      List<Location> locationList = geometry
-          .map((jsonArray) => Location.fromJsonArray(jsonArray))
-          .toList();
-      tempLocations.add(locationList);
-    }
+  factory Neighbourhood.fromJsonToronto(Map<String, dynamic> json) {
     return Neighbourhood(
-      boundaries: tempLocations,
+      boundaries: _getBoundaries(json, Cities.toronto),
       id: json['properties']['AREA_ID'],
       nameEn: json['properties']['AREA_NAME'],
       nameFr: json['properties']['AREA_NAME'],
@@ -59,21 +35,8 @@ class Neighbourhood extends BilingualObject {
   }
 
   factory Neighbourhood.fromJsonMontreal(Map<String, dynamic> json) {
-    var areas = json['geometry']['coordinates'][0] as List<dynamic>;
-    var coordinates = json['geometry']['coordinates'][0];
-    bool hasMultipleParts = areas.length > 1;
-    List<List<Location>> tempLocations = [];
-
-    for (int i = 0; i < areas.length; i++) {
-      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
-          as List<dynamic>;
-      List<Location> locationList = geometry
-          .map((jsonArray) => Location.fromJsonArray(jsonArray))
-          .toList();
-      tempLocations.add(locationList);
-    }
     return Neighbourhood(
-      boundaries: tempLocations,
+      boundaries: _getBoundaries(json, Cities.montreal),
       id: int.parse(json['properties']['no_qr'], radix: 16),
       nameEn: json['properties']['nom_qr'],
       nameFr: json['properties']['nom_qr'],
@@ -81,25 +44,45 @@ class Neighbourhood extends BilingualObject {
   }
 
   factory Neighbourhood.fromJsonCalgary(Map<String, dynamic> json) {
-    var areas = json['multipolygon']['coordinates'][0] as List<dynamic>;
-    var coordinates = json['multipolygon']['coordinates'][0];
-    bool hasMultipleParts = areas.length > 1;
-    List<List<Location>> tempLocations = [];
-
-    for (int i = 0; i < areas.length; i++) {
-      var geometry = (hasMultipleParts ? coordinates[i][0] : coordinates[0])
-          as List<dynamic>;
-      List<Location> locationList = geometry
-          .map((jsonArray) => Location.fromJsonArray(jsonArray))
-          .toList();
-      tempLocations.add(locationList);
-    }
     return Neighbourhood(
-      boundaries: tempLocations,
+      boundaries: _getBoundaries(json, Cities.calgary),
       id: 0,
       nameEn: json['name'],
       nameFr: json['name'],
     );
+  }
+
+  static List<List<Location>> _getBoundaries(
+    Map<String, dynamic> json,
+    Cities city,
+  ) {
+    var areas = [];
+
+    switch (city) {
+      case Cities.ottawa:
+        areas = json['geometry']['coordinates'] as List<dynamic>;
+        break;
+      case Cities.toronto:
+      case Cities.montreal:
+        areas = json['geometry']['coordinates'][0] as List<dynamic>;
+        break;
+      case Cities.calgary:
+        areas = json['multipolygon']['coordinates'][0] as List<dynamic>;
+        break;
+      default:
+        break;
+    }
+
+    bool hasMultipleParts = areas.length > 1;
+    List<List<Location>> boundaries = [];
+
+    for (int i = 0; i < areas.length; i++) {
+      var area = (hasMultipleParts ? areas[i][0] : areas[0]) as List<dynamic>;
+      List<Location> locationList =
+          area.map((jsonArray) => Location.fromJsonArray(jsonArray)).toList();
+      boundaries.add(locationList);
+    }
+    return boundaries;
   }
 
   //http://en.wikipedia.org/wiki/Point_in_polygon

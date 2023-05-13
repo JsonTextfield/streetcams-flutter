@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import '../entities/camera.dart';
@@ -16,7 +14,7 @@ class CameraWidget extends StatelessWidget {
     return Container(
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height -
-            MediaQueryData.fromWindow(window).padding.top,
+            MediaQueryData.fromView(View.of(context)).padding.top,
       ),
       child: Stack(
         children: [
@@ -45,7 +43,7 @@ class CameraWidget extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                color: Colors.black45,
+                color: Colors.black54,
                 child: Text(
                   camera.name,
                   style: const TextStyle(color: Colors.white),
