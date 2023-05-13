@@ -16,58 +16,57 @@ class Neighbourhood extends BilingualObject {
     required nameFr,
   }) : super(id: id, nameEn: nameEn, nameFr: nameFr);
 
-  factory Neighbourhood.fromJsonOttawa(Map<String, dynamic> json) {
-    return Neighbourhood(
-      boundaries: _getBoundaries(json, Cities.ottawa),
-      id: json['properties']['ONS_ID'],
-      nameEn: json['properties']['Name'],
-      nameFr: json['properties']['Name_FR'],
-    );
-  }
-
-  factory Neighbourhood.fromJsonToronto(Map<String, dynamic> json) {
-    return Neighbourhood(
-      boundaries: _getBoundaries(json, Cities.toronto),
-      id: json['properties']['AREA_ID'],
-      nameEn: json['properties']['AREA_NAME'],
-      nameFr: json['properties']['AREA_NAME'],
-    );
-  }
-
-  factory Neighbourhood.fromJsonMontreal(Map<String, dynamic> json) {
-    return Neighbourhood(
-      boundaries: _getBoundaries(json, Cities.montreal),
-      id: int.parse(json['properties']['no_qr'], radix: 16),
-      nameEn: json['properties']['nom_qr'],
-      nameFr: json['properties']['nom_qr'],
-    );
-  }
-
-  factory Neighbourhood.fromJsonCalgary(Map<String, dynamic> json) {
-    return Neighbourhood(
-      boundaries: _getBoundaries(json, Cities.calgary),
-      id: 0,
-      nameEn: json['name'],
-      nameFr: json['name'],
-    );
+  factory Neighbourhood.fromJson(Map<String, dynamic> json, Cities city) {
+    List<List<Location>> boundaries = _getBoundaries(json, city);
+    switch (city) {
+      case Cities.toronto:
+        return Neighbourhood(
+          boundaries: boundaries,
+          id: json['properties']['AREA_ID'],
+          nameEn: json['properties']['AREA_NAME'],
+          nameFr: json['properties']['AREA_NAME'],
+        );
+      case Cities.montreal:
+        return Neighbourhood(
+          boundaries: boundaries,
+          id: int.parse(json['properties']['no_qr'], radix: 16),
+          nameEn: json['properties']['nom_qr'],
+          nameFr: json['properties']['nom_qr'],
+        );
+      case Cities.calgary:
+        return Neighbourhood(
+          boundaries: boundaries,
+          id: 0,
+          nameEn: json['name'],
+          nameFr: json['name'],
+        );
+      case Cities.ottawa:
+      default:
+        return Neighbourhood(
+          boundaries: boundaries,
+          id: json['properties']['ONS_ID'],
+          nameEn: json['properties']['Name'],
+          nameFr: json['properties']['Name_FR'],
+        );
+    }
   }
 
   static List<List<Location>> _getBoundaries(
     Map<String, dynamic> json,
     Cities city,
   ) {
-    var areas = [];
+    List<dynamic> areas = [];
 
     switch (city) {
       case Cities.ottawa:
-        areas = json['geometry']['coordinates'] as List<dynamic>;
+        areas = json['geometry']['coordinates'];
         break;
       case Cities.toronto:
       case Cities.montreal:
-        areas = json['geometry']['coordinates'][0] as List<dynamic>;
+        areas = json['geometry']['coordinates'][0];
         break;
       case Cities.calgary:
-        areas = json['multipolygon']['coordinates'][0] as List<dynamic>;
+        areas = json['multipolygon']['coordinates'][0];
         break;
       default:
         break;

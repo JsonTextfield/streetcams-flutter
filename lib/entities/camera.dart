@@ -26,7 +26,21 @@ class Camera extends BilingualObject {
     _url = url;
   }
 
-  factory Camera.fromJsonOttawa(Map<String, dynamic> json) {
+  factory Camera.fromJson(Map<String, dynamic> json, Cities city) {
+    switch (city) {
+      case Cities.toronto:
+        return Camera._fromJsonToronto(json);
+      case Cities.montreal:
+        return Camera._fromJsonMontreal(json);
+      case Cities.calgary:
+        return Camera._fromJsonCalgary(json);
+      case Cities.ottawa:
+      default:
+        return Camera._fromJsonOttawa(json);
+    }
+  }
+
+  factory Camera._fromJsonOttawa(Map<String, dynamic> json) {
     return Camera(
       city: Cities.ottawa,
       num: json['number'] ?? 0,
@@ -37,7 +51,7 @@ class Camera extends BilingualObject {
     );
   }
 
-  factory Camera.fromJsonToronto(Map<String, dynamic> json) {
+  factory Camera._fromJsonToronto(Map<String, dynamic> json) {
     String mainRoad = json['properties']['MAINROAD'] ?? 'Main St';
     String sideRoad = json['properties']['CROSSROAD'] ?? 'Cross Rd';
     String name = '$mainRoad & $sideRoad'.toTitleCase();
@@ -51,7 +65,7 @@ class Camera extends BilingualObject {
     );
   }
 
-  factory Camera.fromJsonMontreal(Map<String, dynamic> json) {
+  factory Camera._fromJsonMontreal(Map<String, dynamic> json) {
     return Camera(
       city: Cities.montreal,
       num: json['properties']['id-camera'] ?? 0,
@@ -63,7 +77,7 @@ class Camera extends BilingualObject {
     );
   }
 
-  factory Camera.fromJsonCalgary(Map<String, dynamic> json) {
+  factory Camera._fromJsonCalgary(Map<String, dynamic> json) {
     return Camera(
       city: Cities.calgary,
       num: Random().nextInt(1000000),
@@ -112,8 +126,9 @@ class Camera extends BilingualObject {
 
 extension on String {
   String toTitleCase() {
-    return toLowerCase().split(' ').map((word) {
-      return word.replaceFirst(word[0], word[0].toUpperCase());
-    }).join(' ');
+    return toLowerCase()
+        .split(' ')
+        .map((word) => word.replaceFirst(word[0], word[0].toUpperCase()))
+        .join(' ');
   }
 }

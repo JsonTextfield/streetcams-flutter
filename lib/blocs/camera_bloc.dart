@@ -33,18 +33,17 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         String str = _prefs!.getString('city')!;
         city = Cities.values.firstWhere((e) => describeEnum(e) == str);
       }
-      List<Camera> allCameras = await DownloadService.downloadAll(city);
+      List<dynamic> allData = await DownloadService.downloadAll(city);
+      List<Camera> allCameras = allData.first;
       for (var c in allCameras) {
         c.isFavourite =
             _prefs!.getBool('${c.sortableName}${c.id}.isFavourite') ?? false;
         c.isVisible =
             _prefs!.getBool('${c.sortableName}${c.id}.isVisible') ?? true;
       }
-      List<Neighbourhood> neighbourhoods =
-          await DownloadService.downloadNeighbourhoods(city);
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
-        neighbourhoods: neighbourhoods,
+        neighbourhoods: allData.last,
         allCameras: allCameras,
         status: CameraStatus.success,
         city: city,
