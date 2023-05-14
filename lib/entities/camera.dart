@@ -54,7 +54,7 @@ class Camera extends BilingualObject {
   factory Camera._fromJsonToronto(Map<String, dynamic> json) {
     Map<String, dynamic> properties = json['properties'] ?? {};
     Map<String, dynamic> geometry = json['geometry'] ?? {};
-    Map<int, dynamic> coordinates = geometry['coordinates'] ?? {};
+    Map<int, dynamic> coordinates = (geometry['coordinates'] ?? []).asMap();
     String mainRoad = properties['MAINROAD'] ?? 'Main St';
     String sideRoad = properties['CROSSROAD'] ?? 'Cross Rd';
     return Camera(
