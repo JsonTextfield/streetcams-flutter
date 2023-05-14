@@ -1,11 +1,13 @@
 import 'dart:math';
 
+import 'package:change_case/change_case.dart';
+import 'package:equatable/equatable.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import 'Cities.dart';
 import 'location.dart';
 
-class Camera extends BilingualObject {
+class Camera extends BilingualObject with EquatableMixin {
   bool isVisible = true;
   bool isFavourite = false;
   final int num;
@@ -62,7 +64,7 @@ class Camera extends BilingualObject {
       num: properties['REC_ID'] ?? 0,
       location: Location.fromJsonArray(coordinates[0] ?? [0.0, 0.0]),
       id: properties['_id'] ?? 0,
-      nameEn: '$mainRoad & $sideRoad'.toTitleCase(),
+      nameEn: '$mainRoad & $sideRoad'.toCapitalCase(),
       nameFr: '',
     );
   }
@@ -110,31 +112,5 @@ class Camera extends BilingualObject {
   }
 
   @override
-  bool operator ==(Object other) {
-    if (other is Camera) {
-      return num == other.num && id == other.id;
-    }
-    return false;
-  }
-
-  @override
-  int get hashCode {
-    int prime = 31;
-    int result = 1;
-    result = prime * result + num.hashCode;
-    result = prime * result + id.hashCode;
-    return result;
-  }
-
-  @override
-  String toString() => name;
-}
-
-extension StringExtension on String {
-  String toTitleCase() {
-    return toLowerCase()
-        .split(' ')
-        .map((word) => word.replaceFirst(word[0], word[0].toUpperCase()))
-        .join(' ');
-  }
+  List<Object?> get props => [nameEn, nameFr, num, id, location, city];
 }
