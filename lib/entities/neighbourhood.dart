@@ -18,35 +18,36 @@ class Neighbourhood extends BilingualObject {
 
   factory Neighbourhood.fromJson(Map<String, dynamic> json, Cities city) {
     List<List<Location>> boundaries = _getBoundaries(json, city);
+    Map<String, dynamic> properties = json['properties'] ?? {};
     switch (city) {
       case Cities.toronto:
         return Neighbourhood(
           boundaries: boundaries,
-          id: json['properties']['AREA_ID'],
-          nameEn: json['properties']['AREA_NAME'],
-          nameFr: json['properties']['AREA_NAME'],
+          id: properties['AREA_ID'] ?? 0,
+          nameEn: properties['AREA_NAME'] ?? '',
+          nameFr: properties['AREA_NAME'] ?? '',
         );
       case Cities.montreal:
         return Neighbourhood(
           boundaries: boundaries,
-          id: int.parse(json['properties']['no_qr'], radix: 16),
-          nameEn: json['properties']['nom_qr'],
-          nameFr: json['properties']['nom_qr'],
+          id: int.parse(properties['no_qr'] ?? '0', radix: 16),
+          nameEn: properties['nom_qr'] ?? '',
+          nameFr: properties['nom_qr'] ?? '',
         );
       case Cities.calgary:
         return Neighbourhood(
           boundaries: boundaries,
           id: 0,
-          nameEn: json['name'],
-          nameFr: json['name'],
+          nameEn: json['name'] ?? '',
+          nameFr: json['name'] ?? '',
         );
       case Cities.ottawa:
       default:
         return Neighbourhood(
           boundaries: boundaries,
-          id: json['properties']['ONS_ID'],
-          nameEn: json['properties']['Name'],
-          nameFr: json['properties']['Name_FR'],
+          id: properties['ONS_ID'] ?? 0,
+          nameEn: properties['Name'] ?? '',
+          nameFr: properties['Name_FR'] ?? '',
         );
     }
   }
@@ -56,17 +57,21 @@ class Neighbourhood extends BilingualObject {
     Cities city,
   ) {
     List<dynamic> areas = [];
+    Map<String, dynamic> geometry = json['geometry'] ?? {};
+    List<dynamic> geometryCoordinates = geometry['coordinates'] ?? [];
+    Map<String, dynamic> multiPolygon = json['multipolygon'] ?? {};
+    List<dynamic> multiPolygonCoordinates = multiPolygon['coordinates'] ?? [];
 
     switch (city) {
       case Cities.ottawa:
-        areas = json['geometry']['coordinates'];
+        areas = geometryCoordinates;
         break;
       case Cities.toronto:
       case Cities.montreal:
-        areas = json['geometry']['coordinates'][0];
+        areas = geometryCoordinates[0] ?? [];
         break;
       case Cities.calgary:
-        areas = json['multipolygon']['coordinates'][0];
+        areas = multiPolygonCoordinates[0] ?? [];
         break;
       default:
         break;
@@ -87,44 +92,70 @@ class Neighbourhood extends BilingualObject {
   //http://en.wikipedia.org/wiki/Point_in_polygon
   //https://stackoverflow.com/questions/26014312/identify-if-point-is-in-the-polygon
   bool containsCamera(Camera camera) {
-    var intersectCount = 0;
-    for (var vertices in boundaries) {
-      for (int j = 0; j < vertices.length - 1; j++) {
-        if (onSegment(vertices[j], camera.location, vertices[j + 1])) {
+    int intersectCount = 0;
+    for (List<Location> points in boundaries) {
+      for (int j = 0; j < points.length - 1; j++) {
+        // if the point is on the border of a neighbourhood, just return true
+        if (onSegment(points[j], camera.location, points[j + 1])) {
           return true;
         }
-        if (rayCastIntersect(camera.location, vertices[j], vertices[j + 1])) {
+        if (rayCastIntersect(camera.location, points[j], points[j + 1])) {
           intersectCount++;
         }
       }
     }
-    return ((intersectCount % 2) == 1); // odd = inside, even = outside
+    // odd = inside, even = outside
+    return intersectCount.isOdd;
   }
 
-  bool onSegment(Location a, Location location, Location b) {
-    return location.lon <= max(a.lon, b.lon) &&
-        location.lon >= min(a.lon, b.lon) &&
-        location.lat <= max(a.lat, b.lat) &&
-        location.lat >= min(a.lat, b.lat);
+  /// Checks if a [Location] is on a line between two [Location]s
+  static bool onSegment(Location a, Location loc, Location b) {
+    // double division by 0 results in infinity
+    double rise = b.lat - a.lat;
+    double run = b.lon - a.lon;
+    double slope = rise / run;
+
+    double rise2 = b.lat - loc.lat;
+    double run2 = b.lon - loc.lon;
+    double slope2 = rise2 / run2;
+
+    return loc.lon <= max(a.lon, b.lon) &&
+        loc.lon >= min(a.lon, b.lon) &&
+        loc.lat <= max(a.lat, b.lat) &&
+        loc.lat >= min(a.lat, b.lat) &&
+        slope2 == slope;
   }
 
-  bool rayCastIntersect(Location location, Location vertA, Location vertB) {
-    var aY = vertA.lat;
-    var bY = vertB.lat;
-    var aX = vertA.lon;
-    var bX = vertB.lon;
-    var pY = location.lat;
-    var pX = location.lon;
+  static bool rayCastIntersect(Location loc, Location a, Location b) {
+    double aX = a.lon;
+    double aY = a.lat;
+    double bX = b.lon;
+    double bY = b.lat;
+    double locX = loc.lon;
+    double locY = loc.lat;
 
-    if ((aY > pY && bY > pY) || (aY < pY && bY < pY) || (aX < pX && bX < pX)) {
-      return false;
-      // a and b can't both be above or below pt.y, and a or b must be east of pt.x
+    if (aX == bX) {
+      return aX >= locX;
     }
 
-    var m = (aY - bY) / (aX - bX); // Rise over run
-    var bee = (-aX) * m + aY; // y = mx + b
-    var x = (pY - bee) / m; // algebra is neat!
+    if (aY == bY) {
+      return aY >= locY;
+    }
 
-    return x > pX;
+    if ((aY > locY && bY > locY) ||
+        (aY < locY && bY < locY) ||
+        (aX < locX && bX < locX)) {
+      // a and b can't both be above or below pt.y, and a or b must be east of pt.x
+      return false;
+    }
+
+    double rise = aY - bY;
+    double run = aX - bX;
+    double slope = rise / run;
+
+    double c = -slope * aX + aY; // c = -mx + y
+    double x = (locY - c) / slope;
+
+    return x >= locX;
   }
 }
