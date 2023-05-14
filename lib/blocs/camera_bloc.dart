@@ -1,11 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl_standalone.dart'
+    if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
 
 import '../entities/Cities.dart';
+import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
@@ -13,10 +17,21 @@ import '../entities/neighbourhood.dart';
 part 'camera_event.dart';
 part 'camera_state.dart';
 
-class CameraBloc extends Bloc<CameraEvent, CameraState> {
+class CameraBloc extends Bloc<CameraEvent, CameraState>
+    with WidgetsBindingObserver {
   SharedPreferences? _prefs;
 
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    super.didChangeLocales(locales);
+    BilingualObject.locale =
+        locales?.first.languageCode ?? BilingualObject.locale;
+    add(ReloadCameras(showList: state.showList));
+  }
+
   CameraBloc() : super(const CameraState()) {
+    WidgetsBinding.instance.addObserver(this);
+
     on<CameraLoading>((event, emit) async {
       _prefs ??= await SharedPreferences.getInstance();
       return emit(state.copyWith(
@@ -27,9 +42,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<CameraLoaded>((event, emit) async {
+      BilingualObject.locale = await intl.findSystemLocale();
       _prefs ??= await SharedPreferences.getInstance();
       Cities city = Cities.ottawa;
-      if (_prefs?.getString('city') != null && _prefs!.getString('city')!.isNotEmpty) {
+      if (_prefs?.getString('city') != null &&
+          _prefs!.getString('city')!.isNotEmpty) {
         String str = _prefs!.getString('city')!;
         city = Cities.values.firstWhere((e) => describeEnum(e) == str);
       }

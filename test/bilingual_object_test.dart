@@ -21,12 +21,15 @@ void main() {
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {
+      BilingualObject.locale = 'fr-CA';
       expect(myBilingualObject.name, nameFr);
     });
     Intl.withLocale('en-CA', () {
+      BilingualObject.locale = 'en-CA';
       expect(myBilingualObject.name, nameEn);
     });
     Intl.withLocale('es', () {
+      BilingualObject.locale = 'es';
       expect(myBilingualObject.name, nameEn);
     });
   });
@@ -41,12 +44,14 @@ void main() {
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {
+      BilingualObject.locale = 'fr-CA';
       expect(
         myBilingualObject.sortableName,
         nameFr.replaceAll(RegExp('[\\W_]'), '').toUpperCase(),
       );
     });
     Intl.withLocale('en-CA', () {
+      BilingualObject.locale = 'en-CA';
       expect(
         myBilingualObject.sortableName,
         nameEn.replaceAll(RegExp('[\\W_]'), '').toUpperCase(),
@@ -66,9 +71,11 @@ void main() {
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {
+      BilingualObject.locale = 'fr-CA';
       expect(myBilingualObject.sortableName, 'NAMEFR');
     });
     Intl.withLocale('en-CA', () {
+      BilingualObject.locale = 'en-CA';
       expect(myBilingualObject.sortableName, 'NAMEEN');
     });
   });

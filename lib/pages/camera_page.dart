@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 import '../entities/camera.dart';
 import '../widgets/camera_widget.dart';
@@ -15,13 +16,27 @@ class CameraPage extends StatefulWidget {
   State<CameraPage> createState() => _CameraState();
 }
 
-class _CameraState extends State<CameraPage> {
+class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
   Timer? timer;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
     timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    super.didChangeLocales(locales);
+    BilingualObject.locale =
+        locales?.first.languageCode ?? BilingualObject.locale;
   }
 
   @override

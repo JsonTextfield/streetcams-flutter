@@ -7,7 +7,9 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="StreetCams">
+        android:label="StreetCams"
+        android:localeConfig="@xml/locales_config">
+
 
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/api_key"/>
         <activity

@@ -25,21 +25,21 @@ class Neighbourhood extends BilingualObject {
           boundaries: boundaries,
           id: properties['AREA_ID'] ?? 0,
           nameEn: properties['AREA_NAME'] ?? '',
-          nameFr: properties['AREA_NAME'] ?? '',
+          nameFr: '',
         );
       case Cities.montreal:
         return Neighbourhood(
           boundaries: boundaries,
           id: int.parse(properties['no_qr'] ?? '0', radix: 16),
           nameEn: properties['nom_qr'] ?? '',
-          nameFr: properties['nom_qr'] ?? '',
+          nameFr: '',
         );
       case Cities.calgary:
         return Neighbourhood(
           boundaries: boundaries,
           id: 0,
           nameEn: json['name'] ?? '',
-          nameFr: json['name'] ?? '',
+          nameFr: '',
         );
       case Cities.ottawa:
       default:

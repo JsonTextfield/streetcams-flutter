@@ -2,22 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:intl/intl_standalone.dart'
-    if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
 
 import 'blocs/camera_bloc.dart';
 import 'constants.dart';
-import 'entities/bilingual_object.dart';
 import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
 
 void main() {
-  _setLocale();
   runApp(const StreetCamsApp());
-}
-
-void _setLocale() async {
-  BilingualObject.locale = await intl.findSystemLocale();
 }
 
 class StreetCamsApp extends StatelessWidget {

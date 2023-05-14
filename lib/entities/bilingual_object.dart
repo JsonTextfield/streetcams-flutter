@@ -1,3 +1,4 @@
+import 'package:quiver/strings.dart';
 
 abstract class BilingualObject {
   static String locale = 'en';
@@ -14,5 +15,6 @@ abstract class BilingualObject {
   String get sortableName =>
       name.replaceAll(RegExp('[\\W_]'), '').toUpperCase();
 
-  String get name => locale.contains('fr') ? nameFr : nameEn;
+  String get name =>
+      locale.contains('fr') && isNotBlank(nameFr) ? nameFr : nameEn;
 }
