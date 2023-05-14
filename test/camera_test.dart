@@ -107,4 +107,24 @@ void main() {
 
     expect(camera1 == camera2, false);
   });
+
+  test('camera creation city from json', () {
+    var camera = Camera.fromJson({}, Cities.ottawa);
+    expect(camera.city, Cities.ottawa);
+
+    camera = Camera.fromJson({}, Cities.toronto);
+    expect(camera.city, Cities.toronto);
+
+    camera = Camera.fromJson({}, Cities.montreal);
+    expect(camera.city, Cities.montreal);
+
+    camera = Camera.fromJson({}, Cities.calgary);
+    expect(camera.city, Cities.calgary);
+  });
+
+  test('test toTitleCase extension', () {
+    expect('TEST. THIS. TITLE.'.toTitleCase(), 'Test. This. Title.');
+    expect('test. this. title.'.toTitleCase(), 'Test. This. Title.');
+    expect('tEsT. tHiS. tItLe.'.toTitleCase(), 'Test. This. Title.');
+  });
 }

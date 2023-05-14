@@ -52,40 +52,47 @@ class Camera extends BilingualObject {
   }
 
   factory Camera._fromJsonToronto(Map<String, dynamic> json) {
-    String mainRoad = json['properties']['MAINROAD'] ?? 'Main St';
-    String sideRoad = json['properties']['CROSSROAD'] ?? 'Cross Rd';
+    Map<String, dynamic> properties = json['properties'] ?? {};
+    Map<String, dynamic> geometry = json['geometry'] ?? {};
+    Map<String, dynamic> coordinates = geometry['coordinates'] ?? {};
+    String mainRoad = properties['MAINROAD'] ?? 'Main St';
+    String sideRoad = properties['CROSSROAD'] ?? 'Cross Rd';
     String name = '$mainRoad & $sideRoad'.toTitleCase();
     return Camera(
       city: Cities.toronto,
-      num: json['properties']['REC_ID'] ?? 0,
-      location: Location.fromJsonArray(json['geometry']['coordinates'][0]),
-      id: json['properties']['_id'] ?? 0,
+      num: properties['REC_ID'] ?? 0,
+      location: Location.fromJsonArray(coordinates[0] ?? [0.0, 0.0]),
+      id: properties['_id'] ?? 0,
       nameEn: name,
       nameFr: name,
     );
   }
 
   factory Camera._fromJsonMontreal(Map<String, dynamic> json) {
+    Map<String, dynamic> properties = json['properties'] ?? {};
+    Map<String, dynamic> geometry = json['geometry'] ?? {};
     return Camera(
       city: Cities.montreal,
-      num: json['properties']['id-camera'] ?? 0,
-      location: Location.fromJsonArray(json['geometry']['coordinates']),
-      id: json['properties']['id-camera'] ?? 0,
-      nameEn: json['properties']['titre'] ?? '',
-      nameFr: json['properties']['titre'] ?? '',
-      url: json['properties']['url-image-en-direct'] ?? '',
+      num: properties['id-camera'] ?? 0,
+      location: Location.fromJsonArray(geometry['coordinates'] ?? [0.0, 0.0]),
+      id: properties['id-camera'] ?? 0,
+      nameEn: properties['titre'] ?? '',
+      nameFr: properties['titre'] ?? '',
+      url: properties['url-image-en-direct'] ?? '',
     );
   }
 
   factory Camera._fromJsonCalgary(Map<String, dynamic> json) {
+    Map<String, dynamic> point = json['point'] ?? {};
+    Map<String, dynamic> cameraUrl = json['camera_url'] ?? {};
     return Camera(
       city: Cities.calgary,
-      num: Random().nextInt(1000000),
-      location: Location.fromJsonArray(json['point']['coordinates']),
+      num: Random().nextInt(100000),
+      location: Location.fromJsonArray(point['coordinates'] ?? [0.0, 0.0]),
       id: Random().nextInt(1000000),
       nameEn: json['camera_location'] ?? '',
       nameFr: json['camera_location'] ?? '',
-      url: json['camera_url']['url'] ?? '',
+      url: cameraUrl['url'] ?? '',
     );
   }
 
@@ -124,7 +131,7 @@ class Camera extends BilingualObject {
   String toString() => name;
 }
 
-extension on String {
+extension StringExtension on String {
   String toTitleCase() {
     return toLowerCase()
         .split(' ')

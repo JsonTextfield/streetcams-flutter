@@ -47,7 +47,7 @@ dart_code_metrics:
     - double-literal-format
     - list-all-equatable-fields
     - no-empty-block
-    - no-equal-arguments
+    #- no-equal-arguments
     #- no-magic-number
     - no-equal-then-else
     - no-object-declaration
