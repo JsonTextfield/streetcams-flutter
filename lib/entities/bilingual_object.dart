@@ -7,14 +7,18 @@ abstract class BilingualObject {
   final String nameFr;
 
   const BilingualObject({
-    required this.id,
-    required this.nameEn,
-    required this.nameFr,
+    this.id = 0,
+    this.nameEn = '',
+    this.nameFr = '',
   });
 
   String get sortableName =>
       name.replaceAll(RegExp('[\\W_]'), '').toUpperCase();
 
-  String get name =>
-      locale.contains('fr') && isNotBlank(nameFr) ? nameFr : nameEn;
+  String get name {
+    if ((locale.contains('fr') && isNotBlank(nameFr)) || isBlank(nameEn)) {
+      return nameFr;
+    }
+    return nameEn;
+  }
 }

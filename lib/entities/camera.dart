@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
@@ -17,12 +15,12 @@ class Camera extends BilingualObject with EquatableMixin {
   final Cities city;
 
   Camera({
-    required this.num,
+    this.num = 0,
+    id = 0,
     required this.location,
     required this.city,
-    required id,
-    required nameEn,
-    required nameFr,
+    nameEn = '',
+    nameFr = '',
     url = '',
   }) : super(id: id, nameEn: nameEn, nameFr: nameFr) {
     _url = url;
@@ -65,7 +63,6 @@ class Camera extends BilingualObject with EquatableMixin {
       location: Location.fromJsonArray(coordinates[0] ?? [0.0, 0.0]),
       id: properties['_id'] ?? 0,
       nameEn: '$mainRoad & $sideRoad'.toCapitalCase(),
-      nameFr: '',
     );
   }
 
@@ -74,11 +71,9 @@ class Camera extends BilingualObject with EquatableMixin {
     Map<String, dynamic> geometry = json['geometry'] ?? {};
     return Camera(
       city: Cities.montreal,
-      num: properties['id-camera'] ?? 0,
       location: Location.fromJsonArray(geometry['coordinates'] ?? [0.0, 0.0]),
       id: properties['id-camera'] ?? 0,
-      nameEn: properties['titre'] ?? '',
-      nameFr: '',
+      nameFr: properties['titre'] ?? '',
       url: properties['url-image-en-direct'] ?? '',
     );
   }
@@ -88,11 +83,8 @@ class Camera extends BilingualObject with EquatableMixin {
     Map<String, dynamic> cameraUrl = json['camera_url'] ?? {};
     return Camera(
       city: Cities.calgary,
-      num: Random().nextInt(100000),
       location: Location.fromJsonArray(point['coordinates'] ?? [0.0, 0.0]),
-      id: Random().nextInt(1000000),
       nameEn: json['camera_location'] ?? '',
-      nameFr: '',
       url: cameraUrl['url'] ?? '',
     );
   }

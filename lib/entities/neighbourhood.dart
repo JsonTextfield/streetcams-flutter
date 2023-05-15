@@ -11,9 +11,9 @@ class Neighbourhood extends BilingualObject {
 
   const Neighbourhood({
     required this.boundaries,
-    required id,
-    required nameEn,
-    required nameFr,
+    id = 0,
+    nameEn = '',
+    nameFr = '',
   }) : super(id: id, nameEn: nameEn, nameFr: nameFr);
 
   factory Neighbourhood.fromJson(Map<String, dynamic> json, Cities city) {
@@ -25,21 +25,17 @@ class Neighbourhood extends BilingualObject {
           boundaries: boundaries,
           id: properties['AREA_ID'] ?? 0,
           nameEn: properties['AREA_NAME'] ?? '',
-          nameFr: '',
         );
       case Cities.montreal:
         return Neighbourhood(
           boundaries: boundaries,
           id: int.parse(properties['no_qr'] ?? '0', radix: 16),
-          nameEn: properties['nom_qr'] ?? '',
-          nameFr: '',
+          nameFr: properties['nom_qr'] ?? '',
         );
       case Cities.calgary:
         return Neighbourhood(
           boundaries: boundaries,
-          id: 0,
           nameEn: json['name'] ?? '',
-          nameFr: '',
         );
       case Cities.ottawa:
       default:

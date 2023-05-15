@@ -4,9 +4,9 @@ import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 class _MyBilingualObject extends BilingualObject {
   _MyBilingualObject({
-    required super.id,
-    required super.nameEn,
-    required super.nameFr,
+    super.id,
+    super.nameEn,
+    super.nameFr,
   });
 }
 
@@ -32,6 +32,18 @@ void main() {
       BilingualObject.locale = 'es';
       expect(myBilingualObject.name, nameEn);
     });
+  });
+
+  test('test English name only', () {
+    String nameEn = 'nameEn';
+    var myBilingualObject = _MyBilingualObject(nameEn: nameEn);
+    expect(myBilingualObject.name, nameEn);
+  });
+
+  test('test French name only', () {
+    String nameFr = 'nameFr';
+    var myBilingualObject = _MyBilingualObject(nameFr: nameFr);
+    expect(myBilingualObject.name, nameFr);
   });
 
   test('test sortable name', () {
