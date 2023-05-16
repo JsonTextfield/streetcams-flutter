@@ -15,6 +15,7 @@ import '../entities/location.dart';
 import '../entities/neighbourhood.dart';
 
 part 'camera_event.dart';
+
 part 'camera_state.dart';
 
 class CameraBloc extends Bloc<CameraEvent, CameraState>
@@ -178,15 +179,28 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
         .sort((a, b) => a.sortableName.compareTo(b.sortableName));
   }
 
+  String getDistanceString(double distance) {
+    if (distance > 9000000) {
+      return '>9000\nkm';
+    }
+    if (distance >= 100000) {
+      return '${(distance / 1000).round()}\nkm';
+    }
+    if (distance >= 500) {
+      distance = (distance / 100).roundToDouble() / 10;
+      return '$distance\nkm';
+    }
+    return '${distance.round()}\nm';
+  }
+
   void _sortByDistance(Location location) {
     state.displayedCameras.sort((a, b) {
-      int result = location
-          .distanceTo(a.location)
-          .compareTo(location.distanceTo(b.location));
-      if (result == 0) {
-        return a.sortableName.compareTo(b.sortableName);
-      }
-      return result;
+      double distanceA = location.distanceTo(a.location);
+      double distanceB = location.distanceTo(b.location);
+      a.distance = getDistanceString(distanceA);
+      b.distance = getDistanceString(distanceB);
+      int result = distanceA.compareTo(distanceB);
+      return result == 0 ? a.sortableName.compareTo(b.sortableName) : result;
     });
   }
 

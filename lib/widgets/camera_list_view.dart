@@ -74,6 +74,7 @@ class CameraListView extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Icon(
                     camera.isVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -84,6 +85,7 @@ class CameraListView extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: Icon(
                     camera.isVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white,
                   ),
                 ),
               ),
@@ -93,9 +95,16 @@ class CameraListView extends StatelessWidget {
                 selectedColor: Colors.white,
                 dense: true,
                 contentPadding: const EdgeInsets.only(left: 5),
+                minLeadingWidth: 0,
                 visualDensity: const VisualDensity(vertical: -2),
                 title: Text(camera.name, style: const TextStyle(fontSize: 16)),
                 subtitle: Text(camera.neighbourhood),
+                leading: state.sortingMethod == SortingMethod.distance
+                    ? Text(
+                        camera.distance,
+                        textAlign: TextAlign.center,
+                      )
+                    : null,
                 trailing: IconButton(
                   icon:
                       Icon(camera.isFavourite ? Icons.star : Icons.star_border),

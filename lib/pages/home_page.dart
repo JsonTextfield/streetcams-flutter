@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
           appBar: AppBar(
             actions: const [ActionBar()],
             backgroundColor: state.selectedCameras.isEmpty
-                ? Colors.transparent
+                ? Theme.of(context).appBarTheme.backgroundColor
                 : Constants.accentColour,
             title: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {

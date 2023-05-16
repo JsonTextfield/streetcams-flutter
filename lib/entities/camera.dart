@@ -6,6 +6,7 @@ import 'Cities.dart';
 import 'location.dart';
 
 class Camera extends BilingualObject with EquatableMixin {
+  String distance = '';
   bool isVisible = true;
   bool isFavourite = false;
   final int num;

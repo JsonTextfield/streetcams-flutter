@@ -26,15 +26,29 @@ class StreetCamsApp extends StatelessWidget {
       routes: {
         CameraPage.routeName: (context) => const CameraPage(),
       },
-      theme: ThemeData.light(),
+      theme: ThemeData(
+        colorScheme: const ColorScheme.light(
+          secondary: Constants.accentColour,
+          primary: Constants.primaryColour,
+        ),
+        appBarTheme: const AppBarTheme(backgroundColor: Constants.accentColour),
+      ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(
           secondary: Constants.accentColour,
-          primary: Constants.accentColour,
+          primary: Constants.primaryColour,
         ),
-        appBarTheme: const AppBarTheme(color: Colors.black),
+        appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
         scaffoldBackgroundColor: Colors.black,
+        popupMenuTheme:
+            const PopupMenuThemeData(color: Constants.darkMenuColour),
+        menuTheme: const MenuThemeData(
+          style: MenuStyle(
+            backgroundColor:
+                MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
+          ),
+        ),
       ),
       localizationsDelegates: const [
         AppLocalizations.delegate,

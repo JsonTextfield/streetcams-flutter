@@ -37,25 +37,38 @@ class SearchTextField extends StatelessWidget {
           .add(SearchCameras(searchMode: SearchMode.none));
     }
 
+    search(value) {
+      context
+          .read<CameraBloc>()
+          .add(SearchCameras(searchMode: searchMode, query: value));
+    }
+
     return TextField(
+      style: const TextStyle(color: Colors.white),
       focusNode: focusNode,
       controller: controller,
       textAlignVertical: TextAlignVertical.center,
       textInputAction: TextInputAction.search,
-      onChanged: (value) {
-        context.read<CameraBloc>().add(
-              SearchCameras(
-                searchMode: searchMode,
-                query: value,
-              ),
-            );
-      },
+      onChanged: search,
       decoration: InputDecoration(
-        icon: IconButton(icon: const Icon(Icons.arrow_back), onPressed: back),
+        icon: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: back,
+        ),
         suffixIcon: controller.text.isNotEmpty
-            ? IconButton(icon: const Icon(Icons.clear), onPressed: clear)
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: Colors.white),
+                onPressed: clear,
+              )
             : null,
         hintText: hintText,
+        hintStyle: const TextStyle(color: Colors.white70),
+        enabledBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white70),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.white),
+        ),
       ),
     );
   }
