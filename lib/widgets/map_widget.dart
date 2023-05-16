@@ -162,7 +162,7 @@ class MapWidget extends StatelessWidget {
         markers.add(
           Marker(
             icon: _getMarkerIcon(context, camera),
-            markerId: MarkerId(camera.id.toString()),
+            markerId: MarkerId(camera.url),
             position: LatLng(camera.location.lat, camera.location.lon),
             infoWindow: InfoWindow(
               title: camera.name,

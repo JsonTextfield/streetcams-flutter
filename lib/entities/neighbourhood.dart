@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
+import 'package:change_case/change_case.dart';
 
 import 'Cities.dart';
 import 'camera.dart';
@@ -33,9 +34,10 @@ class Neighbourhood extends BilingualObject {
           nameFr: properties['nom_qr'] ?? '',
         );
       case Cities.calgary:
+        String name = json['name'] ?? '';
         return Neighbourhood(
           boundaries: boundaries,
-          nameEn: json['name'] ?? '',
+          nameEn: name.toCapitalCase(),
         );
       case Cities.ottawa:
       default:
@@ -119,7 +121,7 @@ class Neighbourhood extends BilingualObject {
         loc.lon >= min(a.lon, b.lon) &&
         loc.lat <= max(a.lat, b.lat) &&
         loc.lat >= min(a.lat, b.lat) &&
-        slope2 == slope;
+        slope2.abs() == slope.abs();
   }
 
   static bool rayCastIntersect(Location loc, Location a, Location b) {
@@ -130,19 +132,16 @@ class Neighbourhood extends BilingualObject {
     double locX = loc.lon;
     double locY = loc.lat;
 
-    if (aX == bX) {
-      return aX >= locX;
-    }
-
-    if (aY == bY) {
-      return aY >= locY;
-    }
-
     if ((aY > locY && bY > locY) ||
         (aY < locY && bY < locY) ||
         (aX < locX && bX < locX)) {
       // a and b can't both be above or below pt.y, and a or b must be east of pt.x
       return false;
+    }
+
+    // vertical line
+    if (aX == bX) {
+      return aX >= locX;
     }
 
     double rise = aY - bY;
