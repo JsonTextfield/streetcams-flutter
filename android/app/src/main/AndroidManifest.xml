@@ -7,7 +7,7 @@
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
-        android:label="StreetCams"
+        android:label="Street\nCams"
         android:localeConfig="@xml/locales_config">
 
 

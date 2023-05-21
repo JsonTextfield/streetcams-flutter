@@ -93,38 +93,28 @@ class HomePage extends StatelessWidget {
                     child: Text(AppLocalizations.of(context)!.error),
                   );
                 case CameraStatus.success:
-                  return IndexedStack(
-                    index: state.showList ? 0 : 1,
-                    children: [
-                      Row(children: [
-                        if (state.showSectionIndex)
-                          Flexible(
-                            flex: 0,
-                            child: SectionIndex(
-                              data: state.visibleCameras
-                                  .map((cam) => cam.sortableName)
-                                  .toList(),
-                              callback: _moveToListPosition,
-                            ),
-                          ),
-                        Expanded(
-                          child: CameraListView(
-                            itemScrollController: itemScrollController,
-                            cameras: state.displayedCameras,
-                            onTapped: (camera) => showCameras([camera]),
+                  if (state.showList) {
+                    return Row(children: [
+                      if (state.showSectionIndex)
+                        Flexible(
+                          flex: 0,
+                          child: SectionIndex(
+                            data: state.visibleCameras
+                                .map((cam) => cam.sortableName)
+                                .toList(),
+                            callback: _moveToListPosition,
                           ),
                         ),
-                      ]),
-                      MapWidget(
-                        cameras: state.displayedCameras,
-                        onTapped: (camera) {
-                          context
-                              .read<CameraBloc>()
-                              .add(SelectCamera(camera: camera));
-                        },
+                      Expanded(
+                        child: CameraListView(
+                          itemScrollController: itemScrollController,
+                          cameras: state.displayedCameras,
+                          onTapped: (camera) => showCameras([camera]),
+                        ),
                       ),
-                    ],
-                  );
+                    ]);
+                  }
+                  return MapWidget(cameras: state.displayedCameras);
                 case CameraStatus.initial:
                 default:
                   return const Center(child: CircularProgressIndicator());

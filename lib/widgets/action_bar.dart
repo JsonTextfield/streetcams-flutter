@@ -129,51 +129,41 @@ class ActionBar extends StatelessWidget {
                 : AppLocalizations.of(context)!.list,
           ),
         );
+
+        void sortCameras(SortingMethod sortMode) {
+          context.read<CameraBloc>().add(SortCameras(sortingMethod: sortMode));
+        }
+
         var sort = Visibility(
           visible: selectedCameras.isEmpty &&
               state.showList &&
               state.searchMode == SearchMode.none,
-          child: BlocBuilder<CameraBloc, CameraState>(
-            builder: (context, state) {
-              void sortCameras(SortingMethod sortMode) {
-                context
-                    .read<CameraBloc>()
-                    .add(SortCameras(sortingMethod: sortMode));
-              }
-
-              return MenuAnchor(
-                menuChildren: [
-                  RadioMenuButton<SortingMethod>(
-                    value: SortingMethod.name,
-                    groupValue: state.sortingMethod,
-                    onChanged: (_) => sortCameras(SortingMethod.name),
-                    child: Text(AppLocalizations.of(context)!.sortName),
-                  ),
-                  RadioMenuButton<SortingMethod>(
-                    value: SortingMethod.distance,
-                    groupValue: state.sortingMethod,
-                    onChanged: (_) => sortCameras(SortingMethod.distance),
-                    child: Text(AppLocalizations.of(context)!.sortDistance),
-                  ),
-                  RadioMenuButton<SortingMethod>(
-                    value: SortingMethod.neighbourhood,
-                    groupValue: state.sortingMethod,
-                    onChanged: (_) => sortCameras(SortingMethod.neighbourhood),
-                    child:
-                        Text(AppLocalizations.of(context)!.sortNeighbourhood),
-                  ),
-                ],
-                builder: (context, controller, child) {
-                  return IconButton(
-                    onPressed: () {
-                      controller.isOpen
-                          ? controller.close()
-                          : controller.open();
-                    },
-                    icon: const Icon(Icons.sort),
-                    tooltip: AppLocalizations.of(context)!.sort,
-                  );
-                },
+          child: MenuAnchor(
+            menuChildren: [
+              RadioMenuButton<SortingMethod>(
+                value: SortingMethod.name,
+                groupValue: state.sortingMethod,
+                onChanged: (_) => sortCameras(SortingMethod.name),
+                child: Text(AppLocalizations.of(context)!.sortName),
+              ),
+              RadioMenuButton<SortingMethod>(
+                value: SortingMethod.distance,
+                groupValue: state.sortingMethod,
+                onChanged: (_) => sortCameras(SortingMethod.distance),
+                child: Text(AppLocalizations.of(context)!.sortDistance),
+              ),
+              RadioMenuButton<SortingMethod>(
+                value: SortingMethod.neighbourhood,
+                groupValue: state.sortingMethod,
+                onChanged: (_) => sortCameras(SortingMethod.neighbourhood),
+                child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
+              ),
+            ],
+            builder: (context, menu, child) {
+              return IconButton(
+                onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+                icon: const Icon(Icons.sort),
+                tooltip: AppLocalizations.of(context)!.sort,
               );
             },
           ),
@@ -242,52 +232,45 @@ class ActionBar extends StatelessWidget {
             },
           ),
         );
-        var changeCity = Visibility(
-          visible: selectedCameras.isEmpty,
-          child: BlocBuilder<CameraBloc, CameraState>(
-            builder: (context, state) {
-              void changeCity(Cities city) {
-                context.read<CameraBloc>().changeCity(city);
-              }
 
-              return MenuAnchor(
-                menuChildren: [
-                  RadioMenuButton<Cities>(
-                    value: Cities.ottawa,
-                    groupValue: state.city,
-                    onChanged: (_) => changeCity(Cities.ottawa),
-                    child: Text(AppLocalizations.of(context)!.ottawa),
-                  ),
-                  RadioMenuButton<Cities>(
-                    value: Cities.toronto,
-                    groupValue: state.city,
-                    onChanged: (_) => changeCity(Cities.toronto),
-                    child: Text(AppLocalizations.of(context)!.toronto),
-                  ),
-                  RadioMenuButton<Cities>(
-                    value: Cities.montreal,
-                    groupValue: state.city,
-                    onChanged: (_) => changeCity(Cities.montreal),
-                    child: Text(AppLocalizations.of(context)!.montreal),
-                  ),
-                  RadioMenuButton<Cities>(
-                    value: Cities.calgary,
-                    groupValue: state.city,
-                    onChanged: (_) => changeCity(Cities.calgary),
-                    child: Text(AppLocalizations.of(context)!.calgary),
-                  ),
-                ],
-                builder: (context, controller, child) {
-                  return IconButton(
-                    onPressed: () {
-                      controller.isOpen
-                          ? controller.close()
-                          : controller.open();
-                    },
-                    icon: const Icon(Icons.location_city),
-                    tooltip: AppLocalizations.of(context)!.city,
-                  );
-                },
+        void changeCity(Cities city) {
+          context.read<CameraBloc>().changeCity(city);
+        }
+
+        var city = Visibility(
+          visible: selectedCameras.isEmpty,
+          child: MenuAnchor(
+            menuChildren: [
+              RadioMenuButton<Cities>(
+                value: Cities.ottawa,
+                groupValue: state.city,
+                onChanged: (_) => changeCity(Cities.ottawa),
+                child: Text(AppLocalizations.of(context)!.ottawa),
+              ),
+              RadioMenuButton<Cities>(
+                value: Cities.toronto,
+                groupValue: state.city,
+                onChanged: (_) => changeCity(Cities.toronto),
+                child: Text(AppLocalizations.of(context)!.toronto),
+              ),
+              RadioMenuButton<Cities>(
+                value: Cities.montreal,
+                groupValue: state.city,
+                onChanged: (_) => changeCity(Cities.montreal),
+                child: Text(AppLocalizations.of(context)!.montreal),
+              ),
+              RadioMenuButton<Cities>(
+                value: Cities.calgary,
+                groupValue: state.city,
+                onChanged: (_) => changeCity(Cities.calgary),
+                child: Text(AppLocalizations.of(context)!.calgary),
+              ),
+            ],
+            builder: (context, menu, child) {
+              return IconButton(
+                onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+                icon: const Icon(Icons.location_city),
+                tooltip: AppLocalizations.of(context)!.city,
               );
             },
           ),
@@ -305,7 +288,7 @@ class ActionBar extends StatelessWidget {
           selectAll,
           random,
           shuffle,
-          changeCity,
+          city,
           about,
         ].where((action) => action.visible).toList();
         // the number of 48-width buttons that can fit in 1/4 the width of the window
@@ -313,41 +296,28 @@ class ActionBar extends StatelessWidget {
         if (visibleActions.length > maxActions) {
           List<Visibility> overflowActions = [];
           for (int i = maxActions; i < visibleActions.length; i++) {
-            if (visibleActions[i] == sort || visibleActions[i] == changeCity) {
+            if (visibleActions[i] == sort || visibleActions[i] == city) {
               continue;
             } else {
               overflowActions.add(visibleActions[i]);
             }
           }
           visibleActions.removeWhere(overflowActions.contains);
-          visibleActions.add(
-            Visibility(
-              child: PopupMenuButton(
-                tooltip: AppLocalizations.of(context)!.more,
-                position: PopupMenuPosition.under,
-                itemBuilder: (context) {
-                  return overflowActions.map((visibility) {
-                    IconButton iconButton = visibility.child as IconButton;
-                    return PopupMenuItem(
-                      padding: const EdgeInsets.all(0),
-                      child: ListTile(
-                        leading: iconButton.icon,
-                        title: Text(iconButton.tooltip ?? ''),
-                        onTap: () {
-                          Navigator.pop(context);
-                          iconButton.onPressed?.call();
-                        },
-                      ),
-                    );
-                  }).toList();
-                },
-              ),
+          var more = Visibility(
+            child: PopupMenuButton(
+              tooltip: AppLocalizations.of(context)!.more,
+              position: PopupMenuPosition.under,
+              itemBuilder: (context) {
+                return overflowActions.map((Visibility visibility) {
+                  IconButton iconButton = visibility.child as IconButton;
+                  return OverflowPopupMenuItem(iconButton: iconButton);
+                }).toList();
+              },
             ),
           );
+          visibleActions.add(more);
         }
-        return Row(
-          children: visibleActions,
-        );
+        return Row(children: visibleActions);
       },
     );
   }
@@ -357,7 +327,6 @@ class ActionBar extends StatelessWidget {
     if (context.mounted) {
       showAboutDialog(
         context: context,
-        applicationIcon: const FlutterLogo(),
         applicationName: AppLocalizations.of(context)!.appName,
         applicationVersion: 'Version ${packageInfo.version}',
       );
@@ -367,7 +336,7 @@ class ActionBar extends StatelessWidget {
   void showCameras(
     BuildContext context,
     List<Camera> cameras, {
-    shuffle = false,
+    bool shuffle = false,
   }) {
     if (cameras.isNotEmpty) {
       Navigator.pushNamed(
@@ -376,5 +345,33 @@ class ActionBar extends StatelessWidget {
         arguments: [cameras, shuffle],
       );
     }
+  }
+}
+
+class OverflowPopupMenuItem extends PopupMenuItem {
+  final IconButton iconButton;
+
+  OverflowPopupMenuItem({super.key, required this.iconButton})
+      : super(
+          child: OverflowListTile(iconButton: iconButton),
+          padding: const EdgeInsets.all(0),
+        );
+}
+
+class OverflowListTile extends ListTile {
+  final IconButton iconButton;
+
+  const OverflowListTile({super.key, required this.iconButton});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: iconButton.icon,
+      title: Text(iconButton.tooltip ?? ''),
+      onTap: () {
+        Navigator.pop(context);
+        iconButton.onPressed?.call();
+      },
+    );
   }
 }

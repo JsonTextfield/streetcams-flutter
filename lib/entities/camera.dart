@@ -106,4 +106,6 @@ class Camera extends BilingualObject with EquatableMixin {
 
   @override
   List<Object?> get props => [nameEn, nameFr, num, id, location, city];
+
+  String get cameraId => props.join();
 }

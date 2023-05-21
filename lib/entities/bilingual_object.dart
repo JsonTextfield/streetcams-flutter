@@ -22,3 +22,9 @@ abstract class BilingualObject {
     return nameEn;
   }
 }
+
+extension StringExtensions on String {
+  bool containsIgnoreCase(String other) {
+    return toLowerCase().contains(other.toLowerCase());
+  }
+}

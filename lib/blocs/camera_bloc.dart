@@ -49,16 +49,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
       if (_prefs?.getString('city') != null &&
           _prefs!.getString('city')!.isNotEmpty) {
         String str = _prefs!.getString('city')!;
-        city = Cities.values.firstWhere((e) => describeEnum(e) == str);
+        city = Cities.values.firstWhere((Cities c) => describeEnum(c) == str);
       }
       List<dynamic> allData = await DownloadService.downloadAll(city);
       List<Camera> allCameras = allData.first;
-      for (var c in allCameras) {
-        c.isFavourite =
-            _prefs!.getBool('${c.sortableName}${c.id}.isFavourite') ?? false;
-        c.isVisible =
-            _prefs!.getBool('${c.sortableName}${c.id}.isVisible') ?? true;
-      }
+      _readSharedPrefs(allCameras);
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
         neighbourhoods: allData.last,
@@ -72,12 +67,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
     });
 
     on<ReloadCameras>((event, emit) async {
-      for (var c in state.displayedCameras) {
-        c.isFavourite =
-            _prefs!.getBool('${c.sortableName}${c.id}.isFavourite') ?? false;
-        c.isVisible =
-            _prefs!.getBool('${c.sortableName}${c.id}.isVisible') ?? true;
-      }
+      _readSharedPrefs(state.displayedCameras);
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
         showList: event.showList,
@@ -156,21 +146,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
       } else {
         selectedCameras.add(event.camera);
       }
-      return emit(state.copyWith(
-        selectedCameras: selectedCameras,
-      ));
+      return emit(state.copyWith(selectedCameras: selectedCameras));
     });
 
     on<SelectAll>((event, emit) async {
-      return emit(state.copyWith(
-        selectedCameras: state.displayedCameras,
-      ));
+      return emit(state.copyWith(selectedCameras: state.displayedCameras));
     });
 
     on<ClearSelection>((event, emit) async {
-      return emit(state.copyWith(
-        selectedCameras: const [],
-      ));
+      return emit(state.copyWith(selectedCameras: const []));
     });
   }
 
@@ -180,10 +164,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
   }
 
   String getDistanceString(double distance) {
-    if (distance > 9000000) {
+    if (distance > 9000e3) {
       return '>9000\nkm';
     }
-    if (distance >= 100000) {
+    if (distance >= 100e3) {
       return '${(distance / 1000).round()}\nkm';
     }
     if (distance >= 500) {
@@ -215,29 +199,30 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
   }
 
   List<Camera> _searchByCamera(String query) {
-    List<Camera> result = state.visibleCameras;
-    String q = query.toLowerCase();
+    bool Function(Camera) predicate = (camera) => camera.isVisible;
+    String q = query;
     if (q.startsWith('f:')) {
       q = q.substring(2).trim();
-      result.removeWhere((camera) => !camera.isFavourite);
+      predicate = (camera) => camera.isVisible && camera.isFavourite;
     } else if (q.startsWith('h:')) {
       q = q.substring(2).trim();
-      result.removeWhere((camera) => camera.isVisible);
+      predicate = (camera) => !camera.isVisible;
     }
-    result.removeWhere((camera) => !camera.name.toLowerCase().contains(q));
-    return result;
+    return state.allCameras
+        .where(predicate)
+        .where((camera) => !camera.name.containsIgnoreCase(q))
+        .toList();
   }
 
   List<Camera> _searchByNeighbourhood(String query) {
     return state.visibleCameras
-        .where((cam) =>
-            cam.neighbourhood.toLowerCase().contains(query.toLowerCase()))
+        .where((camera) => camera.neighbourhood.containsIgnoreCase(query))
         .toList();
   }
 
   void favouriteSelectedCameras() {
-    var allFave = state.selectedCameras.every((camera) => camera.isFavourite);
-    for (var camera in state.selectedCameras) {
+    bool allFave = state.selectedCameras.every((camera) => camera.isFavourite);
+    for (Camera camera in state.selectedCameras) {
       camera.isFavourite = !allFave;
     }
     _writeSharedPrefs();
@@ -245,8 +230,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
   }
 
   void hideSelectedCameras() {
-    var allHidden = state.selectedCameras.every((camera) => !camera.isVisible);
-    for (var camera in state.selectedCameras) {
+    bool allHidden = state.selectedCameras.every((camera) => !camera.isVisible);
+    for (Camera camera in state.selectedCameras) {
       camera.isVisible = !allHidden;
     }
     _writeSharedPrefs();
@@ -271,15 +256,16 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
   }
 
   void _writeSharedPrefs() {
-    for (var camera in state.allCameras) {
-      _prefs!.setBool(
-        '${camera.sortableName}${camera.id}.isFavourite',
-        camera.isFavourite,
-      );
-      _prefs!.setBool(
-        '${camera.sortableName}${camera.id}.isVisible',
-        camera.isVisible,
-      );
+    for (Camera camera in state.allCameras) {
+      _prefs!.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
+      _prefs!.setBool('${camera.cameraId}.isVisible', camera.isVisible);
+    }
+  }
+
+  void _readSharedPrefs(List<Camera> cameras) {
+    for (Camera c in cameras) {
+      c.isFavourite = _prefs!.getBool('${c.cameraId}.isFavourite') ?? false;
+      c.isVisible = _prefs!.getBool('${c.cameraId}.isVisible') ?? true;
     }
   }
 }

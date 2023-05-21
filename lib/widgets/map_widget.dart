@@ -6,7 +6,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart' as flutter_map;
 import 'package:flutter_map/plugin_api.dart' as flutter_map_api;
-import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:latlong2/latlong.dart' as latlon;
 
@@ -16,16 +15,11 @@ import '../entities/camera.dart';
 import '../services/location_service.dart';
 
 class MapWidget extends StatelessWidget {
-  final void Function(Camera) onTapped;
   final List<Camera> cameras;
   final flutter_map.MapController flutterMapController =
       flutter_map.MapController();
 
-  MapWidget({
-    super.key,
-    required this.cameras,
-    required this.onTapped,
-  });
+  MapWidget({super.key, required this.cameras});
 
   @override
   Widget build(BuildContext context) {
@@ -52,36 +46,39 @@ class MapWidget extends StatelessWidget {
         ],
       );
     }
-    return FutureBuilder<Position>(
-      future: LocationService.getCurrentLocation(),
+    return FutureBuilder<bool>(
+      future: LocationService.requestPermission(),
       builder: (context, data) {
-        return FutureBuilder<String>(
-          future: rootBundle.loadString('assets/dark_mode.json'),
-          builder: (context, mapSnapshot) {
-            if (mapSnapshot.hasData) {
-              LatLng cameraPosition = const LatLng(45.4, -75.7);
-              LatLngBounds? bounds = getBounds();
-              bool showLocation = data.hasData;
-              Set<Marker> markers = {};
-              _getMapMarkers(context, markers);
-              return GoogleMap(
-                myLocationButtonEnabled: showLocation,
-                myLocationEnabled: showLocation,
-                cameraTargetBounds: CameraTargetBounds(bounds),
-                initialCameraPosition: CameraPosition(target: cameraPosition),
-                minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
-                markers: markers,
-                onMapCreated: (controller) {
-                  if (Theme.of(context).brightness == Brightness.dark &&
-                      mapSnapshot.hasData) {
+        LatLng initCamPos = const LatLng(45.4, -75.7);
+        LatLngBounds? bounds = getBounds();
+        Set<Marker> markers = {};
+        _getMapMarkers(context, markers);
+
+        if (data.hasData) {
+          return FutureBuilder<String>(
+            future: rootBundle.loadString('assets/dark_mode.json'),
+            builder: (context, mapSnapshot) {
+              if (mapSnapshot.hasData) {
+                setDarkMode(GoogleMapController controller) {
+                  if (Theme.of(context).brightness == Brightness.dark) {
                     controller.setMapStyle(mapSnapshot.data);
                   }
-                },
-              );
-            }
-            return const Center(child: CircularProgressIndicator());
-          },
-        );
+                }
+
+                return GoogleMap(
+                  myLocationEnabled: data.requireData,
+                  cameraTargetBounds: CameraTargetBounds(bounds),
+                  initialCameraPosition: CameraPosition(target: initCamPos),
+                  minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
+                  markers: markers,
+                  onMapCreated: setDarkMode,
+                );
+              }
+              return const Center(child: CircularProgressIndicator());
+            },
+          );
+        }
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
@@ -149,10 +146,7 @@ class MapWidget extends StatelessWidget {
                             ? Colors.yellow
                             : Colors.red,
                   ),
-                  const Icon(
-                    Icons.location_on_outlined,
-                    size: 48,
-                  ),
+                  const Icon(Icons.location_on_outlined, size: 48),
                 ],
               ),
             ),
@@ -166,8 +160,17 @@ class MapWidget extends StatelessWidget {
             position: LatLng(camera.location.lat, camera.location.lon),
             infoWindow: InfoWindow(
               title: camera.name,
-              onTap: () => onTapped.call(camera),
+              onTap: () {
+                context.read<CameraBloc>().add(SelectCamera(camera: camera));
+              },
             ),
+            zIndex: context
+                    .read<CameraBloc>()
+                    .state
+                    .selectedCameras
+                    .contains(camera)
+                ? 1.0
+                : 0.0,
           ),
         );
       }
@@ -182,9 +185,5 @@ class MapWidget extends StatelessWidget {
       return BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueYellow);
     }
     return BitmapDescriptor.defaultMarker;
-  }
-
-  Future<String> _loadMapStyle() async {
-    return await rootBundle.loadString('assets/dark_mode.json');
   }
 }

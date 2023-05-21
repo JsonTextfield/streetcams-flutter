@@ -17,19 +17,16 @@ class CameraWidget extends StatelessWidget {
             MediaQueryData.fromView(View.of(context)).padding.top,
       ),
       child: Stack(
+        textDirection: TextDirection.ltr,
         children: [
           Image.network(
             camera.url,
-            errorBuilder: (
-              BuildContext context,
-              Object exception,
-              StackTrace? stackTrace,
-            ) {
+            errorBuilder: (context, exception, stackTrace) {
               return Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(50),
                 width: MediaQuery.of(context).size.width,
                 child: const Text(
-                  'Could not load image 😢',
+                  'Image unavailable 😢',
                   textAlign: TextAlign.center,
                 ),
               );
@@ -48,6 +45,7 @@ class CameraWidget extends StatelessWidget {
                   camera.name,
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
+                  textDirection: TextDirection.ltr,
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/widgets/search_text_field.dart';
 
 import '../blocs/camera_bloc.dart';
@@ -38,13 +39,10 @@ class NeighbourhoodSearchBar extends StatelessWidget {
     TextEditingValue value,
     List<Neighbourhood> neighbourhoods,
   ) {
-    if (value.text.isEmpty) {
-      return [];
-    }
-    return neighbourhoods.map((n) => n.name).where(
-      (name) {
-        return name.toLowerCase().contains(value.text.trim().toLowerCase());
-      },
-    );
+    return value.text.isEmpty
+        ? []
+        : neighbourhoods
+            .map((neighbourhood) => neighbourhood.name)
+            .where((name) => name.containsIgnoreCase(value.text.trim()));
   }
 }

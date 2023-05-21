@@ -49,6 +49,7 @@ class StreetCamsApp extends StatelessWidget {
                 MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
           ),
         ),
+        dialogBackgroundColor: Constants.darkMenuColour,
       ),
       localizationsDelegates: const [
         AppLocalizations.delegate,
