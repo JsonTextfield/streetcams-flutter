@@ -18,23 +18,36 @@ part 'camera_event.dart';
 
 part 'camera_state.dart';
 
-class CameraBloc extends Bloc<CameraEvent, CameraState>
-    with WidgetsBindingObserver {
-  SharedPreferences? _prefs;
+class LocaleListener with WidgetsBindingObserver {
+  final void Function() callback;
+
+  LocaleListener({required this.callback}) {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void didChangeLocales(List<Locale>? locales) {
     super.didChangeLocales(locales);
     BilingualObject.locale =
         locales?.first.languageCode ?? BilingualObject.locale;
-    add(ReloadCameras(showList: state.showList));
+    callback.call();
   }
+}
 
-  CameraBloc() : super(const CameraState()) {
-    WidgetsBinding.instance.addObserver(this);
+class CameraBloc extends Bloc<CameraEvent, CameraState> {
+  LocaleListener? localeListener;
+  SharedPreferences? prefs;
+
+  CameraBloc({
+    this.localeListener,
+    this.prefs,
+  }) : super(const CameraState()) {
+    localeListener ??= LocaleListener(callback: () {
+      add(ReloadCameras(showList: state.showList));
+    });
 
     on<CameraLoading>((event, emit) async {
-      _prefs ??= await SharedPreferences.getInstance();
+      prefs ??= await SharedPreferences.getInstance();
       return emit(state.copyWith(
         status: CameraStatus.initial,
         searchMode: SearchMode.none,
@@ -44,11 +57,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
 
     on<CameraLoaded>((event, emit) async {
       BilingualObject.locale = await intl.findSystemLocale();
-      _prefs ??= await SharedPreferences.getInstance();
+      prefs ??= await SharedPreferences.getInstance();
       Cities city = Cities.ottawa;
-      if (_prefs?.getString('city') != null &&
-          _prefs!.getString('city')!.isNotEmpty) {
-        String str = _prefs!.getString('city')!;
+      if (prefs?.getString('city') != null &&
+          prefs!.getString('city')!.isNotEmpty) {
+        String str = prefs!.getString('city')!;
         city = Cities.values.firstWhere((Cities c) => describeEnum(c) == str);
       }
       List<dynamic> allData = await DownloadService.downloadAll(city);
@@ -251,21 +264,21 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
 
   void changeCity(Cities city) {
     add(CameraLoading());
-    _prefs?.setString('city', city.name);
+    prefs?.setString('city', city.name);
     add(CameraLoaded());
   }
 
   void _writeSharedPrefs() {
     for (Camera camera in state.allCameras) {
-      _prefs!.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
-      _prefs!.setBool('${camera.cameraId}.isVisible', camera.isVisible);
+      prefs!.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
+      prefs!.setBool('${camera.cameraId}.isVisible', camera.isVisible);
     }
   }
 
   void _readSharedPrefs(List<Camera> cameras) {
     for (Camera c in cameras) {
-      c.isFavourite = _prefs!.getBool('${c.cameraId}.isFavourite') ?? false;
-      c.isVisible = _prefs!.getBool('${c.cameraId}.isVisible') ?? true;
+      c.isFavourite = prefs!.getBool('${c.cameraId}.isFavourite') ?? false;
+      c.isVisible = prefs!.getBool('${c.cameraId}.isVisible') ?? true;
     }
   }
 }
