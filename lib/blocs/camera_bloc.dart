@@ -59,8 +59,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       BilingualObject.locale = await intl.findSystemLocale();
       prefs ??= await SharedPreferences.getInstance();
       Cities city = Cities.ottawa;
-      if (prefs?.getString('city') != null &&
-          prefs!.getString('city')!.isNotEmpty) {
+      if ((prefs?.getString('city') ?? '').isNotEmpty) {
         String str = prefs!.getString('city')!;
         city = Cities.values.firstWhere((Cities c) => describeEnum(c) == str);
       }
@@ -237,8 +236,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     bool allFave = state.selectedCameras.every((camera) => camera.isFavourite);
     for (Camera camera in state.selectedCameras) {
       camera.isFavourite = !allFave;
+      prefs?.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
     }
-    _writeSharedPrefs();
     add(ReloadCameras(showList: state.showList));
   }
 
@@ -246,8 +245,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     bool allHidden = state.selectedCameras.every((camera) => !camera.isVisible);
     for (Camera camera in state.selectedCameras) {
       camera.isVisible = !allHidden;
+      prefs?.setBool('${camera.cameraId}.isVisible', camera.isVisible);
     }
-    _writeSharedPrefs();
     add(ReloadCameras(showList: state.showList));
   }
 
@@ -255,10 +254,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     for (Camera cam in state.allCameras) {
       if (cam == camera) {
         cam.isVisible = camera.isVisible;
+        prefs?.setBool('${camera.cameraId}.isVisible', camera.isVisible);
         cam.isFavourite = camera.isFavourite;
+        prefs?.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
+        break;
       }
     }
-    _writeSharedPrefs();
     add(ReloadCameras());
   }
 
@@ -268,17 +269,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     add(CameraLoaded());
   }
 
-  void _writeSharedPrefs() {
-    for (Camera camera in state.allCameras) {
-      prefs!.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
-      prefs!.setBool('${camera.cameraId}.isVisible', camera.isVisible);
-    }
-  }
-
   void _readSharedPrefs(List<Camera> cameras) {
     for (Camera c in cameras) {
-      c.isFavourite = prefs!.getBool('${c.cameraId}.isFavourite') ?? false;
-      c.isVisible = prefs!.getBool('${c.cameraId}.isVisible') ?? true;
+      c.isFavourite = prefs?.getBool('${c.cameraId}.isFavourite') ?? false;
+      c.isVisible = prefs?.getBool('${c.cameraId}.isVisible') ?? true;
     }
   }
 }

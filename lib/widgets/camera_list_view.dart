@@ -39,23 +39,23 @@ class CameraListView extends StatelessWidget {
               );
             }
 
-            Camera camera = cameras[index];
+            Camera cam = cameras[index];
 
             hide() {
-              camera.isVisible = !camera.isVisible;
-              if (state.displayedCameras.contains(camera)) {
-                state.displayedCameras.remove(camera);
+              cam.isVisible = !cam.isVisible;
+              if (state.displayedCameras.contains(cam)) {
+                state.displayedCameras.remove(cam);
               } else {
-                state.displayedCameras.insert(index, camera);
+                state.displayedCameras.insert(index, cam);
               }
-              context.read<CameraBloc>().updateCamera(camera);
+              context.read<CameraBloc>().updateCamera(cam);
             }
 
             dismissed() {
               hide();
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(
-                  '${camera.name} ${camera.isVisible ? 'unhidden' : 'hidden'}',
+                  '${cam.name} ${cam.isVisible ? 'unhidden' : 'hidden'}',
                 ),
                 action: SnackBarAction(
                   label: 'Undo',
@@ -67,51 +67,33 @@ class CameraListView extends StatelessWidget {
             return Dismissible(
               key: UniqueKey(),
               onDismissed: (direction) => dismissed(),
-              background: Container(
-                color: Constants.accentColour,
-                padding: const EdgeInsets.only(left: 20),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Icon(
-                    camera.isVisible ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white,
-                  ),
-                ),
+              background: DismissibleBackground(
+                icon: cam.isVisible ? Icons.visibility_off : Icons.visibility,
+                alignment: Alignment.centerLeft,
               ),
-              secondaryBackground: Container(
-                color: Constants.accentColour,
-                padding: const EdgeInsets.only(right: 20),
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: Icon(
-                    camera.isVisible ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white,
-                  ),
-                ),
+              secondaryBackground: DismissibleBackground(
+                icon: cam.isVisible ? Icons.visibility_off : Icons.visibility,
+                alignment: Alignment.centerRight,
               ),
               child: ListTile(
-                selected: state.selectedCameras.contains(camera),
+                selected: state.selectedCameras.contains(cam),
                 selectedTileColor: Constants.accentColour,
                 selectedColor: Colors.white,
                 dense: true,
                 contentPadding: const EdgeInsets.only(left: 5),
                 minLeadingWidth: 0,
                 visualDensity: const VisualDensity(vertical: -2),
-                title: Text(camera.name, style: const TextStyle(fontSize: 16)),
-                subtitle: Text(camera.neighbourhood),
+                title: Text(cam.name, style: const TextStyle(fontSize: 16)),
+                subtitle: Text(cam.neighbourhood),
                 leading: state.sortingMethod == SortingMethod.distance
-                    ? Text(
-                        camera.distance,
-                        textAlign: TextAlign.center,
-                      )
+                    ? Text(cam.distance, textAlign: TextAlign.center)
                     : null,
                 trailing: IconButton(
-                  icon:
-                      Icon(camera.isFavourite ? Icons.star : Icons.star_border),
-                  color: camera.isFavourite ? Colors.yellow : null,
+                  icon: Icon(cam.isFavourite ? Icons.star : Icons.star_border),
+                  color: cam.isFavourite ? Colors.yellow : null,
                   onPressed: () {
-                    camera.isFavourite = !camera.isFavourite;
-                    context.read<CameraBloc>().updateCamera(camera);
+                    cam.isFavourite = !cam.isFavourite;
+                    context.read<CameraBloc>().updateCamera(cam);
                   },
                 ),
                 onTap: () {
@@ -120,24 +102,43 @@ class CameraListView extends StatelessWidget {
                       context,
                       CameraPage.routeName,
                       arguments: [
-                        [camera],
+                        [cam],
                         false,
                       ],
                     );
                   } else {
-                    context
-                        .read<CameraBloc>()
-                        .add(SelectCamera(camera: camera));
+                    context.read<CameraBloc>().add(SelectCamera(camera: cam));
                   }
                 },
                 onLongPress: () {
-                  context.read<CameraBloc>().add(SelectCamera(camera: camera));
+                  context.read<CameraBloc>().add(SelectCamera(camera: cam));
                 },
               ),
             );
           },
         );
       },
+    );
+  }
+}
+
+class DismissibleBackground extends StatelessWidget {
+  final IconData icon;
+  final Alignment alignment;
+
+  const DismissibleBackground({
+    super.key,
+    required this.icon,
+    required this.alignment,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Constants.accentColour,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      alignment: alignment,
+      child: Icon(icon, color: Colors.white),
     );
   }
 }
