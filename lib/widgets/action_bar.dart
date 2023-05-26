@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:streetcams_flutter/widgets/change_city_menu.dart';
+import 'package:streetcams_flutter/widgets/sort_cameras_menu.dart';
 
 import '../blocs/camera_bloc.dart';
-import '../entities/Cities.dart';
 import '../entities/camera.dart';
 import '../pages/camera_page.dart';
 
@@ -32,10 +33,10 @@ class ActionBar extends StatelessWidget {
         String getHiddenTooltip() {
           if (selectedCameras.isEmpty) {
             return AppLocalizations.of(context)!.hidden;
-          } else if (selectedCameras.every((camera) => !camera.isVisible)) {
-            return AppLocalizations.of(context)!.unhide;
+          } else if (selectedCameras.any((camera) => camera.isVisible)) {
+            return AppLocalizations.of(context)!.hide;
           }
-          return AppLocalizations.of(context)!.hide;
+          return AppLocalizations.of(context)!.unhide;
         }
 
         IconData getFavouriteIcon() {
@@ -65,9 +66,11 @@ class ActionBar extends StatelessWidget {
         }
 
         void filterCameras(FilterMode filterMode) {
-          var mode =
-              state.filterMode == filterMode ? FilterMode.visible : filterMode;
-          context.read<CameraBloc>().add(FilterCamera(filterMode: mode));
+          context.read<CameraBloc>().add(FilterCamera(filterMode: filterMode));
+        }
+
+        void searchCameras(SearchMode searchMode) {
+          context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
         }
 
         void favouriteOptionClicked() {
@@ -99,11 +102,7 @@ class ActionBar extends StatelessWidget {
               selectedCameras.isEmpty && state.searchMode != SearchMode.camera,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.search,
-            onPressed: () {
-              context
-                  .read<CameraBloc>()
-                  .add(SearchCameras(searchMode: SearchMode.camera));
-            },
+            onPressed: () => searchCameras(SearchMode.camera),
             icon: const Icon(Icons.search),
           ),
         );
@@ -129,44 +128,11 @@ class ActionBar extends StatelessWidget {
                 : AppLocalizations.of(context)!.list,
           ),
         );
-
-        void sortCameras(SortingMethod sortMode) {
-          context.read<CameraBloc>().add(SortCameras(sortingMethod: sortMode));
-        }
-
         var sort = Visibility(
           visible: selectedCameras.isEmpty &&
               state.showList &&
               state.searchMode == SearchMode.none,
-          child: MenuAnchor(
-            menuChildren: [
-              RadioMenuButton<SortingMethod>(
-                value: SortingMethod.name,
-                groupValue: state.sortingMethod,
-                onChanged: (_) => sortCameras(SortingMethod.name),
-                child: Text(AppLocalizations.of(context)!.sortName),
-              ),
-              RadioMenuButton<SortingMethod>(
-                value: SortingMethod.distance,
-                groupValue: state.sortingMethod,
-                onChanged: (_) => sortCameras(SortingMethod.distance),
-                child: Text(AppLocalizations.of(context)!.sortDistance),
-              ),
-              RadioMenuButton<SortingMethod>(
-                value: SortingMethod.neighbourhood,
-                groupValue: state.sortingMethod,
-                onChanged: (_) => sortCameras(SortingMethod.neighbourhood),
-                child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
-              ),
-            ],
-            builder: (context, menu, child) {
-              return IconButton(
-                onPressed: () => menu.isOpen ? menu.close() : menu.open(),
-                icon: const Icon(Icons.sort),
-                tooltip: AppLocalizations.of(context)!.sort,
-              );
-            },
-          ),
+          child: const SortCamerasMenu(),
         );
         var favourite = Visibility(
           child: IconButton(
@@ -225,55 +191,12 @@ class ActionBar extends StatelessWidget {
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
             icon: const Icon(Icons.travel_explore),
-            onPressed: () {
-              context
-                  .read<CameraBloc>()
-                  .add(SearchCameras(searchMode: SearchMode.neighbourhood));
-            },
+            onPressed: () => searchCameras(SearchMode.neighbourhood),
           ),
         );
-
-        void changeCity(Cities city) {
-          context.read<CameraBloc>().changeCity(city);
-        }
-
         var city = Visibility(
           visible: selectedCameras.isEmpty,
-          child: MenuAnchor(
-            menuChildren: [
-              RadioMenuButton<Cities>(
-                value: Cities.ottawa,
-                groupValue: state.city,
-                onChanged: (_) => changeCity(Cities.ottawa),
-                child: Text(AppLocalizations.of(context)!.ottawa),
-              ),
-              RadioMenuButton<Cities>(
-                value: Cities.toronto,
-                groupValue: state.city,
-                onChanged: (_) => changeCity(Cities.toronto),
-                child: Text(AppLocalizations.of(context)!.toronto),
-              ),
-              RadioMenuButton<Cities>(
-                value: Cities.montreal,
-                groupValue: state.city,
-                onChanged: (_) => changeCity(Cities.montreal),
-                child: Text(AppLocalizations.of(context)!.montreal),
-              ),
-              RadioMenuButton<Cities>(
-                value: Cities.calgary,
-                groupValue: state.city,
-                onChanged: (_) => changeCity(Cities.calgary),
-                child: Text(AppLocalizations.of(context)!.calgary),
-              ),
-            ],
-            builder: (context, menu, child) {
-              return IconButton(
-                onPressed: () => menu.isOpen ? menu.close() : menu.open(),
-                icon: const Icon(Icons.location_city),
-                tooltip: AppLocalizations.of(context)!.city,
-              );
-            },
-          ),
+          child: const ChangeCityMenu(),
         );
 
         List<Visibility> visibleActions = [
@@ -291,12 +214,13 @@ class ActionBar extends StatelessWidget {
           city,
           about,
         ].where((action) => action.visible).toList();
+        List<Visibility> alwaysShowActions = [sort, city];
         // the number of 48-width buttons that can fit in 1/4 the width of the window
         int maxActions = (MediaQuery.of(context).size.width / 4 / 48).floor();
         if (visibleActions.length > maxActions) {
           List<Visibility> overflowActions = [];
           for (int i = maxActions; i < visibleActions.length; i++) {
-            if (visibleActions[i] == sort || visibleActions[i] == city) {
+            if (alwaysShowActions.contains(visibleActions[i])) {
               continue;
             } else {
               overflowActions.add(visibleActions[i]);
@@ -310,7 +234,16 @@ class ActionBar extends StatelessWidget {
               itemBuilder: (context) {
                 return overflowActions.map((Visibility visibility) {
                   IconButton iconButton = visibility.child as IconButton;
-                  return OverflowPopupMenuItem(iconButton: iconButton);
+                  bool checked = ((iconButton.tooltip ==
+                              AppLocalizations.of(context)!.hidden) &&
+                          (state.filterMode == FilterMode.hidden)) ||
+                      ((iconButton.tooltip ==
+                              AppLocalizations.of(context)!.favourites) &&
+                          (state.filterMode == FilterMode.favourite));
+                  return OverflowPopupMenuItem(
+                    iconButton: iconButton,
+                    checked: checked,
+                  );
                 }).toList();
               },
             ),
@@ -350,18 +283,27 @@ class ActionBar extends StatelessWidget {
 
 class OverflowPopupMenuItem extends PopupMenuItem {
   final IconButton iconButton;
+  final bool checked;
 
-  OverflowPopupMenuItem({super.key, required this.iconButton})
-      : super(
-          child: OverflowListTile(iconButton: iconButton),
-          padding: const EdgeInsets.all(0),
+  OverflowPopupMenuItem({
+    super.key,
+    required this.iconButton,
+    this.checked = false,
+  }) : super(
+          child: OverflowListTile(iconButton: iconButton, checked: checked),
+          padding: EdgeInsets.zero,
         );
 }
 
 class OverflowListTile extends ListTile {
   final IconButton iconButton;
+  final bool checked;
 
-  const OverflowListTile({super.key, required this.iconButton});
+  const OverflowListTile({
+    super.key,
+    required this.iconButton,
+    this.checked = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -372,6 +314,7 @@ class OverflowListTile extends ListTile {
         Navigator.pop(context);
         iconButton.onPressed?.call();
       },
+      trailing: checked ? const Icon(Icons.check) : null,
     );
   }
 }

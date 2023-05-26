@@ -66,6 +66,9 @@ class CameraListView extends StatelessWidget {
 
             return Dismissible(
               key: UniqueKey(),
+              direction: state.filterMode == FilterMode.favourite
+                  ? DismissDirection.none
+                  : DismissDirection.horizontal,
               onDismissed: (direction) => dismissed(),
               background: DismissibleBackground(
                 icon: cam.isVisible ? Icons.visibility_off : Icons.visibility,

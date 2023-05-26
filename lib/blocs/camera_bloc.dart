@@ -47,6 +47,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<CameraLoading>((event, emit) async {
+      BilingualObject.locale = await intl.findSystemLocale();
       prefs ??= await SharedPreferences.getInstance();
       return emit(state.copyWith(
         status: CameraStatus.initial,
@@ -80,28 +81,17 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<ReloadCameras>((event, emit) async {
       _readSharedPrefs(state.displayedCameras);
+      _readSharedPrefs(state.allCameras);
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
+        allCameras: state.allCameras,
         showList: event.showList,
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
       ));
     });
 
     on<SortCameras>((event, emit) async {
-      switch (event.sortingMethod) {
-        case SortingMethod.distance:
-          var position = await LocationService.getCurrentLocation();
-          var location = Location.fromPosition(position);
-          _sortByDistance(location);
-          break;
-        case SortingMethod.neighbourhood:
-          _sortByNeighbourhood();
-          break;
-        case SortingMethod.name:
-        default:
-          _sortByName();
-          break;
-      }
+      await _sortCameras(event.sortingMethod);
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
         sortingMethod: event.sortingMethod,
@@ -109,45 +99,25 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SearchCameras>((event, emit) async {
-      List<Camera> result = state.visibleCameras.toList();
-      switch (event.searchMode) {
-        case SearchMode.camera:
-          result = _searchByCamera(event.query);
-          break;
-        case SearchMode.neighbourhood:
-          result = _searchByNeighbourhood(event.query);
-          break;
-        case SearchMode.none:
-        default:
-          break;
-      }
       return emit(state.copyWith(
-        filterMode: FilterMode.visible,
-        displayedCameras: result,
+        displayedCameras: _searchCameras(
+          event.searchMode,
+          state.filterMode,
+          event.query,
+        ),
         searchMode: event.searchMode,
       ));
     });
 
     on<FilterCamera>((event, emit) async {
-      List<Camera> displayedCameras;
-      switch (event.filterMode) {
-        case FilterMode.favourite:
-          displayedCameras = state.favouriteCameras;
-          break;
-        case FilterMode.visible:
-          displayedCameras = state.visibleCameras;
-          break;
-        case FilterMode.hidden:
-          displayedCameras = state.hiddenCameras;
-          break;
-        default:
-          displayedCameras = state.displayedCameras;
-          break;
-      }
+      FilterMode mode = event.filterMode == state.filterMode
+          ? FilterMode.visible
+          : event.filterMode;
       return emit(state.copyWith(
+        selectedCameras: [],
         searchMode: SearchMode.none,
-        filterMode: event.filterMode,
-        displayedCameras: displayedCameras,
+        filterMode: mode,
+        displayedCameras: _filterCameras(mode),
       ));
     });
 
@@ -168,6 +138,39 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<ClearSelection>((event, emit) async {
       return emit(state.copyWith(selectedCameras: const []));
     });
+  }
+
+  List<Camera> _filterCameras(FilterMode filterMode) {
+    switch (filterMode) {
+      case FilterMode.favourite:
+        return state.favouriteCameras;
+      case FilterMode.visible:
+        return state.visibleCameras;
+      case FilterMode.hidden:
+        return state.hiddenCameras;
+      default:
+        return state.displayedCameras;
+    }
+  }
+
+  Future<void> _sortCameras(SortingMethod sortingMethod) async {
+    switch (sortingMethod) {
+      case SortingMethod.distance:
+        var position = await LocationService.getCurrentLocation();
+        var location = Location.fromPosition(position);
+        for (Camera cam in state.allCameras) {
+          cam.distance = getDistanceString(location.distanceTo(cam.location));
+        }
+        _sortByDistance(location);
+        break;
+      case SortingMethod.neighbourhood:
+        _sortByNeighbourhood();
+        break;
+      case SortingMethod.name:
+      default:
+        _sortByName();
+        break;
+    }
   }
 
   void _sortByName() {
@@ -203,51 +206,61 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   void _sortByNeighbourhood() {
     state.displayedCameras.sort((a, b) {
       int result = a.neighbourhood.compareTo(b.neighbourhood);
-      if (a.neighbourhood.compareTo(b.neighbourhood) == 0) {
-        return a.sortableName.compareTo(b.sortableName);
-      }
-      return result;
+      return result == 0 ? a.sortableName.compareTo(b.sortableName) : result;
     });
   }
 
-  List<Camera> _searchByCamera(String query) {
-    bool Function(Camera) predicate = (camera) => camera.isVisible;
-    String q = query;
-    if (q.startsWith('f:')) {
-      q = q.substring(2).trim();
-      predicate = (camera) => camera.isVisible && camera.isFavourite;
-    } else if (q.startsWith('h:')) {
-      q = q.substring(2).trim();
-      predicate = (camera) => !camera.isVisible;
-    }
+  List<Camera> _searchCameras(
+    SearchMode searchMode,
+    FilterMode filterMode,
+    String query,
+  ) {
     return state.allCameras
-        .where(predicate)
-        .where((camera) => !camera.name.containsIgnoreCase(q))
+        .where(_getFilterPredicate(filterMode))
+        .where(_getSearchPredicate(searchMode, query))
         .toList();
   }
 
-  List<Camera> _searchByNeighbourhood(String query) {
-    return state.visibleCameras
-        .where((camera) => camera.neighbourhood.containsIgnoreCase(query))
-        .toList();
+  bool Function(Camera) _getFilterPredicate(FilterMode filterMode) {
+    switch (filterMode) {
+      case FilterMode.favourite:
+        return (camera) => camera.isFavourite;
+      case FilterMode.hidden:
+        return (camera) => !camera.isVisible;
+      case FilterMode.visible:
+      default:
+        return (camera) => camera.isVisible;
+    }
+  }
+
+  bool Function(Camera) _getSearchPredicate(SearchMode searchMode, String str) {
+    switch (searchMode) {
+      case SearchMode.camera:
+        return (camera) => camera.name.containsIgnoreCase(str.trim());
+      case SearchMode.neighbourhood:
+        return (camera) => camera.neighbourhood.containsIgnoreCase(str.trim());
+      case SearchMode.none:
+      default:
+        return (camera) => true;
+    }
   }
 
   void favouriteSelectedCameras() {
     bool allFave = state.selectedCameras.every((camera) => camera.isFavourite);
     for (Camera camera in state.selectedCameras) {
-      camera.isFavourite = !allFave;
-      prefs?.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
+      prefs?.setBool('${camera.cameraId}.isFavourite', !allFave);
     }
     add(ReloadCameras(showList: state.showList));
   }
 
   void hideSelectedCameras() {
-    bool allHidden = state.selectedCameras.every((camera) => !camera.isVisible);
-    for (Camera camera in state.selectedCameras) {
-      camera.isVisible = !allHidden;
-      prefs?.setBool('${camera.cameraId}.isVisible', camera.isVisible);
+    bool anyVisible = state.selectedCameras.any((camera) => camera.isVisible);
+    for (Camera cam in state.selectedCameras) {
+      cam.isVisible = !anyVisible;
+      prefs?.setBool('${cam.cameraId}.isVisible', !anyVisible);
     }
     add(ReloadCameras(showList: state.showList));
+    add(FilterCamera(filterMode: state.filterMode));
   }
 
   void updateCamera(Camera camera) {
@@ -260,7 +273,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         break;
       }
     }
-    add(ReloadCameras());
+    add(ReloadCameras(showList: state.showList));
   }
 
   void changeCity(Cities city) {

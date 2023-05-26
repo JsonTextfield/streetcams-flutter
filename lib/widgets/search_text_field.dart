@@ -22,16 +22,11 @@ class SearchTextField extends StatelessWidget {
     debugPrint('building search bar');
     clear() {
       controller.clear();
-      context.read<CameraBloc>().add(
-            SearchCameras(
-              searchMode: searchMode,
-              query: controller.text,
-            ),
-          );
+      context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
     }
 
     back() {
-      clear();
+      controller.clear();
       context
           .read<CameraBloc>()
           .add(SearchCameras(searchMode: SearchMode.none));
