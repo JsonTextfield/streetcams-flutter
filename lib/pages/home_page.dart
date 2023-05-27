@@ -43,7 +43,9 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            actions: const [ActionBar()],
+            actions: state.status == CameraStatus.success
+                ? const [ActionBar()]
+                : null,
             backgroundColor: state.selectedCameras.isEmpty
                 ? Theme.of(context).appBarTheme.backgroundColor
                 : Constants.accentColour,
@@ -101,8 +103,8 @@ class HomePage extends StatelessWidget {
                         Flexible(
                           flex: 0,
                           child: SectionIndex(
-                            data: state.visibleCameras
-                                .map((cam) => cam.sortableName)
+                            data: state.displayedCameras
+                                .map((cam) => cam.sortableName[0])
                                 .toList(),
                             callback: _moveToListPosition,
                           ),

@@ -64,7 +64,14 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         String str = prefs!.getString('city')!;
         city = Cities.values.firstWhere((Cities c) => describeEnum(c) == str);
       }
-      List<dynamic> allData = await DownloadService.downloadAll(city);
+      List<dynamic> allData;
+      try {
+        allData = await DownloadService.downloadAll(city);
+      } on Exception catch (_) {
+        return emit(state.copyWith(
+          status: CameraStatus.failure,
+        ));
+      }
       List<Camera> allCameras = allData.first;
       _readSharedPrefs(allCameras);
       return emit(state.copyWith(

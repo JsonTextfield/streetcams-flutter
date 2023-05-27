@@ -40,10 +40,7 @@ class SortCamerasMenu extends StatelessWidget {
               value: SortingMethod.neighbourhood,
               groupValue: state.sortingMethod,
               onChanged: (_) => sortCameras(SortingMethod.neighbourhood),
-              child: Text(
-                AppLocalizations.of(context)!.sortNeighbourhood,
-                textAlign: TextAlign.right,
-              ),
+              child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
             ),
           ],
         );

@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:flutter/material.dart';
 
 import '../constants.dart';
@@ -15,53 +17,51 @@ class SectionIndex extends StatefulWidget {
 }
 
 class _SectionIndexState extends State<SectionIndex> {
-  GlobalKey key = GlobalKey();
+  final GlobalKey key = GlobalKey();
   int _selectedIndex = -1;
-  final List<int> _positions = [];
+  LinkedHashMap<String, int> _index = LinkedHashMap();
+
+  LinkedHashMap<String, int> _createIndex() {
+    String dataString = (widget.data..sort()).map((str) => str[0]).join();
+
+    RegExp letters = RegExp('[A-Z]');
+    RegExp numbers = RegExp('[0-9]');
+    RegExp special = RegExp('[^0-9A-Z]');
+
+    LinkedHashMap<String, int> result = LinkedHashMap();
+    if (special.hasMatch(dataString)) {
+      result['*'] = dataString.indexOf(special);
+    }
+    if (numbers.hasMatch(dataString)) {
+      result['#'] = dataString.indexOf(numbers);
+    }
+    for (var character in dataString.characters) {
+      if (letters.hasMatch(character)) {
+        result[character] = dataString.indexOf(character);
+      }
+    }
+    return result;
+  }
 
   @override
   Widget build(BuildContext context) {
     debugPrint('building section index');
-    List<Widget> result = [];
-    Set<String> indices = {};
-    String letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    String numbers = '0123456789';
-    for (int i = 0; i < widget.data.length; i++) {
-      var firstChar = widget.data[i][0];
 
-      if (numbers.contains(firstChar) && !indices.contains('#')) {
-        indices.add('#');
-        if (!_positions.contains(i)) {
-          _positions.add(i);
-        }
-        result.add(SectionIndexItem(title: '#', selected: _selectedIndex == i));
-      } else if (letters.contains(firstChar.toUpperCase()) &&
-          !indices.contains(firstChar)) {
-        indices.add(firstChar);
-        if (!_positions.contains(i)) {
-          _positions.add(i);
-        }
-        result.add(
-          SectionIndexItem(title: firstChar, selected: _selectedIndex == i),
-        );
-      } else if (!numbers.contains(firstChar) &&
-          !letters.contains(firstChar.toUpperCase()) &&
-          !indices.contains('*')) {
-        indices.add('*');
-        if (!_positions.contains(i)) {
-          _positions.add(i);
-        }
-        result.add(SectionIndexItem(title: '*', selected: _selectedIndex == i));
-      }
-    }
+    _index = _createIndex();
+
+    List<Widget> result = _index.entries.map((entry) {
+      return SectionIndexItem(
+        title: entry.key,
+        selected: _selectedIndex == entry.value,
+      );
+    }).toList();
 
     return GestureDetector(
       key: key,
       child: Column(children: result),
-      onTapDown: (details) => _selectIndexFromPointer(details.localPosition.dy),
+      onTapDown: (details) => _selectIndex(details.localPosition.dy),
       onTapUp: (details) => _resetSelectedIndex(),
-      onVerticalDragUpdate: (details) =>
-          _selectIndexFromPointer(details.localPosition.dy),
+      onVerticalDragUpdate: (details) => _selectIndex(details.localPosition.dy),
       onVerticalDragEnd: (details) => _resetSelectedIndex(),
     );
   }
@@ -70,16 +70,17 @@ class _SectionIndexState extends State<SectionIndex> {
     setState(() => _selectedIndex = -1);
   }
 
-  void _selectIndexFromPointer(double yPosition) {
+  void _selectIndex(double yPosition) {
     var box = key.currentContext?.findRenderObject() as RenderBox;
     var sectionIndexHeight = box.constraints.maxHeight;
-    int listIndex = (yPosition / sectionIndexHeight * _positions.length)
+    var positions = _index.values.toList();
+    int listIndex = (yPosition / sectionIndexHeight * positions.length)
         .toInt()
-        .clamp(0, _positions.length - 1);
+        .clamp(0, positions.length - 1);
 
-    if (_positions[listIndex] != _selectedIndex) {
+    if (positions[listIndex] != _selectedIndex) {
       setState(() {
-        _selectedIndex = _positions[listIndex];
+        _selectedIndex = positions[listIndex];
         widget.callback(_selectedIndex);
       });
     }
