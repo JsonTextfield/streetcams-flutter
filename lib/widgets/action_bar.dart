@@ -227,25 +227,23 @@ class ActionBar extends StatelessWidget {
             }
           }
           visibleActions.removeWhere(overflowActions.contains);
+
+          List<PopupMenuEntry<IconButton>> overflowMenuItems =
+              overflowActions.map((visibility) {
+            IconButton iconButton = visibility.child as IconButton;
+            bool checked = ((visibility == hidden) &&
+                    (state.filterMode == FilterMode.hidden)) ||
+                ((visibility == favourite) &&
+                    (state.filterMode == FilterMode.favourite));
+            return OverflowMenuItem(iconButton: iconButton, checked: checked);
+          }).toList();
+
           var more = Visibility(
-            child: PopupMenuButton(
+            child: PopupMenuButton<IconButton>(
               tooltip: AppLocalizations.of(context)!.more,
               position: PopupMenuPosition.under,
-              itemBuilder: (context) {
-                return overflowActions.map((Visibility visibility) {
-                  IconButton iconButton = visibility.child as IconButton;
-                  bool checked = ((iconButton.tooltip ==
-                              AppLocalizations.of(context)!.hidden) &&
-                          (state.filterMode == FilterMode.hidden)) ||
-                      ((iconButton.tooltip ==
-                              AppLocalizations.of(context)!.favourites) &&
-                          (state.filterMode == FilterMode.favourite));
-                  return OverflowPopupMenuItem(
-                    iconButton: iconButton,
-                    checked: checked,
-                  );
-                }).toList();
-              },
+              itemBuilder: (context) => overflowMenuItems,
+              onSelected: (iconButton) => iconButton.onPressed?.call(),
             ),
           );
           visibleActions.add(more);
@@ -281,40 +279,29 @@ class ActionBar extends StatelessWidget {
   }
 }
 
-class OverflowPopupMenuItem extends PopupMenuItem {
+class OverflowMenuItem extends PopupMenuItem<IconButton> {
   final IconButton iconButton;
   final bool checked;
 
-  OverflowPopupMenuItem({
+  OverflowMenuItem({
     super.key,
     required this.iconButton,
     this.checked = false,
   }) : super(
-          child: OverflowListTile(iconButton: iconButton, checked: checked),
+          child: Row(
+            children: [
+              Expanded(flex: 25, child: iconButton.icon),
+              Expanded(flex: 50, child: Text(iconButton.tooltip ?? '')),
+              Expanded(
+                flex: 25,
+                child: Visibility(
+                  visible: checked,
+                  child: const Icon(Icons.check),
+                ),
+              ),
+            ],
+          ),
           padding: EdgeInsets.zero,
+          value: iconButton,
         );
-}
-
-class OverflowListTile extends ListTile {
-  final IconButton iconButton;
-  final bool checked;
-
-  const OverflowListTile({
-    super.key,
-    required this.iconButton,
-    this.checked = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      leading: iconButton.icon,
-      title: Text(iconButton.tooltip ?? ''),
-      onTap: () {
-        Navigator.pop(context);
-        iconButton.onPressed?.call();
-      },
-      trailing: checked ? const Icon(Icons.check) : null,
-    );
-  }
 }
