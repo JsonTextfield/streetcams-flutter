@@ -58,7 +58,7 @@ class CameraListView extends StatelessWidget {
                   '${cam.name} ${cam.isVisible ? 'unhidden' : 'hidden'}',
                 ),
                 action: SnackBarAction(
-                  label: 'Undo',
+                  label: AppLocalizations.of(context)!.undo,
                   onPressed: hide,
                 ),
               ));

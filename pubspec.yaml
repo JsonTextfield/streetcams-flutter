@@ -28,16 +28,16 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   msix: ^3.8.2
-  package_info_plus: ^3.0.3
+  package_info_plus: ^4.0.1
   provider: ^6.0.0
   equatable: ^2.0.5
   flutter_bloc: ^8.1.2
   scrollable_positioned_list: ^0.3.5
   google_maps_flutter: ^2.2.3
   google_maps_flutter_web: ^0.4.0+5
-  flutter_map: ^3.1.0
+  flutter_map: ^4.0.0
   geolocator: ^9.0.0
-  http: ^0.13.4
+  http: ^0.13.5
   shared_preferences: ^2.0.15
   flutter:
     sdk: flutter
