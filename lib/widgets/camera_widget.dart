@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../entities/camera.dart';
@@ -19,6 +21,19 @@ class CameraWidget extends StatelessWidget {
       child: Stack(
         textDirection: TextDirection.ltr,
         children: [
+          ImageFiltered(
+            imageFilter: ImageFilter.blur(
+              sigmaX: 6,
+              sigmaY: 6,
+              tileMode: TileMode.decal,
+            ),
+            child: Image.network(
+              camera.url,
+              fit: BoxFit.fitWidth,
+              gaplessPlayback: true,
+              width: MediaQuery.of(context).size.width,
+            ),
+          ),
           Image.network(
             camera.url,
             errorBuilder: (context, exception, stackTrace) {
