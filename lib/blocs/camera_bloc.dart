@@ -43,7 +43,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     this.prefs,
   }) : super(const CameraState()) {
     localeListener ??= LocaleListener(callback: () {
-      add(ReloadCameras(showList: state.showList));
+      add(ReloadCameras(viewMode: ViewMode.list));
     });
 
     on<CameraLoading>((event, emit) async {
@@ -92,7 +92,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
         allCameras: state.allCameras,
-        showList: event.showList,
+        viewMode: event.viewMode,
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
       ));
     });
@@ -257,7 +257,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     for (Camera camera in state.selectedCameras) {
       prefs?.setBool('${camera.cameraId}.isFavourite', !allFave);
     }
-    add(ReloadCameras(showList: state.showList));
+    add(ReloadCameras(viewMode: state.viewMode));
   }
 
   void hideSelectedCameras() {
@@ -266,7 +266,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       cam.isVisible = !anyVisible;
       prefs?.setBool('${cam.cameraId}.isVisible', !anyVisible);
     }
-    add(ReloadCameras(showList: state.showList));
+    add(ReloadCameras(viewMode: state.viewMode));
     add(FilterCamera(filterMode: state.filterMode));
   }
 
@@ -280,7 +280,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         break;
       }
     }
-    add(ReloadCameras(showList: state.showList));
+    add(ReloadCameras(viewMode: state.viewMode));
   }
 
   void changeCity(Cities city) {

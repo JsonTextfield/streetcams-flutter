@@ -7,6 +7,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:streetcams_flutter/widgets/change_city_menu.dart';
 import 'package:streetcams_flutter/widgets/sort_cameras_menu.dart';
+import 'package:streetcams_flutter/widgets/view_mode_menu.dart';
 
 import '../blocs/camera_bloc.dart';
 import '../entities/camera.dart';
@@ -114,23 +115,13 @@ class ActionBar extends StatelessWidget {
             icon: const Icon(Icons.camera_alt),
           ),
         );
-        var switchView = Visibility(
-          visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
-          child: IconButton(
-            onPressed: () {
-              context
-                  .read<CameraBloc>()
-                  .add(ReloadCameras(showList: !state.showList));
-            },
-            icon: Icon(state.showList ? Icons.place : Icons.list),
-            tooltip: state.showList
-                ? AppLocalizations.of(context)!.map
-                : AppLocalizations.of(context)!.list,
-          ),
+        var switchView = const Visibility(
+          //visible: defaultTargetPlatform != TargetPlatform.windows || kIsWeb,
+          child: ViewModeMenu(),
         );
         var sort = Visibility(
           visible: selectedCameras.isEmpty &&
-              state.showList &&
+              state.viewMode != ViewMode.map &&
               state.searchMode == SearchMode.none,
           child: const SortCamerasMenu(),
         );
@@ -215,7 +206,11 @@ class ActionBar extends StatelessWidget {
           shuffle,
           about,
         ].where((action) => action.visible).toList();
-        List<Visibility> alwaysShowActions = [sort, city];
+        List<Visibility> alwaysShowActions = [
+          sort,
+          switchView,
+          city,
+        ].where((action) => action.visible).toList();
         // the number of 48-width buttons that can fit in 1/4 the width of the window
         int maxActions = (MediaQuery.of(context).size.width / 4 / 48).floor();
         if (visibleActions.length > maxActions) {

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
+import 'package:streetcams_flutter/widgets/camera_gallery_view.dart';
 import 'package:streetcams_flutter/widgets/map_widget.dart';
 
 import '../constants.dart';
@@ -95,28 +96,33 @@ class HomePage extends StatelessWidget {
                     child: Text(AppLocalizations.of(context)!.error),
                   );
                 case CameraStatus.success:
-                  if (state.showList) {
-                    return Row(children: [
-                      if (state.showSectionIndex)
-                        Flexible(
-                          flex: 0,
-                          child: SectionIndex(
-                            data: state.displayedCameras
-                                .map((cam) => cam.sortableName[0])
-                                .toList(),
-                            callback: _moveToListPosition,
+                  switch (state.viewMode) {
+                    case ViewMode.map:
+                      return MapWidget(cameras: state.displayedCameras);
+                    case ViewMode.gallery:
+                      return CameraGalleryView(state.displayedCameras);
+                    case ViewMode.list:
+                    default:
+                      return Row(children: [
+                        if (state.showSectionIndex)
+                          Flexible(
+                            flex: 0,
+                            child: SectionIndex(
+                              data: state.displayedCameras
+                                  .map((cam) => cam.sortableName[0])
+                                  .toList(),
+                              callback: _moveToListPosition,
+                            ),
+                          ),
+                        Expanded(
+                          child: CameraListView(
+                            itemScrollController: itemScrollController,
+                            cameras: state.displayedCameras,
+                            onTapped: (camera) => showCameras([camera]),
                           ),
                         ),
-                      Expanded(
-                        child: CameraListView(
-                          itemScrollController: itemScrollController,
-                          cameras: state.displayedCameras,
-                          onTapped: (camera) => showCameras([camera]),
-                        ),
-                      ),
-                    ]);
+                      ]);
                   }
-                  return MapWidget(cameras: state.displayedCameras);
                 case CameraStatus.initial:
                 default:
                   return const Center(child: CircularProgressIndicator());

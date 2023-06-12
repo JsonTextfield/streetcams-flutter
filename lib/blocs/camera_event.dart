@@ -10,12 +10,12 @@ class CameraLoading extends CameraEvent {}
 class CameraLoaded extends CameraEvent {}
 
 class ReloadCameras extends CameraEvent {
-  final bool showList;
+  final ViewMode viewMode;
 
-  ReloadCameras({this.showList = true});
+  ReloadCameras({this.viewMode = ViewMode.list});
 
   @override
-  List<Object?> get props => [showList];
+  List<Object?> get props => [viewMode];
 }
 
 class SortCameras extends CameraEvent {

@@ -8,6 +8,8 @@ enum SortingMethod { name, distance, neighbourhood }
 
 enum FilterMode { visible, hidden, favourite }
 
+enum ViewMode { list, gallery, map }
+
 class CameraState extends Equatable {
   final List<Camera> allCameras;
   final List<Camera> displayedCameras;
@@ -17,7 +19,7 @@ class CameraState extends Equatable {
   final SortingMethod sortingMethod;
   final SearchMode searchMode;
   final FilterMode filterMode;
-  final bool showList;
+  final ViewMode viewMode;
   final int lastUpdated;
   final Cities city;
 
@@ -34,7 +36,7 @@ class CameraState extends Equatable {
       filterMode == FilterMode.visible &&
       sortingMethod == SortingMethod.name &&
       searchMode == SearchMode.none &&
-      showList;
+      viewMode == ViewMode.list;
 
   @override
   List<Object?> get props => [
@@ -46,7 +48,7 @@ class CameraState extends Equatable {
         sortingMethod,
         searchMode,
         filterMode,
-        showList,
+        viewMode,
         lastUpdated,
         city,
       ];
@@ -60,13 +62,12 @@ class CameraState extends Equatable {
     this.sortingMethod = SortingMethod.name,
     this.searchMode = SearchMode.none,
     this.filterMode = FilterMode.visible,
-    this.showList = true,
+    this.viewMode = ViewMode.list,
     this.lastUpdated = 0,
     this.city = Cities.ottawa,
   });
 
   CameraState copyWith({
-    bool? showList,
     List<Neighbourhood>? neighbourhoods,
     List<Camera>? allCameras,
     List<Camera>? displayedCameras,
@@ -75,6 +76,7 @@ class CameraState extends Equatable {
     SortingMethod? sortingMethod,
     SearchMode? searchMode,
     FilterMode? filterMode,
+    ViewMode? viewMode,
     int? lastUpdated,
     Cities? city,
   }) {
@@ -87,7 +89,7 @@ class CameraState extends Equatable {
       sortingMethod: sortingMethod ?? this.sortingMethod,
       searchMode: searchMode ?? this.searchMode,
       filterMode: filterMode ?? this.filterMode,
-      showList: showList ?? this.showList,
+      viewMode: viewMode ?? this.viewMode,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       city: city ?? this.city,
     );
