@@ -83,7 +83,9 @@ class DownloadService {
     for (var camera in cameras) {
       for (var neighbourhood in neighbourhoods) {
         if (neighbourhood.containsCamera(camera)) {
-          camera.neighbourhood = neighbourhood.name;
+          camera.neighbourhood = city == Cities.montreal
+              ? utf8.decode(neighbourhood.name.runes.toList())
+              : neighbourhood.name;
         }
       }
     }

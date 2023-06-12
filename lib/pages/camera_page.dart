@@ -18,6 +18,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
   Timer? timer;
+  List<Camera> cameras = [];
 
   @override
   void initState() {
@@ -42,8 +43,14 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     var arguments = ModalRoute.of(context)!.settings.arguments as List;
-    List<Camera> cameras = arguments[0] as List<Camera>;
+
     bool shuffle = arguments[1] as bool;
+    if (cameras.isEmpty) {
+      cameras = arguments[0] as List<Camera>;
+      if (shuffle) {
+        cameras.shuffle();
+      }
+    }
     timer ??= Timer.periodic(
       Duration(seconds: shuffle ? 6 : 3),
       (t) => setState(() {}),

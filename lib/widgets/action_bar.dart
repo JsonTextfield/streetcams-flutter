@@ -122,7 +122,7 @@ class ActionBar extends StatelessWidget {
                   .read<CameraBloc>()
                   .add(ReloadCameras(showList: !state.showList));
             },
-            icon: Icon(state.showList ? Icons.map : Icons.list),
+            icon: Icon(state.showList ? Icons.place : Icons.list),
             tooltip: state.showList
                 ? AppLocalizations.of(context)!.map
                 : AppLocalizations.of(context)!.list,
@@ -195,7 +195,8 @@ class ActionBar extends StatelessWidget {
           ),
         );
         var city = Visibility(
-          visible: selectedCameras.isEmpty,
+          visible:
+              selectedCameras.isEmpty && state.searchMode == SearchMode.none,
           child: const ChangeCityMenu(),
         );
 
@@ -208,10 +209,10 @@ class ActionBar extends StatelessWidget {
           sort,
           favourite,
           hidden,
+          city,
           selectAll,
           random,
           shuffle,
-          city,
           about,
         ].where((action) => action.visible).toList();
         List<Visibility> alwaysShowActions = [sort, city];

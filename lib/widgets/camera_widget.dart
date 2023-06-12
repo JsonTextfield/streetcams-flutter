@@ -23,8 +23,8 @@ class CameraWidget extends StatelessWidget {
         children: [
           ImageFiltered(
             imageFilter: ImageFilter.blur(
-              sigmaX: 6,
-              sigmaY: 6,
+              sigmaX: 10,
+              sigmaY: 10,
               tileMode: TileMode.decal,
             ),
             child: Image.network(

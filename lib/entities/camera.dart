@@ -90,6 +90,33 @@ class Camera extends BilingualObject with EquatableMixin {
     );
   }
 
+  @override
+  String get sortableName {
+    if (city != Cities.montreal) {
+      return super.sortableName;
+    }
+
+    String sortableName = name;
+
+    int startIndex = 0;
+    if (sortableName.startsWith('Avenue ')) {
+      startIndex = 'Avenue '.length;
+    } //
+    else if (sortableName.startsWith('Boulevard ')) {
+      startIndex = 'Boulevard '.length;
+    } //
+    else if (sortableName.startsWith('Chemin ')) {
+      startIndex = 'Chemin '.length;
+    } //
+    else if (sortableName.startsWith('Rue ')) {
+      startIndex = 'Rue '.length;
+    }
+    sortableName = sortableName.substring(startIndex);
+
+    var regex = RegExp('[0-9A-ZÀ-Ö]');
+    return sortableName.substring(sortableName.indexOf(regex));
+  }
+
   String get url {
     switch (city) {
       case Cities.toronto:

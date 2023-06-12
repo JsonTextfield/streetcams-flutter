@@ -43,9 +43,7 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            actions: state.status == CameraStatus.success
-                ? const [ActionBar()]
-                : null,
+            actions: const [ActionBar()],
             backgroundColor: state.selectedCameras.isEmpty
                 ? Theme.of(context).appBarTheme.backgroundColor
                 : Constants.accentColour,

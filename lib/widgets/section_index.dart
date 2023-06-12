@@ -24,9 +24,9 @@ class _SectionIndexState extends State<SectionIndex> {
   LinkedHashMap<String, int> _createIndex() {
     String dataString = (widget.data..sort()).map((str) => str[0]).join();
 
-    RegExp letters = RegExp('[A-Z]');
+    RegExp letters = RegExp('[A-ZÀ-Ö]');
     RegExp numbers = RegExp('[0-9]');
-    RegExp special = RegExp('[^0-9A-Z]');
+    RegExp special = RegExp('[^0-9A-ZÀ-Ö]');
 
     LinkedHashMap<String, int> result = LinkedHashMap();
     if (special.hasMatch(dataString)) {
