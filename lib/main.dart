@@ -32,6 +32,18 @@ class StreetCamsApp extends StatelessWidget {
           primary: Constants.primaryColour,
         ),
         appBarTheme: const AppBarTheme(backgroundColor: Constants.accentColour),
+        popupMenuTheme: PopupMenuThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        menuTheme: MenuThemeData(
+          style: MenuStyle(
+            shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            )),
+          ),
+        ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
@@ -41,12 +53,19 @@ class StreetCamsApp extends StatelessWidget {
         ),
         appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
         scaffoldBackgroundColor: Colors.black,
-        popupMenuTheme:
-            const PopupMenuThemeData(color: Constants.darkMenuColour),
-        menuTheme: const MenuThemeData(
+        popupMenuTheme: PopupMenuThemeData(
+          color: Constants.darkMenuColour,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+        menuTheme: MenuThemeData(
           style: MenuStyle(
+            shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            )),
             backgroundColor:
-                MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
+                const MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
           ),
         ),
         dialogBackgroundColor: Constants.darkMenuColour,

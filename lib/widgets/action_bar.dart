@@ -230,7 +230,11 @@ class ActionBar extends StatelessWidget {
                     (state.filterMode == FilterMode.hidden)) ||
                 ((visibility == favourite) &&
                     (state.filterMode == FilterMode.favourite));
-            return OverflowMenuItem(iconButton: iconButton, checked: checked);
+            return OverflowMenuItem(
+              context: context,
+              iconButton: iconButton,
+              checked: checked,
+            );
           }).toList();
 
           var more = Visibility(
@@ -276,22 +280,27 @@ class ActionBar extends StatelessWidget {
 
 class OverflowMenuItem extends PopupMenuItem<IconButton> {
   final IconButton iconButton;
+  final BuildContext context;
   final bool checked;
 
   OverflowMenuItem({
     super.key,
+    required this.context,
     required this.iconButton,
     this.checked = false,
   }) : super(
           child: Row(
             children: [
-              Expanded(flex: 25, child: iconButton.icon),
+              Expanded(
+                flex: 25,
+                child: Icon((iconButton.icon as Icon).icon, color: Colors.grey),
+              ),
               Expanded(flex: 50, child: Text(iconButton.tooltip ?? '')),
               Expanded(
                 flex: 25,
                 child: Visibility(
                   visible: checked,
-                  child: const Icon(Icons.check_rounded),
+                  child: const Icon(Icons.check_rounded, color: Colors.grey),
                 ),
               ),
             ],
