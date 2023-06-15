@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../blocs/camera_bloc.dart';
 
 class SearchTextField extends StatelessWidget {
@@ -47,13 +47,15 @@ class SearchTextField extends StatelessWidget {
       onChanged: search,
       decoration: InputDecoration(
         icon: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
           onPressed: back,
+          tooltip: AppLocalizations.of(context)!.back,
         ),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, color: Colors.white),
+                icon: const Icon(Icons.clear_rounded, color: Colors.white),
                 onPressed: clear,
+                tooltip: AppLocalizations.of(context)!.clear,
               )
             : null,
         hintText: hintText,

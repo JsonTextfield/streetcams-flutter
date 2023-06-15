@@ -28,6 +28,7 @@
   "error": "An error has occurred.",
   "more": "More",
   "undo": "Undo",
+  "back": "Back",
   "cameras": "{count,plural, =0{0 cameras} =1{1 camera} other{{count} cameras}}",
   "@cameras":  {
     "placeholders": {

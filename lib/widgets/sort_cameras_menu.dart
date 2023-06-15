@@ -19,7 +19,7 @@ class SortCamerasMenu extends StatelessWidget {
           builder: (context, menu, child) {
             return IconButton(
               onPressed: () => menu.isOpen ? menu.close() : menu.open(),
-              icon: const Icon(Icons.sort),
+              icon: const Icon(Icons.sort_rounded),
               tooltip: AppLocalizations.of(context)!.sort,
             );
           },

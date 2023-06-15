@@ -34,6 +34,7 @@ class CameraListView extends StatelessWidget {
                 title: Center(
                   child: Text(
                     AppLocalizations.of(context)!.cameras(cameras.length),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               );
@@ -71,11 +72,15 @@ class CameraListView extends StatelessWidget {
                   : DismissDirection.horizontal,
               onDismissed: (direction) => dismissed(),
               background: DismissibleBackground(
-                icon: cam.isVisible ? Icons.visibility_off : Icons.visibility,
+                icon: cam.isVisible
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 alignment: Alignment.centerLeft,
               ),
               secondaryBackground: DismissibleBackground(
-                icon: cam.isVisible ? Icons.visibility_off : Icons.visibility,
+                icon: cam.isVisible
+                    ? Icons.visibility_off_rounded
+                    : Icons.visibility_rounded,
                 alignment: Alignment.centerRight,
               ),
               child: ListTile(
@@ -92,7 +97,9 @@ class CameraListView extends StatelessWidget {
                     ? Text(cam.distance, textAlign: TextAlign.center)
                     : null,
                 trailing: IconButton(
-                  icon: Icon(cam.isFavourite ? Icons.star : Icons.star_border),
+                  icon: Icon(cam.isFavourite
+                      ? Icons.star_rounded
+                      : Icons.star_border_rounded),
                   color: cam.isFavourite ? Colors.yellow : null,
                   onPressed: () {
                     cam.isFavourite = !cam.isFavourite;

@@ -55,7 +55,12 @@ class CameraWidget extends StatelessWidget {
             child: Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                color: Colors.black54,
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                margin: const EdgeInsets.all(5),
+                padding: const EdgeInsets.all(10),
                 child: Text(
                   camera.name,
                   style: const TextStyle(color: Colors.white),

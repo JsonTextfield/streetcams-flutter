@@ -50,41 +50,45 @@ class HomePage extends StatelessWidget {
                 : Constants.accentColour,
             title: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
-                switch (state.searchMode) {
-                  case SearchMode.camera:
-                    return SearchTextField(
-                      controller: textEditingController,
-                      hintText: AppLocalizations.of(context)!
-                          .searchCameras(state.displayedCameras.length),
-                      searchMode: SearchMode.camera,
-                    );
-                  case SearchMode.neighbourhood:
-                    return const NeighbourhoodSearchBar();
-                  case SearchMode.none:
-                  default:
-                    String title = '';
-                    if (state.selectedCameras.isNotEmpty) {
-                      title = AppLocalizations.of(context)!
-                          .selectedCameras(state.selectedCameras.length);
-                    } else {
-                      switch (state.filterMode) {
-                        case FilterMode.favourite:
-                          title = AppLocalizations.of(context)!.favourites;
-                          break;
-                        case FilterMode.hidden:
-                          title = AppLocalizations.of(context)!.hidden;
-                          break;
-                        case FilterMode.visible:
-                        default:
-                          title = AppLocalizations.of(context)!.appName;
-                          break;
-                      }
-                    }
-                    return GestureDetector(
-                      child: Text(title),
-                      onTap: () => _moveToListPosition(0),
-                    );
+                if (state.selectedCameras.isEmpty) {
+                  switch (state.searchMode) {
+                    case SearchMode.camera:
+                      return SearchTextField(
+                        controller: textEditingController,
+                        hintText: AppLocalizations.of(context)!
+                            .searchCameras(state.displayedCameras.length),
+                        searchMode: SearchMode.camera,
+                      );
+                    case SearchMode.neighbourhood:
+                      return const NeighbourhoodSearchBar();
+                    case SearchMode.none:
+                    default:
+                      break;
+                  }
                 }
+
+                String title = '';
+                if (state.selectedCameras.isNotEmpty) {
+                  title = AppLocalizations.of(context)!
+                      .selectedCameras(state.selectedCameras.length);
+                } else {
+                  switch (state.filterMode) {
+                    case FilterMode.favourite:
+                      title = AppLocalizations.of(context)!.favourites;
+                      break;
+                    case FilterMode.hidden:
+                      title = AppLocalizations.of(context)!.hidden;
+                      break;
+                    case FilterMode.visible:
+                    default:
+                      title = AppLocalizations.of(context)!.appName;
+                      break;
+                  }
+                }
+                return GestureDetector(
+                  child: Text(title),
+                  onTap: () => _moveToListPosition(0),
+                );
               },
             ),
           ),

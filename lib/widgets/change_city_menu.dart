@@ -20,7 +20,7 @@ class ChangeCityMenu extends StatelessWidget {
           builder: (context, menu, child) {
             return IconButton(
               onPressed: () => menu.isOpen ? menu.close() : menu.open(),
-              icon: const Icon(Icons.location_city),
+              icon: const Icon(Icons.location_city_rounded),
               tooltip: AppLocalizations.of(context)!.city,
             );
           },

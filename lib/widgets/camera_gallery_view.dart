@@ -11,17 +11,20 @@ import '../pages/camera_page.dart';
 
 class CameraGalleryView extends StatelessWidget {
   final List<Camera> cameras;
+  final scrollController = ScrollController();
 
-  const CameraGalleryView(this.cameras, {super.key});
+  CameraGalleryView(this.cameras, {super.key});
 
   @override
   Widget build(BuildContext context) {
     return RawScrollbar(
+      controller: scrollController,
       thumbColor: const Color(0xDD22AAFF),
       radius: const Radius.circular(10),
       thickness: 10,
       interactive: true,
       child: GridView.builder(
+        controller: scrollController,
         padding: const EdgeInsets.all(5),
         itemCount: cameras.length + 1,
         itemBuilder: (context, index) {
@@ -30,6 +33,7 @@ class CameraGalleryView extends StatelessWidget {
               title: Center(
                 child: Text(
                   AppLocalizations.of(context)!.cameras(cameras.length),
+                  textAlign: TextAlign.center,
                 ),
               ),
             );
@@ -60,7 +64,8 @@ class CameraGalleryView extends StatelessWidget {
           );
         },
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: max(3, MediaQuery.of(context).size.width ~/ 100),
+          crossAxisCount:
+              max(3, (MediaQuery.of(context).size.width ~/ 100).clamp(3, 9)),
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),

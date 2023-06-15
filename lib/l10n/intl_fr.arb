@@ -24,7 +24,8 @@
   "unfavourite": "Déconseillé",
   "error": "Une erreur est survenue.",
   "more": "Plus",
-  "Undo": "Annuler",
+  "undo": "Annuler",
+  "back": "Retourner",
   "cameras": "{count,plural, =0{0 caméras} =1{1 caméra} other{{count} caméras}}",
   "@cameras": {
     "placeholders": {

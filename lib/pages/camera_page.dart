@@ -2,8 +2,9 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:streetcams_flutter/entities/bilingual_object.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 import '../widgets/camera_widget.dart';
 
@@ -68,9 +69,17 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
               },
             ),
             Container(
-              color: Colors.white54,
+              decoration: const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+                color: Colors.white54,
+              ),
               margin: const EdgeInsets.all(5),
-              child: const BackButton(color: Colors.black),
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                tooltip: AppLocalizations.of(context)!.back,
+                color: Colors.black,
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ),
           ],
         ),

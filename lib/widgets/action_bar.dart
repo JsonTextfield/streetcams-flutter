@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -43,17 +42,17 @@ class ActionBar extends StatelessWidget {
         IconData getFavouriteIcon() {
           if (selectedCameras.isEmpty ||
               selectedCameras.any((c) => !c.isFavourite)) {
-            return Icons.star;
+            return Icons.star_rounded;
           }
-          return Icons.star_border;
+          return Icons.star_border_rounded;
         }
 
         IconData getHiddenIcon() {
           if (selectedCameras.isEmpty ||
               selectedCameras.any((c) => c.isVisible)) {
-            return Icons.visibility_off;
+            return Icons.visibility_off_rounded;
           }
-          return Icons.visibility;
+          return Icons.visibility_rounded;
         }
 
         void showRandomCamera() {
@@ -95,7 +94,7 @@ class ActionBar extends StatelessWidget {
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.clear,
             onPressed: () => context.read<CameraBloc>().add(ClearSelection()),
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.clear_rounded),
           ),
         );
         var search = Visibility(
@@ -104,7 +103,7 @@ class ActionBar extends StatelessWidget {
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.search,
             onPressed: () => searchCameras(SearchMode.camera),
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.search_rounded),
           ),
         );
         var showSelectedCameras = Visibility(
@@ -112,7 +111,7 @@ class ActionBar extends StatelessWidget {
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.showCameras,
             onPressed: () => showCameras(context, selectedCameras),
-            icon: const Icon(Icons.camera_alt),
+            icon: const Icon(Icons.camera_alt_rounded),
           ),
         );
         var switchView = const Visibility(
@@ -144,7 +143,7 @@ class ActionBar extends StatelessWidget {
               selectedCameras.length < state.displayedCameras.length,
           child: IconButton(
             onPressed: () => context.read<CameraBloc>().add(SelectAll()),
-            icon: const Icon(Icons.select_all),
+            icon: const Icon(Icons.select_all_rounded),
             tooltip: AppLocalizations.of(context)!.selectAll,
           ),
         );
@@ -152,7 +151,7 @@ class ActionBar extends StatelessWidget {
           visible: selectedCameras.isEmpty,
           child: IconButton(
             onPressed: showRandomCamera,
-            icon: const Icon(Icons.casino),
+            icon: const Icon(Icons.casino_rounded),
             tooltip: AppLocalizations.of(context)!.random,
           ),
         );
@@ -164,7 +163,7 @@ class ActionBar extends StatelessWidget {
               state.visibleCameras,
               shuffle: true,
             ),
-            icon: const Icon(Icons.shuffle),
+            icon: const Icon(Icons.shuffle_rounded),
             tooltip: AppLocalizations.of(context)!.shuffle,
           ),
         );
@@ -172,7 +171,7 @@ class ActionBar extends StatelessWidget {
           visible: selectedCameras.isEmpty,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.about,
-            icon: const Icon(Icons.info),
+            icon: const Icon(Icons.info_rounded),
             onPressed: () => showAbout(context),
           ),
         );
@@ -181,7 +180,7 @@ class ActionBar extends StatelessWidget {
               state.searchMode != SearchMode.neighbourhood,
           child: IconButton(
             tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
-            icon: const Icon(Icons.travel_explore),
+            icon: const Icon(Icons.travel_explore_rounded),
             onPressed: () => searchCameras(SearchMode.neighbourhood),
           ),
         );
@@ -213,9 +212,9 @@ class ActionBar extends StatelessWidget {
         ].where((action) => action.visible).toList();
         // the number of 48-width buttons that can fit in 1/4 the width of the window
         int maxActions = (MediaQuery.of(context).size.width / 4 / 48).floor();
-        if (visibleActions.length > maxActions) {
+        if (visibleActions.length > maxActions && maxActions > 0) {
           List<Visibility> overflowActions = [];
-          for (int i = maxActions; i < visibleActions.length; i++) {
+          for (int i = maxActions - 1; i < visibleActions.length; i++) {
             if (alwaysShowActions.contains(visibleActions[i])) {
               continue;
             } else {
@@ -292,7 +291,7 @@ class OverflowMenuItem extends PopupMenuItem<IconButton> {
                 flex: 25,
                 child: Visibility(
                   visible: checked,
-                  child: const Icon(Icons.check),
+                  child: const Icon(Icons.check_rounded),
                 ),
               ),
             ],

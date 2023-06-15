@@ -62,7 +62,7 @@ class CameraState extends Equatable {
     this.sortingMethod = SortingMethod.name,
     this.searchMode = SearchMode.none,
     this.filterMode = FilterMode.visible,
-    this.viewMode = ViewMode.list,
+    this.viewMode = ViewMode.gallery,
     this.lastUpdated = 0,
     this.city = Cities.ottawa,
   });
