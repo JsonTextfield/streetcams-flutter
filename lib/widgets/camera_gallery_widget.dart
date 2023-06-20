@@ -26,7 +26,7 @@ class CameraGalleryWidget extends StatelessWidget {
                 color: Colors.grey,
                 alignment: Alignment.center,
                 padding: const EdgeInsets.all(10),
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery.sizeOf(context).width,
                 child: const Text(
                   'Image\nunavailable\n😢',
                   textAlign: TextAlign.center,
@@ -37,7 +37,7 @@ class CameraGalleryWidget extends StatelessWidget {
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              width: MediaQuery.of(context).size.width,
+              width: MediaQuery.sizeOf(context).width,
               padding: const EdgeInsets.all(2),
               color: Colors.black54,
               child: Text(

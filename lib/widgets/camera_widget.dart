@@ -15,7 +15,7 @@ class CameraWidget extends StatelessWidget {
     debugPrint('building camera widget');
     return Container(
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height -
+        maxHeight: MediaQuery.sizeOf(context).height -
             MediaQueryData.fromView(View.of(context)).padding.top,
       ),
       child: Stack(
@@ -31,7 +31,7 @@ class CameraWidget extends StatelessWidget {
               camera.url,
               fit: BoxFit.fitWidth,
               gaplessPlayback: true,
-              width: MediaQuery.of(context).size.width,
+              width: MediaQuery.sizeOf(context).width,
             ),
           ),
           Image.network(
@@ -39,7 +39,7 @@ class CameraWidget extends StatelessWidget {
             errorBuilder: (context, exception, stackTrace) {
               return Container(
                 padding: const EdgeInsets.all(50),
-                width: MediaQuery.of(context).size.width,
+                width: MediaQuery.sizeOf(context).width,
                 child: const Text(
                   'Image unavailable 😢',
                   textAlign: TextAlign.center,
@@ -48,7 +48,7 @@ class CameraWidget extends StatelessWidget {
             },
             semanticLabel: camera.name,
             fit: BoxFit.contain,
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery.sizeOf(context).width,
             gaplessPlayback: true,
           ),
           Positioned.fill(

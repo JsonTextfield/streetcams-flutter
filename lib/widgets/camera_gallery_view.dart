@@ -65,7 +65,7 @@ class CameraGalleryView extends StatelessWidget {
         },
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount:
-              max(3, (MediaQuery.of(context).size.width ~/ 100).clamp(3, 9)),
+              max(3, (MediaQuery.sizeOf(context).width ~/ 100).clamp(3, 9)),
           crossAxisSpacing: 10,
           mainAxisSpacing: 10,
         ),
