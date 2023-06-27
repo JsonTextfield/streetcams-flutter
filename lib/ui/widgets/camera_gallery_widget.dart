@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../blocs/camera_bloc.dart';
-import '../entities/camera.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../entities/camera.dart';
 
 class CameraGalleryWidget extends StatelessWidget {
   final Camera camera;

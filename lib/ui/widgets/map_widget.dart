@@ -9,10 +9,10 @@ import 'package:flutter_map/plugin_api.dart' as flutter_map_api;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:latlong2/latlong.dart' as latlon;
 
-import '../blocs/camera_bloc.dart';
-import '../constants.dart';
-import '../entities/camera.dart';
-import '../services/location_service.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../constants.dart';
+import '../../entities/camera.dart';
+import '../../services/location_service.dart';
 
 class MapWidget extends StatelessWidget {
   final List<Camera> cameras;

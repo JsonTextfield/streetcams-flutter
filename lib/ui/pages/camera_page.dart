@@ -4,8 +4,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../entities/bilingual_object.dart';
-import '../entities/camera.dart';
+import '../../entities/bilingual_object.dart';
+import '../../entities/camera.dart';
 import '../widgets/camera_widget.dart';
 
 class CameraPage extends StatefulWidget {

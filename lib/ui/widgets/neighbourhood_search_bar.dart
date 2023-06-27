@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
-import 'package:streetcams_flutter/widgets/search_text_field.dart';
+import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
 
-import '../blocs/camera_bloc.dart';
-import '../entities/neighbourhood.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../entities/neighbourhood.dart';
 
 class NeighbourhoodSearchBar extends StatelessWidget {
   const NeighbourhoodSearchBar({super.key});

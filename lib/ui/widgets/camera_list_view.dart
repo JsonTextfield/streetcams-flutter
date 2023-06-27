@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
-import '../blocs/camera_bloc.dart';
-import '../constants.dart';
-import '../entities/camera.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../constants.dart';
+import '../../entities/camera.dart';
 import '../pages/camera_page.dart';
 
 class CameraListView extends StatelessWidget {

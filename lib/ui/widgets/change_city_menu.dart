@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../blocs/camera_bloc.dart';
-import '../entities/Cities.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../entities/Cities.dart';
 
 class ChangeCityMenu extends StatelessWidget {
   const ChangeCityMenu({super.key});

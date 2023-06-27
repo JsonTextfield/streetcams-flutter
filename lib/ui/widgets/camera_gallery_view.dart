@@ -3,11 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:streetcams_flutter/widgets/camera_gallery_widget.dart';
-
-import '../blocs/camera_bloc.dart';
-import '../entities/camera.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../entities/camera.dart';
 import '../pages/camera_page.dart';
+import 'camera_gallery_widget.dart';
 
 class CameraGalleryView extends StatelessWidget {
   final List<Camera> cameras;

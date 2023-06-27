@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:streetcams_flutter/entities/Cities.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
-import 'package:streetcams_flutter/widgets/camera_widget.dart';
+import 'package:streetcams_flutter/ui/widgets/camera_widget.dart';
 
 void main() {
   testWidgets('test camera widget', (WidgetTester tester) async {

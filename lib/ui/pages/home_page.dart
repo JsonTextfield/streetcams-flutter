@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'package:streetcams_flutter/blocs/camera_bloc.dart';
-import 'package:streetcams_flutter/widgets/camera_gallery_view.dart';
-import 'package:streetcams_flutter/widgets/map_widget.dart';
+import '../../blocs/camera_bloc.dart';
+import '../widgets/camera_gallery_view.dart';
+import '../widgets/map_widget.dart';
 
-import '../constants.dart';
-import '../entities/camera.dart';
+import '../../constants.dart';
+import '../../entities/camera.dart';
 import '../widgets/action_bar.dart';
 import '../widgets/camera_list_view.dart';
 import '../widgets/neighbourhood_search_bar.dart';

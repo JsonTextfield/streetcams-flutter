@@ -4,13 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:streetcams_flutter/widgets/change_city_menu.dart';
-import 'package:streetcams_flutter/widgets/sort_cameras_menu.dart';
-import 'package:streetcams_flutter/widgets/view_mode_menu.dart';
-
-import '../blocs/camera_bloc.dart';
-import '../entities/camera.dart';
+import 'package:streetcams_flutter/ui/widgets/sort_cameras_menu.dart';
+import 'package:streetcams_flutter/ui/widgets/view_mode_menu.dart';
+import '../../blocs/camera_bloc.dart';
+import '../../entities/camera.dart';
 import '../pages/camera_page.dart';
+import 'change_city_menu.dart';
 
 class ActionBar extends StatelessWidget {
   const ActionBar({super.key});

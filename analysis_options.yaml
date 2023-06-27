@@ -52,6 +52,7 @@ dart_code_metrics:
     - no-equal-then-else
     - no-object-declaration
     - prefer-async-await
+    - prefer-relative-imports
     - prefer-correct-edge-insets-constructor
     - prefer-extracting-callbacks
     - use-setstate-synchronously

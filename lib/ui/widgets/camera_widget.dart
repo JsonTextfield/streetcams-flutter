@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-import '../entities/camera.dart';
+import '../../entities/camera.dart';
 
 class CameraWidget extends StatelessWidget {
   // Widget for an individual camera feed

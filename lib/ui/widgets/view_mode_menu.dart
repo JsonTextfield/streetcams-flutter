@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../blocs/camera_bloc.dart';
+import '../../blocs/camera_bloc.dart';
 
 class ViewModeMenu extends StatelessWidget {
   const ViewModeMenu({super.key});
