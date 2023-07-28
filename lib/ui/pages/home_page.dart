@@ -8,7 +8,7 @@ import '../widgets/map_widget.dart';
 
 import '../../constants.dart';
 import '../../entities/camera.dart';
-import '../widgets/action_bar.dart';
+import '../widgets/menus/action_bar.dart';
 import '../widgets/camera_list_view.dart';
 import '../widgets/neighbourhood_search_bar.dart';
 import '../widgets/search_text_field.dart';
@@ -44,6 +44,15 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
+            leading: (state.filterMode != FilterMode.visible)
+                ? BackButton(
+                    onPressed: () {
+                      context
+                          .read<CameraBloc>()
+                          .add(FilterCamera(filterMode: FilterMode.visible));
+                    },
+                  )
+                : null,
             actions: const [ActionBar()],
             backgroundColor: state.selectedCameras.isEmpty
                 ? Theme.of(context).appBarTheme.backgroundColor

@@ -56,13 +56,17 @@ class _SectionIndexState extends State<SectionIndex> {
       );
     }).toList();
 
-    return GestureDetector(
-      key: key,
-      child: Column(children: result),
-      onTapDown: (details) => _selectIndex(details.localPosition.dy),
-      onTapUp: (details) => _resetSelectedIndex(),
-      onVerticalDragUpdate: (details) => _selectIndex(details.localPosition.dy),
-      onVerticalDragEnd: (details) => _resetSelectedIndex(),
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: GestureDetector(
+        key: key,
+        child: Column(children: result),
+        onTapDown: (details) => _selectIndex(details.localPosition.dy),
+        onTapUp: (details) => _resetSelectedIndex(),
+        onVerticalDragUpdate: (details) =>
+            _selectIndex(details.localPosition.dy),
+        onVerticalDragEnd: (details) => _resetSelectedIndex(),
+      ),
     );
   }
 

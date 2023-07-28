@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../blocs/camera_bloc.dart';
-import '../../entities/Cities.dart';
+import '../../../blocs/camera_bloc.dart';
+import '../../../entities/Cities.dart';
 
 class ChangeCityMenu extends StatelessWidget {
   const ChangeCityMenu({super.key});
@@ -29,9 +29,7 @@ class ChangeCityMenu extends StatelessWidget {
               value: Cities.ottawa,
               groupValue: state.city,
               onChanged: (_) => changeCity(Cities.ottawa),
-              child: Center(
-                child: Text(AppLocalizations.of(context)!.ottawa),
-              ),
+              child: Text(AppLocalizations.of(context)!.ottawa),
             ),
             RadioMenuButton<Cities>(
               value: Cities.toronto,

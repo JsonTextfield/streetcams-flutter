@@ -1,8 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../blocs/camera_bloc.dart';
+import '../../../blocs/camera_bloc.dart';
 
 class ViewModeMenu extends StatelessWidget {
   const ViewModeMenu({super.key});
@@ -10,15 +11,11 @@ class ViewModeMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String getTooltip(ViewMode viewMode) {
-      switch (viewMode) {
-        case ViewMode.map:
-          return AppLocalizations.of(context)!.map;
-        case ViewMode.gallery:
-          return AppLocalizations.of(context)!.gallery;
-        case ViewMode.list:
-        default:
-          return AppLocalizations.of(context)!.list;
-      }
+      return switch (viewMode) {
+        ViewMode.map => AppLocalizations.of(context)!.map,
+        ViewMode.gallery => AppLocalizations.of(context)!.gallery,
+        ViewMode.list => AppLocalizations.of(context)!.list
+      };
     }
 
     return BlocBuilder<CameraBloc, CameraState>(
@@ -42,12 +39,13 @@ class ViewModeMenu extends StatelessWidget {
               onChanged: (_) => changeViewMode(ViewMode.list),
               child: Text(AppLocalizations.of(context)!.list),
             ),
-            RadioMenuButton<ViewMode>(
-              value: ViewMode.map,
-              groupValue: state.viewMode,
-              onChanged: (_) => changeViewMode(ViewMode.map),
-              child: Text(AppLocalizations.of(context)!.map),
-            ),
+            if (defaultTargetPlatform != TargetPlatform.windows || kIsWeb)
+              RadioMenuButton<ViewMode>(
+                value: ViewMode.map,
+                groupValue: state.viewMode,
+                onChanged: (_) => changeViewMode(ViewMode.map),
+                child: Text(AppLocalizations.of(context)!.map),
+              ),
             RadioMenuButton<ViewMode>(
               value: ViewMode.gallery,
               groupValue: state.viewMode,
@@ -61,14 +59,10 @@ class ViewModeMenu extends StatelessWidget {
   }
 
   IconData getIcon(ViewMode viewMode) {
-    switch (viewMode) {
-      case ViewMode.map:
-        return Icons.place;
-      case ViewMode.gallery:
-        return Icons.grid_view_rounded;
-      case ViewMode.list:
-      default:
-        return Icons.list;
-    }
+    return switch (viewMode) {
+      ViewMode.map => Icons.place,
+      ViewMode.gallery => Icons.grid_view_rounded,
+      ViewMode.list => Icons.list
+    };
   }
 }

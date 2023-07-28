@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import '../../blocs/camera_bloc.dart';
+import '../../../blocs/camera_bloc.dart';
 
 class SortCamerasMenu extends StatelessWidget {
   const SortCamerasMenu({super.key});
@@ -11,8 +11,8 @@ class SortCamerasMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
-        void sortCameras(SortingMethod sortMode) {
-          context.read<CameraBloc>().add(SortCameras(sortingMethod: sortMode));
+        void sortCameras(SortMode sortMode) {
+          context.read<CameraBloc>().add(SortCameras(sortMode: sortMode));
         }
 
         return MenuAnchor(
@@ -24,22 +24,22 @@ class SortCamerasMenu extends StatelessWidget {
             );
           },
           menuChildren: [
-            RadioMenuButton<SortingMethod>(
-              value: SortingMethod.name,
-              groupValue: state.sortingMethod,
-              onChanged: (_) => sortCameras(SortingMethod.name),
+            RadioMenuButton<SortMode>(
+              value: SortMode.name,
+              groupValue: state.sortMode,
+              onChanged: (_) => sortCameras(SortMode.name),
               child: Text(AppLocalizations.of(context)!.sortName),
             ),
-            RadioMenuButton<SortingMethod>(
-              value: SortingMethod.distance,
-              groupValue: state.sortingMethod,
-              onChanged: (_) => sortCameras(SortingMethod.distance),
+            RadioMenuButton<SortMode>(
+              value: SortMode.distance,
+              groupValue: state.sortMode,
+              onChanged: (_) => sortCameras(SortMode.distance),
               child: Text(AppLocalizations.of(context)!.sortDistance),
             ),
-            RadioMenuButton<SortingMethod>(
-              value: SortingMethod.neighbourhood,
-              groupValue: state.sortingMethod,
-              onChanged: (_) => sortCameras(SortingMethod.neighbourhood),
+            RadioMenuButton<SortMode>(
+              value: SortMode.neighbourhood,
+              groupValue: state.sortMode,
+              onChanged: (_) => sortCameras(SortMode.neighbourhood),
               child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
             ),
           ],

@@ -74,7 +74,8 @@ class DownloadService {
     return jsonArray.map((json) => Neighbourhood.fromJson(json, city)).toList();
   }
 
-  static Future<List<dynamic>> downloadAll(Cities city) async {
+  static Future<(List<Camera>, List<Neighbourhood>)> downloadAll(
+      Cities city) async {
     List<Camera> cameras = await _downloadCameras(city);
     cameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
 
@@ -89,6 +90,6 @@ class DownloadService {
         }
       }
     }
-    return [cameras, neighbourhoods];
+    return (cameras, neighbourhoods);
   }
 }

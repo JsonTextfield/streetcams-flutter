@@ -93,7 +93,7 @@ class CameraListView extends StatelessWidget {
                 visualDensity: const VisualDensity(vertical: -2),
                 title: Text(cam.name, style: const TextStyle(fontSize: 16)),
                 subtitle: Text(cam.neighbourhood),
-                leading: state.sortingMethod == SortingMethod.distance
+                leading: state.sortMode == SortMode.distance
                     ? Text(cam.distance, textAlign: TextAlign.center)
                     : null,
                 trailing: IconButton(
