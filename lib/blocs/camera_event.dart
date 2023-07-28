@@ -19,12 +19,12 @@ class ReloadCameras extends CameraEvent {
 }
 
 class SortCameras extends CameraEvent {
-  final SortingMethod sortingMethod;
+  final SortMode sortMode;
 
-  SortCameras({this.sortingMethod = SortingMethod.name});
+  SortCameras({this.sortMode = SortMode.name});
 
   @override
-  List<Object?> get props => [sortingMethod];
+  List<Object?> get props => [sortMode];
 }
 
 class SearchCameras extends CameraEvent {

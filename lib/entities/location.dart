@@ -39,5 +39,5 @@ class Location {
   }
 
   @override
-  String toString() => '$lat, $lon';
+  String toString() => '[$lat, $lon]';
 }

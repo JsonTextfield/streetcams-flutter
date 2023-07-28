@@ -64,7 +64,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         String str = prefs!.getString('city')!;
         city = Cities.values.firstWhere((Cities c) => describeEnum(c) == str);
       }
-      List<dynamic> allData;
+      ViewMode viewMode = ViewMode.gallery;
+      if ((prefs?.getString('viewMode') ?? '').isNotEmpty) {
+        String str = prefs!.getString('viewMode')!;
+        viewMode =
+            ViewMode.values.firstWhere((ViewMode v) => describeEnum(v) == str);
+      }
+      (List<Camera>, List<Neighbourhood>) allData;
       try {
         allData = await DownloadService.downloadAll(city);
       } on Exception catch (_) {
@@ -72,23 +78,26 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           status: CameraStatus.failure,
         ));
       }
-      List<Camera> allCameras = allData.first;
+      List<Camera> allCameras = allData.$1;
       _readSharedPrefs(allCameras);
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
-        neighbourhoods: allData.last,
+        neighbourhoods: allData.$2,
         allCameras: allCameras,
         status: CameraStatus.success,
         city: city,
-        sortingMethod: SortingMethod.name,
+        sortMode: SortMode.name,
         filterMode: FilterMode.visible,
         searchMode: SearchMode.none,
+        viewMode: viewMode,
       ));
     });
 
     on<ReloadCameras>((event, emit) async {
       _readSharedPrefs(state.displayedCameras);
       _readSharedPrefs(state.allCameras);
+      prefs?.setString('viewMode', event.viewMode.name);
+
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
         allCameras: state.allCameras,
@@ -98,10 +107,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SortCameras>((event, emit) async {
-      await _sortCameras(event.sortingMethod);
+      await _sortCameras(event.sortMode);
       return emit(state.copyWith(
         displayedCameras: state.displayedCameras,
-        sortingMethod: event.sortingMethod,
+        sortMode: event.sortMode,
       ));
     });
 
@@ -148,21 +157,16 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   }
 
   List<Camera> _filterCameras(FilterMode filterMode) {
-    switch (filterMode) {
-      case FilterMode.favourite:
-        return state.favouriteCameras;
-      case FilterMode.visible:
-        return state.visibleCameras;
-      case FilterMode.hidden:
-        return state.hiddenCameras;
-      default:
-        return state.displayedCameras;
-    }
+    return switch (filterMode) {
+      FilterMode.favourite => state.favouriteCameras,
+      FilterMode.visible => state.visibleCameras,
+      FilterMode.hidden => state.hiddenCameras,
+    };
   }
 
-  Future<void> _sortCameras(SortingMethod sortingMethod) async {
-    switch (sortingMethod) {
-      case SortingMethod.distance:
+  Future<void> _sortCameras(SortMode sortMode) async {
+    switch (sortMode) {
+      case SortMode.distance:
         var position = await LocationService.getCurrentLocation();
         var location = Location.fromPosition(position);
         for (Camera cam in state.allCameras) {
@@ -170,10 +174,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         }
         _sortByDistance(location);
         break;
-      case SortingMethod.neighbourhood:
+      case SortMode.neighbourhood:
         _sortByNeighbourhood();
         break;
-      case SortingMethod.name:
+      case SortMode.name:
       default:
         _sortByName();
         break;
@@ -222,22 +226,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     FilterMode filterMode,
     String query,
   ) {
-    return state.allCameras
-        .where(_getFilterPredicate(filterMode))
+    return _filterCameras(filterMode)
         .where(_getSearchPredicate(searchMode, query))
         .toList();
-  }
-
-  bool Function(Camera) _getFilterPredicate(FilterMode filterMode) {
-    switch (filterMode) {
-      case FilterMode.favourite:
-        return (camera) => camera.isFavourite;
-      case FilterMode.hidden:
-        return (camera) => !camera.isVisible;
-      case FilterMode.visible:
-      default:
-        return (camera) => camera.isVisible;
-    }
   }
 
   bool Function(Camera) _getSearchPredicate(SearchMode searchMode, String str) {
@@ -252,19 +243,17 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
   }
 
-  void favouriteSelectedCameras() {
-    bool allFave = state.selectedCameras.every((camera) => camera.isFavourite);
+  void favouriteSelectedCameras(bool favourite) {
     for (Camera camera in state.selectedCameras) {
-      prefs?.setBool('${camera.cameraId}.isFavourite', !allFave);
+      prefs?.setBool('${camera.cameraId}.isFavourite', favourite);
     }
     add(ReloadCameras(viewMode: state.viewMode));
+    add(FilterCamera(filterMode: state.filterMode));
   }
 
-  void hideSelectedCameras() {
-    bool anyVisible = state.selectedCameras.any((camera) => camera.isVisible);
+  void hideSelectedCameras(bool hide) {
     for (Camera cam in state.selectedCameras) {
-      cam.isVisible = !anyVisible;
-      prefs?.setBool('${cam.cameraId}.isVisible', !anyVisible);
+      prefs?.setBool('${cam.cameraId}.isVisible', !hide);
     }
     add(ReloadCameras(viewMode: state.viewMode));
     add(FilterCamera(filterMode: state.filterMode));

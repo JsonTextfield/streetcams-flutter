@@ -4,7 +4,7 @@ enum CameraStatus { initial, success, failure }
 
 enum SearchMode { none, camera, neighbourhood }
 
-enum SortingMethod { name, distance, neighbourhood }
+enum SortMode { name, distance, neighbourhood }
 
 enum FilterMode { visible, hidden, favourite }
 
@@ -16,7 +16,7 @@ class CameraState extends Equatable {
   final List<Camera> selectedCameras;
   final List<Neighbourhood> neighbourhoods;
   final CameraStatus status;
-  final SortingMethod sortingMethod;
+  final SortMode sortMode;
   final SearchMode searchMode;
   final FilterMode filterMode;
   final ViewMode viewMode;
@@ -34,7 +34,7 @@ class CameraState extends Equatable {
 
   bool get showSectionIndex =>
       filterMode == FilterMode.visible &&
-      sortingMethod == SortingMethod.name &&
+      sortMode == SortMode.name &&
       searchMode == SearchMode.none &&
       viewMode == ViewMode.list;
 
@@ -45,7 +45,7 @@ class CameraState extends Equatable {
         selectedCameras,
         neighbourhoods,
         status,
-        sortingMethod,
+        sortMode,
         searchMode,
         filterMode,
         viewMode,
@@ -59,7 +59,7 @@ class CameraState extends Equatable {
     this.displayedCameras = const <Camera>[],
     this.selectedCameras = const <Camera>[],
     this.status = CameraStatus.initial,
-    this.sortingMethod = SortingMethod.name,
+    this.sortMode = SortMode.name,
     this.searchMode = SearchMode.none,
     this.filterMode = FilterMode.visible,
     this.viewMode = ViewMode.gallery,
@@ -73,7 +73,7 @@ class CameraState extends Equatable {
     List<Camera>? displayedCameras,
     List<Camera>? selectedCameras,
     CameraStatus? status,
-    SortingMethod? sortingMethod,
+    SortMode? sortMode,
     SearchMode? searchMode,
     FilterMode? filterMode,
     ViewMode? viewMode,
@@ -86,7 +86,7 @@ class CameraState extends Equatable {
       displayedCameras: displayedCameras ?? this.displayedCameras,
       selectedCameras: selectedCameras ?? this.selectedCameras,
       status: status ?? this.status,
-      sortingMethod: sortingMethod ?? this.sortingMethod,
+      sortMode: sortMode ?? this.sortMode,
       searchMode: searchMode ?? this.searchMode,
       filterMode: filterMode ?? this.filterMode,
       viewMode: viewMode ?? this.viewMode,

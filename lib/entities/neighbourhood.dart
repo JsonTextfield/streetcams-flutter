@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:change_case/change_case.dart';
 
+import 'bilingual_object.dart';
 import 'Cities.dart';
 import 'camera.dart';
 import 'location.dart';

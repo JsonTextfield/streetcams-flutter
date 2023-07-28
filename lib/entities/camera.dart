@@ -1,7 +1,7 @@
 import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
-import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
+import 'bilingual_object.dart';
 import 'Cities.dart';
 import 'location.dart';
 
