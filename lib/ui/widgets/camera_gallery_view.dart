@@ -1,18 +1,22 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import '../../blocs/camera_bloc.dart';
 import '../../entities/camera.dart';
-import '../pages/camera_page.dart';
 import 'camera_gallery_widget.dart';
 
 class CameraGalleryView extends StatelessWidget {
   final List<Camera> cameras;
   final scrollController = ScrollController();
+  final void Function(Camera)? onItemClick;
+  final void Function(Camera)? onItemLongClick;
 
-  CameraGalleryView(this.cameras, {super.key});
+  CameraGalleryView({
+    super.key,
+    required this.cameras,
+    this.onItemClick,
+    this.onItemLongClick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -38,27 +42,8 @@ class CameraGalleryView extends StatelessWidget {
             );
           }
           return GestureDetector(
-            onLongPress: () {
-              context
-                  .read<CameraBloc>()
-                  .add(SelectCamera(camera: cameras[index]));
-            },
-            onTap: () {
-              if (context.read<CameraBloc>().state.selectedCameras.isEmpty) {
-                Navigator.pushNamed(
-                  context,
-                  CameraPage.routeName,
-                  arguments: [
-                    [cameras[index]],
-                    false,
-                  ],
-                );
-              } else {
-                context
-                    .read<CameraBloc>()
-                    .add(SelectCamera(camera: cameras[index]));
-              }
-            },
+            onLongPress: () => onItemLongClick?.call(cameras[index]),
+            onTap: () => onItemClick?.call(cameras[index]),
             child: CameraGalleryWidget(cameras[index]),
           );
         },

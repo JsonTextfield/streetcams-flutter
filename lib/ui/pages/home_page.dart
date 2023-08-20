@@ -44,13 +44,15 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            leading: (state.filterMode != FilterMode.visible)
-                ? BackButton(
+            leading: (state.filterMode != FilterMode.visible ||
+                    state.searchMode != SearchMode.none)
+                ? IconButton(
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(Icons.arrow_back_rounded),
                     onPressed: () {
-                      context
-                          .read<CameraBloc>()
-                          .add(FilterCamera(filterMode: FilterMode.visible));
+                      context.read<CameraBloc>().add(ResetFilters());
                     },
+                    tooltip: AppLocalizations.of(context)!.back,
                   )
                 : null,
             actions: const [ActionBar()],
@@ -94,8 +96,11 @@ class HomePage extends StatelessWidget {
                       break;
                   }
                 }
-                return GestureDetector(
-                  child: Text(title),
+                return InkWell(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    child: Text(title),
+                  ),
                   onTap: () => _moveToListPosition(0),
                 );
               },
@@ -109,11 +114,33 @@ class HomePage extends StatelessWidget {
                     child: Text(AppLocalizations.of(context)!.error),
                   );
                 case CameraStatus.success:
+                  onClick(Camera camera) {
+                    if (state.selectedCameras.isEmpty) {
+                      showCameras([camera]);
+                    } else {
+                      context
+                          .read<CameraBloc>()
+                          .add(SelectCamera(camera: camera));
+                    }
+                  }
+                  onLongClick(Camera camera) {
+                    context
+                        .read<CameraBloc>()
+                        .add(SelectCamera(camera: camera));
+                  }
                   switch (state.viewMode) {
                     case ViewMode.map:
-                      return MapWidget(cameras: state.displayedCameras);
+                      return MapWidget(
+                        cameras: state.displayedCameras,
+                        onItemClick: onClick,
+                        onItemLongClick: onLongClick,
+                      );
                     case ViewMode.gallery:
-                      return CameraGalleryView(state.displayedCameras);
+                      return CameraGalleryView(
+                        cameras: state.displayedCameras,
+                        onItemClick: onClick,
+                        onItemLongClick: onLongClick,
+                      );
                     case ViewMode.list:
                     default:
                       return Row(children: [
@@ -131,7 +158,8 @@ class HomePage extends StatelessWidget {
                           child: CameraListView(
                             itemScrollController: itemScrollController,
                             cameras: state.displayedCameras,
-                            onTapped: (camera) => showCameras([camera]),
+                            onItemClick: onClick,
+                            onItemLongClick: onLongClick,
                           ),
                         ),
                       ]);

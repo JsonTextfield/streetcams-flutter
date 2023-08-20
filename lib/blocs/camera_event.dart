@@ -51,6 +51,8 @@ class ClearSelection extends CameraEvent {}
 
 class SelectAll extends CameraEvent {}
 
+class ResetFilters extends CameraEvent {}
+
 class FilterCamera extends CameraEvent {
   final FilterMode filterMode;
 

@@ -6,18 +6,19 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import '../../blocs/camera_bloc.dart';
 import '../../constants.dart';
 import '../../entities/camera.dart';
-import '../pages/camera_page.dart';
 
 class CameraListView extends StatelessWidget {
   final ItemScrollController? itemScrollController;
   final List<Camera> cameras;
-  final void Function(Camera)? onTapped;
+  final void Function(Camera)? onItemClick;
+  final void Function(Camera)? onItemLongClick;
 
   const CameraListView({
     super.key,
     required this.cameras,
-    this.onTapped,
+    this.onItemClick,
     this.itemScrollController,
+    this.onItemLongClick,
   });
 
   @override
@@ -106,23 +107,8 @@ class CameraListView extends StatelessWidget {
                     context.read<CameraBloc>().updateCamera(cam);
                   },
                 ),
-                onTap: () {
-                  if (state.selectedCameras.isEmpty) {
-                    Navigator.pushNamed(
-                      context,
-                      CameraPage.routeName,
-                      arguments: [
-                        [cam],
-                        false,
-                      ],
-                    );
-                  } else {
-                    context.read<CameraBloc>().add(SelectCamera(camera: cam));
-                  }
-                },
-                onLongPress: () {
-                  context.read<CameraBloc>().add(SelectCamera(camera: cam));
-                },
+                onTap: () => onItemClick?.call(cameras[index]),
+                onLongPress: () => onItemLongClick?.call(cameras[index]),
               ),
             );
           },

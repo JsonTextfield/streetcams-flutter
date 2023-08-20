@@ -131,7 +131,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           : event.filterMode;
       return emit(state.copyWith(
         selectedCameras: [],
-        searchMode: SearchMode.none,
         filterMode: mode,
         displayedCameras: _filterCameras(mode),
       ));
@@ -153,6 +152,16 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<ClearSelection>((event, emit) async {
       return emit(state.copyWith(selectedCameras: const []));
+    });
+
+    on<ResetFilters>((event, emit) async {
+      return emit(state.copyWith(
+        displayedCameras:
+            _searchCameras(SearchMode.none, FilterMode.visible, ''),
+        selectedCameras: [],
+        searchMode: SearchMode.none,
+        filterMode: FilterMode.visible,
+      ));
     });
   }
 
@@ -249,6 +258,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
     add(ReloadCameras(viewMode: state.viewMode));
     add(FilterCamera(filterMode: state.filterMode));
+    add(SortCameras(sortMode: state.sortMode));
   }
 
   void hideSelectedCameras(bool hide) {
@@ -257,6 +267,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     }
     add(ReloadCameras(viewMode: state.viewMode));
     add(FilterCamera(filterMode: state.filterMode));
+    add(SortCameras(sortMode: state.sortMode));
   }
 
   void updateCamera(Camera camera) {

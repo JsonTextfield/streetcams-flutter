@@ -25,13 +25,6 @@ class SearchTextField extends StatelessWidget {
       context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
     }
 
-    back() {
-      controller.clear();
-      context
-          .read<CameraBloc>()
-          .add(SearchCameras(searchMode: SearchMode.none));
-    }
-
     search(value) {
       context
           .read<CameraBloc>()
@@ -40,17 +33,13 @@ class SearchTextField extends StatelessWidget {
 
     return TextField(
       style: const TextStyle(color: Colors.white),
+      cursorColor: Colors.white,
       focusNode: focusNode,
       controller: controller,
       textAlignVertical: TextAlignVertical.center,
       textInputAction: TextInputAction.search,
       onChanged: search,
       decoration: InputDecoration(
-        icon: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-          onPressed: back,
-          tooltip: AppLocalizations.of(context)!.back,
-        ),
         suffixIcon: controller.text.isNotEmpty
             ? IconButton(
                 icon: const Icon(Icons.clear_rounded, color: Colors.white),

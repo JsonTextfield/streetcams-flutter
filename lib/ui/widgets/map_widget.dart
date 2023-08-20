@@ -18,8 +18,15 @@ class MapWidget extends StatelessWidget {
   final List<Camera> cameras;
   final flutter_map.MapController flutterMapController =
       flutter_map.MapController();
+  final void Function(Camera)? onItemClick;
+  final void Function(Camera)? onItemLongClick;
 
-  MapWidget({super.key, required this.cameras});
+  MapWidget({
+    super.key,
+    required this.cameras,
+    this.onItemClick,
+    this.onItemLongClick,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -156,13 +163,11 @@ class MapWidget extends StatelessWidget {
         markers.add(
           Marker(
             icon: _getMarkerIcon(context, camera),
-            markerId: MarkerId(camera.url),
+            markerId: MarkerId(camera.cameraId),
             position: LatLng(camera.location.lat, camera.location.lon),
             infoWindow: InfoWindow(
               title: camera.name,
-              onTap: () {
-                context.read<CameraBloc>().add(SelectCamera(camera: camera));
-              },
+              onTap: () => onItemLongClick?.call(camera),
             ),
             zIndex: context
                     .read<CameraBloc>()

@@ -128,14 +128,16 @@ class ActionBar extends StatelessWidget {
     );
 
     var search = Action(
-      condition: cameraState.searchMode != SearchMode.camera,
+      condition: cameraState.status == CameraStatus.success &&
+          cameraState.searchMode != SearchMode.camera,
       icon: Icons.search_rounded,
       tooltip: AppLocalizations.of(context)!.search,
       onClick: () => searchCameras(SearchMode.camera),
     );
 
     var searchNeighbourhood = Action(
-      condition: cameraState.searchMode != SearchMode.neighbourhood,
+      condition: cameraState.status == CameraStatus.success &&
+          cameraState.searchMode != SearchMode.neighbourhood,
       icon: Icons.travel_explore_rounded,
       tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
       onClick: () => searchCameras(SearchMode.neighbourhood),
@@ -158,13 +160,15 @@ class ActionBar extends StatelessWidget {
     }
 
     Action switchView = Action(
+      condition: cameraState.status == CameraStatus.success,
       icon: getIcon(cameraState.viewMode),
       tooltip: getTooltip(cameraState.viewMode),
       child: const ViewModeMenu(),
     );
 
     Action sort = Action(
-      condition: cameraState.viewMode != ViewMode.map,
+      condition: cameraState.status == CameraStatus.success &&
+          cameraState.viewMode != ViewMode.map,
       icon: Icons.sort_rounded,
       tooltip: AppLocalizations.of(context)!.sort,
       child: const SortCamerasMenu(),
@@ -178,6 +182,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action favourites = Action(
+      condition: cameraState.status == CameraStatus.success,
       icon: Icons.star_rounded,
       tooltip: AppLocalizations.of(context)!.favourites,
       checked: cameraState.filterMode == FilterMode.favourite,
@@ -185,6 +190,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action hidden = Action(
+      condition: cameraState.status == CameraStatus.success,
       icon: Icons.visibility_off_rounded,
       tooltip: AppLocalizations.of(context)!.hidden,
       checked: cameraState.filterMode == FilterMode.hidden,
@@ -192,12 +198,14 @@ class ActionBar extends StatelessWidget {
     );
 
     Action random = Action(
+      condition: cameraState.status == CameraStatus.success,
       icon: Icons.casino_rounded,
       tooltip: AppLocalizations.of(context)!.random,
       onClick: () => showRandomCamera(context),
     );
 
     Action shuffle = Action(
+      condition: cameraState.status == CameraStatus.success,
       icon: Icons.shuffle_rounded,
       tooltip: AppLocalizations.of(context)!.shuffle,
       onClick: () {
