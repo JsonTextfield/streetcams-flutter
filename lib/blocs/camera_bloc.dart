@@ -30,7 +30,7 @@ class LocaleListener with WidgetsBindingObserver {
     super.didChangeLocales(locales);
     BilingualObject.locale =
         locales?.first.languageCode ?? BilingualObject.locale;
-    callback.call();
+    callback();
   }
 }
 

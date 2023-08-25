@@ -56,8 +56,8 @@ class _SectionIndexState extends State<SectionIndex> {
       );
     }).toList();
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 5),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: GestureDetector(
         key: key,
         child: Column(children: result),
@@ -103,7 +103,7 @@ class SectionIndexItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Flexible(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10),
         alignment: Alignment.center,

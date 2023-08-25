@@ -32,12 +32,12 @@ class SearchTextField extends StatelessWidget {
     }
 
     return TextField(
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.white, fontSize: 14),
       cursorColor: Colors.white,
       focusNode: focusNode,
       controller: controller,
       textAlignVertical: TextAlignVertical.center,
-      textInputAction: TextInputAction.search,
+      textInputAction: TextInputAction.done,
       onChanged: search,
       decoration: InputDecoration(
         suffixIcon: controller.text.isNotEmpty
@@ -48,13 +48,12 @@ class SearchTextField extends StatelessWidget {
               )
             : null,
         hintText: hintText,
-        hintStyle: const TextStyle(color: Colors.white70),
-        enabledBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white70),
+        hintStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.normal,
         ),
-        focusedBorder: const UnderlineInputBorder(
-          borderSide: BorderSide(color: Colors.white),
-        ),
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
       ),
     );
   }

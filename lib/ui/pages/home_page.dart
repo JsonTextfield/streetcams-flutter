@@ -59,6 +59,7 @@ class HomePage extends StatelessWidget {
             backgroundColor: state.selectedCameras.isEmpty
                 ? Theme.of(context).appBarTheme.backgroundColor
                 : Constants.accentColour,
+            titleSpacing: 0.0,
             title: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
                 if (state.selectedCameras.isEmpty) {
@@ -97,8 +98,11 @@ class HomePage extends StatelessWidget {
                   }
                 }
                 return InkWell(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  customBorder: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
                     child: Text(title),
                   ),
                   onTap: () => _moveToListPosition(0),

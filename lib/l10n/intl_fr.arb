@@ -9,7 +9,7 @@
   "search": "Chercher",
   "sortName": "Trier par nom",
   "sortDistance": "Trier par distance",
-  "sortNeighbourhood": "Trier par quartier",
+  "sortNeighbourhood": "Trier par\nquartier",
   "searchNeighbourhood": "Chercher par\nquartier",
   "sort": "Trier",
   "list": "Liste",
@@ -34,7 +34,7 @@
       }
     }
   },
-  "selectedCameras": "{count,plural, =0{0 caméras sélectionnées} =1{1 caméra sélectionnée} other{{count} caméras sélectionnées}}",
+  "selectedCameras": "{count,plural, =0{0 sélectionnées} =1{1 sélectionnée} other{{count} sélectionnées}}",
   "@selectedCameras": {
     "placeholders": {
       "count": {

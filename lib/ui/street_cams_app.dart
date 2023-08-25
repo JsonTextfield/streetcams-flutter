@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -23,11 +24,18 @@ class StreetCamsApp extends StatelessWidget {
         CameraPage.routeName: (context) => const CameraPage(),
       },
       theme: ThemeData(
+        useMaterial3: true,
         colorScheme: const ColorScheme.light(
           secondary: Constants.accentColour,
           primary: Constants.primaryColour,
         ),
-        appBarTheme: const AppBarTheme(backgroundColor: Constants.accentColour),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Constants.accentColour,
+          foregroundColor: Colors.white,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Constants.accentColour,
+          ),
+        ),
         popupMenuTheme: PopupMenuThemeData(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
@@ -42,6 +50,7 @@ class StreetCamsApp extends StatelessWidget {
         ),
       ),
       darkTheme: ThemeData(
+        useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(
           secondary: Constants.accentColour,

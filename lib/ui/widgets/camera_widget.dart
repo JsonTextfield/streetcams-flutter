@@ -59,11 +59,14 @@ class CameraWidget extends StatelessWidget {
                   color: Colors.black54,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                margin: const EdgeInsets.all(5),
-                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(2),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 5,
+                  horizontal: 10,
+                ),
                 child: Text(
                   camera.name,
-                  style: const TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white, fontSize: 12),
                   textAlign: TextAlign.center,
                   textDirection: TextDirection.ltr,
                 ),
