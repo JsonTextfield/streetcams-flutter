@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streetcams_flutter/entities/Cities.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/location.dart';
 import 'package:streetcams_flutter/entities/neighbourhood.dart';
@@ -48,14 +48,14 @@ void main() {
           ],
         },
       },
-      Cities.ottawa,
+      City.ottawa,
     );
     var camera = Camera.fromJson(
       {
         'longitude': -75.696969,
         'latitude': 45.454545,
       },
-      Cities.ottawa,
+      City.ottawa,
     );
     expect(neighbourhood.containsCamera(camera), true);
 
@@ -64,7 +64,7 @@ void main() {
         'longitude': -75.0,
         'latitude': 23.999,
       },
-      Cities.ottawa,
+      City.ottawa,
     );
     expect(neighbourhood.containsCamera(camera2), false);
   });

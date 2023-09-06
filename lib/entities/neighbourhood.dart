@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:change_case/change_case.dart';
 
 import 'bilingual_object.dart';
-import 'Cities.dart';
+import 'city.dart';
 import 'camera.dart';
 import 'location.dart';
 
@@ -17,29 +17,29 @@ class Neighbourhood extends BilingualObject {
     nameFr = '',
   }) : super(id: id, nameEn: nameEn, nameFr: nameFr);
 
-  factory Neighbourhood.fromJson(Map<String, dynamic> json, Cities city) {
+  factory Neighbourhood.fromJson(Map<String, dynamic> json, City city) {
     List<List<Location>> boundaries = _getBoundaries(json, city);
     Map<String, dynamic> properties = json['properties'] ?? {};
     switch (city) {
-      case Cities.toronto:
+      case City.toronto:
         return Neighbourhood(
           boundaries: boundaries,
           id: properties['AREA_ID'] ?? 0,
           nameEn: properties['AREA_NAME'] ?? '',
         );
-      case Cities.montreal:
+      case City.montreal:
         return Neighbourhood(
           boundaries: boundaries,
           id: int.parse(properties['no_qr'] ?? '0', radix: 16),
           nameFr: properties['nom_qr'] ?? '',
         );
-      case Cities.calgary:
+      case City.calgary:
         String name = json['name'] ?? '';
         return Neighbourhood(
           boundaries: boundaries,
           nameEn: name.toCapitalCase(),
         );
-      case Cities.ottawa:
+      case City.ottawa:
       default:
         return Neighbourhood(
           boundaries: boundaries,
@@ -52,7 +52,7 @@ class Neighbourhood extends BilingualObject {
 
   static List<List<Location>> _getBoundaries(
     Map<String, dynamic> json,
-    Cities city,
+    City city,
   ) {
     List<dynamic> areas = [];
     Map<String, dynamic> geometry = json['geometry'] ?? {};
@@ -61,14 +61,14 @@ class Neighbourhood extends BilingualObject {
     List<dynamic> multiPolygonCoordinates = multiPolygon['coordinates'] ?? [];
 
     switch (city) {
-      case Cities.ottawa:
+      case City.ottawa:
         areas = geometryCoordinates;
         break;
-      case Cities.toronto:
-      case Cities.montreal:
+      case City.toronto:
+      case City.montreal:
         areas = geometryCoordinates[0] ?? [];
         break;
-      case Cities.calgary:
+      case City.calgary:
         areas = multiPolygonCoordinates[0] ?? [];
         break;
       default:

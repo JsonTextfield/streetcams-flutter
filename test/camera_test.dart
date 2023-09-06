@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streetcams_flutter/entities/Cities.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/location.dart';
 
@@ -10,7 +10,7 @@ void main() {
     String name = 'Camera';
     String nameFr = 'CameraFr';
     Location location = const Location(lat: 45.454545, lon: -75.696969);
-    Cities city = Cities.ottawa;
+    City city = City.ottawa;
 
     var camera1 = Camera(
       city: city,
@@ -38,7 +38,7 @@ void main() {
     String name = 'Camera';
     String nameFr = 'CameraFr';
     Location location = const Location(lat: 45.454545, lon: -75.696969);
-    Cities city = Cities.ottawa;
+    City city = City.ottawa;
 
     var camera1 = Camera(
       city: city,
@@ -70,16 +70,16 @@ void main() {
   });
 
   test('camera creation city from json', () {
-    var camera = Camera.fromJson({}, Cities.ottawa);
-    expect(camera.city, Cities.ottawa);
+    var camera = Camera.fromJson({}, City.ottawa);
+    expect(camera.city, City.ottawa);
 
-    camera = Camera.fromJson({}, Cities.toronto);
-    expect(camera.city, Cities.toronto);
+    camera = Camera.fromJson({}, City.toronto);
+    expect(camera.city, City.toronto);
 
-    camera = Camera.fromJson({}, Cities.montreal);
-    expect(camera.city, Cities.montreal);
+    camera = Camera.fromJson({}, City.montreal);
+    expect(camera.city, City.montreal);
 
-    camera = Camera.fromJson({}, Cities.calgary);
-    expect(camera.city, Cities.calgary);
+    camera = Camera.fromJson({}, City.calgary);
+    expect(camera.city, City.calgary);
   });
 }

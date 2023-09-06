@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../blocs/camera_bloc.dart';
-import '../../../entities/Cities.dart';
+import '../../../entities/city.dart';
 
 class ChangeCityMenu extends StatelessWidget {
   const ChangeCityMenu({super.key});
@@ -12,7 +12,7 @@ class ChangeCityMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
-        void changeCity(Cities city) {
+        void changeCity(City city) {
           context.read<CameraBloc>().changeCity(city);
         }
 
@@ -25,28 +25,28 @@ class ChangeCityMenu extends StatelessWidget {
             );
           },
           menuChildren: [
-            RadioMenuButton<Cities>(
-              value: Cities.ottawa,
+            RadioMenuButton<City>(
+              value: City.ottawa,
               groupValue: state.city,
-              onChanged: (_) => changeCity(Cities.ottawa),
+              onChanged: (_) => changeCity(City.ottawa),
               child: Text(AppLocalizations.of(context)!.ottawa),
             ),
-            RadioMenuButton<Cities>(
-              value: Cities.toronto,
+            RadioMenuButton<City>(
+              value: City.toronto,
               groupValue: state.city,
-              onChanged: (_) => changeCity(Cities.toronto),
+              onChanged: (_) => changeCity(City.toronto),
               child: Text(AppLocalizations.of(context)!.toronto),
             ),
-            RadioMenuButton<Cities>(
-              value: Cities.montreal,
+            RadioMenuButton<City>(
+              value: City.montreal,
               groupValue: state.city,
-              onChanged: (_) => changeCity(Cities.montreal),
+              onChanged: (_) => changeCity(City.montreal),
               child: Text(AppLocalizations.of(context)!.montreal),
             ),
-            RadioMenuButton<Cities>(
-              value: Cities.calgary,
+            RadioMenuButton<City>(
+              value: City.calgary,
               groupValue: state.city,
-              onChanged: (_) => changeCity(Cities.calgary),
+              onChanged: (_) => changeCity(City.calgary),
               child: Text(AppLocalizations.of(context)!.calgary),
             ),
           ],

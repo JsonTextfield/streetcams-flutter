@@ -2,7 +2,7 @@ import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
 
 import 'bilingual_object.dart';
-import 'Cities.dart';
+import 'city.dart';
 import 'location.dart';
 
 class Camera extends BilingualObject with EquatableMixin {
@@ -13,7 +13,7 @@ class Camera extends BilingualObject with EquatableMixin {
   final Location location;
   String neighbourhood = '';
   String _url = '';
-  final Cities city;
+  final City city;
 
   Camera({
     this.num = 0,
@@ -27,23 +27,18 @@ class Camera extends BilingualObject with EquatableMixin {
     _url = url;
   }
 
-  factory Camera.fromJson(Map<String, dynamic> json, Cities city) {
-    switch (city) {
-      case Cities.toronto:
-        return Camera._fromJsonToronto(json);
-      case Cities.montreal:
-        return Camera._fromJsonMontreal(json);
-      case Cities.calgary:
-        return Camera._fromJsonCalgary(json);
-      case Cities.ottawa:
-      default:
-        return Camera._fromJsonOttawa(json);
-    }
+  factory Camera.fromJson(Map<String, dynamic> json, City city) {
+    return switch (city) {
+      City.toronto => Camera._fromJsonToronto(json),
+      City.montreal => Camera._fromJsonMontreal(json),
+      City.calgary => Camera._fromJsonCalgary(json),
+      City.ottawa => Camera._fromJsonOttawa(json),
+    };
   }
 
   factory Camera._fromJsonOttawa(Map<String, dynamic> json) {
     return Camera(
-      city: Cities.ottawa,
+      city: City.ottawa,
       num: json['number'] ?? 0,
       location: Location.fromJson(json),
       id: json['id'] ?? 0,
@@ -59,7 +54,7 @@ class Camera extends BilingualObject with EquatableMixin {
     String mainRoad = properties['MAINROAD'] ?? 'Main St';
     String sideRoad = properties['CROSSROAD'] ?? 'Cross Rd';
     return Camera(
-      city: Cities.toronto,
+      city: City.toronto,
       num: properties['REC_ID'] ?? 0,
       location: Location.fromJsonArray(coordinates[0] ?? [0.0, 0.0]),
       id: properties['_id'] ?? 0,
@@ -71,7 +66,7 @@ class Camera extends BilingualObject with EquatableMixin {
     Map<String, dynamic> properties = json['properties'] ?? {};
     Map<String, dynamic> geometry = json['geometry'] ?? {};
     return Camera(
-      city: Cities.montreal,
+      city: City.montreal,
       location: Location.fromJsonArray(geometry['coordinates'] ?? [0.0, 0.0]),
       id: properties['id-camera'] ?? 0,
       nameFr: properties['titre'] ?? '',
@@ -83,7 +78,7 @@ class Camera extends BilingualObject with EquatableMixin {
     Map<String, dynamic> point = json['point'] ?? {};
     Map<String, dynamic> cameraUrl = json['camera_url'] ?? {};
     return Camera(
-      city: Cities.calgary,
+      city: City.calgary,
       location: Location.fromJsonArray(point['coordinates'] ?? [0.0, 0.0]),
       nameEn: json['camera_location'] ?? '',
       url: cameraUrl['url'] ?? '',
@@ -92,7 +87,7 @@ class Camera extends BilingualObject with EquatableMixin {
 
   @override
   String get sortableName {
-    if (city != Cities.montreal) {
+    if (city != City.montreal) {
       return super.sortableName;
     }
 
@@ -119,12 +114,12 @@ class Camera extends BilingualObject with EquatableMixin {
 
   String get url {
     switch (city) {
-      case Cities.toronto:
+      case City.toronto:
         return 'http://opendata.toronto.ca/transportation/tmc/rescucameraimages/CameraImages/loc$num.jpg';
-      case Cities.montreal:
-      case Cities.calgary:
+      case City.montreal:
+      case City.calgary:
         return _url;
-      case Cities.ottawa:
+      case City.ottawa:
       default:
         int time = DateTime.now().millisecondsSinceEpoch;
         return 'https://traffic.ottawa.ca/beta/camera?id=$num&timems=$time';

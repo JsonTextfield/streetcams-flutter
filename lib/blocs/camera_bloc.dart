@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
 
-import '../entities/Cities.dart';
+import '../entities/city.dart';
 import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
 import '../entities/location.dart';
@@ -59,10 +59,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraLoaded>((event, emit) async {
       BilingualObject.locale = await intl.findSystemLocale();
       prefs ??= await SharedPreferences.getInstance();
-      Cities city = Cities.ottawa;
+      City city = City.ottawa;
       if ((prefs?.getString('city') ?? '').isNotEmpty) {
         String str = prefs!.getString('city')!;
-        city = Cities.values.firstWhere((Cities c) => describeEnum(c) == str);
+        city = City.values.firstWhere((City c) => describeEnum(c) == str);
       }
       ViewMode viewMode = ViewMode.gallery;
       if ((prefs?.getString('viewMode') ?? '').isNotEmpty) {
@@ -283,7 +283,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     add(ReloadCameras(viewMode: state.viewMode));
   }
 
-  void changeCity(Cities city) {
+  void changeCity(City city) {
     add(CameraLoading());
     prefs?.setString('city', city.name);
     add(CameraLoaded());

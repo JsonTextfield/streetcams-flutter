@@ -1,4 +1,4 @@
-enum Cities {
+enum City {
   ottawa,
   toronto,
   montreal,

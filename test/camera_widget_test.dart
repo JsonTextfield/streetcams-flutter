@@ -7,7 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streetcams_flutter/entities/Cities.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_widget.dart';
 
@@ -23,7 +23,7 @@ void main() {
         'type': 'MTO',
         'longitude': -75.81467,
       },
-      Cities.ottawa,
+      City.ottawa,
     );
     // Build our app and trigger a frame.
     await tester.pumpWidget(CameraWidget(ottawaCamera));
