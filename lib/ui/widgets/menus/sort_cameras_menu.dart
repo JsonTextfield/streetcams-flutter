@@ -3,9 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../blocs/camera_bloc.dart';
+import 'radio_menu_item.dart';
 
 class SortCamerasMenu extends StatelessWidget {
-  const SortCamerasMenu({super.key});
+  const SortCamerasMenu({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +17,33 @@ class SortCamerasMenu extends StatelessWidget {
         void sortCameras(SortMode sortMode) {
           context.read<CameraBloc>().add(SortCameras(sortMode: sortMode));
         }
+
+        return PopupMenuButton<SortMode>(
+          position: PopupMenuPosition.under,
+          icon: const Icon(Icons.sort_rounded),
+          tooltip: AppLocalizations.of(context)!.sort,
+          itemBuilder: (context) => [
+            RadioMenuItem<SortMode>(
+              value: SortMode.name,
+              text: AppLocalizations.of(context)!.sortName,
+              groupValue: state.sortMode,
+              onChanged: (_) {},
+            ),
+            RadioMenuItem<SortMode>(
+              value: SortMode.distance,
+              text: AppLocalizations.of(context)!.sortDistance,
+              groupValue: state.sortMode,
+              onChanged: (_) {},
+            ),
+            RadioMenuItem<SortMode>(
+              value: SortMode.neighbourhood,
+              text: AppLocalizations.of(context)!.sortNeighbourhood,
+              groupValue: state.sortMode,
+              onChanged: (_) {},
+            ),
+          ],
+          onSelected: sortCameras,
+        );
 
         return MenuAnchor(
           builder: (context, menu, child) {

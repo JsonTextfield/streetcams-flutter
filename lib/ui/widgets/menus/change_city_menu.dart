@@ -4,9 +4,12 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../../blocs/camera_bloc.dart';
 import '../../../entities/city.dart';
+import 'radio_menu_item.dart';
 
 class ChangeCityMenu extends StatelessWidget {
-  const ChangeCityMenu({super.key});
+  const ChangeCityMenu({
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +18,39 @@ class ChangeCityMenu extends StatelessWidget {
         void changeCity(City city) {
           context.read<CameraBloc>().changeCity(city);
         }
+
+        return PopupMenuButton<City>(
+          position: PopupMenuPosition.under,
+          icon: const Icon(Icons.location_city_rounded),
+          tooltip: AppLocalizations.of(context)!.city,
+          itemBuilder: (context) => [
+            RadioMenuItem<City>(
+              value: City.ottawa,
+              text: AppLocalizations.of(context)!.ottawa,
+              groupValue: state.city,
+              onChanged: (_) {},
+            ),
+            RadioMenuItem<City>(
+              value: City.toronto,
+              text: AppLocalizations.of(context)!.toronto,
+              groupValue: state.city,
+              onChanged: (_) {},
+            ),
+            RadioMenuItem<City>(
+              value: City.montreal,
+              text: AppLocalizations.of(context)!.montreal,
+              groupValue: state.city,
+              onChanged: (_) {},
+            ),
+            RadioMenuItem<City>(
+              value: City.calgary,
+              text: AppLocalizations.of(context)!.calgary,
+              groupValue: state.city,
+              onChanged: (_) {},
+            ),
+          ],
+          onSelected: changeCity,
+        );
 
         return MenuAnchor(
           builder: (context, menu, child) {

@@ -6,7 +6,7 @@ final class Action {
   final bool condition;
   final bool checked;
   final Function()? onClick;
-  final Widget? child;
+  final List<PopupMenuItem> popupMenuItems;
 
   const Action({
     required this.icon,
@@ -14,6 +14,6 @@ final class Action {
     this.condition = true,
     this.checked = false,
     this.onClick,
-    this.child,
+    this.popupMenuItems = const [],
   });
 }

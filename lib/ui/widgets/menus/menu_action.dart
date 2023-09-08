@@ -12,6 +12,6 @@ class MenuAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return action.child ?? Icon(action.icon);
+    return Icon(action.icon);
   }
 }
