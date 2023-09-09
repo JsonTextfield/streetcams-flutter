@@ -1,10 +1,10 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Action;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:streetcams_flutter/ui/widgets/menus/overflow_action.dart';
 import 'package:streetcams_flutter/ui/widgets/menus/toolbar_action.dart';
 
 import '../../../blocs/camera_bloc.dart';
@@ -12,7 +12,6 @@ import '../../../entities/camera.dart';
 import '../../../entities/city.dart';
 import '../../pages/camera_page.dart';
 import 'action.dart';
-import 'radio_menu_item.dart';
 
 class ActionBar extends StatelessWidget {
   const ActionBar({super.key});
@@ -22,52 +21,51 @@ class ActionBar extends StatelessWidget {
     debugPrint('building action bar');
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
-        List<Action> visibleActions = getActions(context).where((action) {
-          return action.condition;
-        }).toList();
+        List<Action> visibleActions =
+            _getActions(context).where((action) => action.condition).toList();
 
         // the number of 48-width buttons that can fit in 1/3 the width of the window
         int maxActions = (MediaQuery.sizeOf(context).width / 3 / 48).floor();
         if (maxActions > 0 && visibleActions.length > maxActions) {
           List<Action> overflowActions = visibleActions.sublist(maxActions - 1);
           visibleActions = visibleActions.sublist(0, maxActions - 1);
-
-          List<PopupMenuItem> overflowMenuItems = overflowActions.map((action) {
-            if (action.popupMenuItems.isEmpty) {
-              return PopupMenuItem(
-                onTap: action.onClick,
-                child: OverflowAction(action: action),
-              );
-            }
-            return PopupMenuItem(
-              onTap: action.onClick,
-              padding: EdgeInsets.zero,
-              child: PopupMenuButton(
-                position: PopupMenuPosition.under,
-                tooltip: action.tooltip,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: OverflowAction(action: action),
-                ),
-                itemBuilder: (context) => action.popupMenuItems,
-              ),
-            );
-          }).toList();
+          List<Widget> overflowMenuItems = overflowActions.map(
+            (action) {
+              return action.children != null
+                  ? SubmenuButton(
+                      menuChildren: action.children ?? [],
+                      leadingIcon: Icon(action.icon),
+                      child: Text(action.tooltip),
+                    )
+                  : MenuItemButton(
+                      leadingIcon: Icon(action.icon),
+                      trailingIcon: action.checked
+                          ? const Icon(Icons.check_rounded)
+                          : null,
+                      onPressed: action.onClick,
+                      child: Text(action.tooltip),
+                    );
+            },
+          ).toList();
 
           Action more = Action(
             tooltip: AppLocalizations.of(context)!.more,
             icon: Icons.more_vert_rounded,
-            popupMenuItems: overflowMenuItems,
+            children: overflowMenuItems,
           );
           visibleActions.add(more);
         }
         List<Widget> toolbarActions = visibleActions.map((action) {
-          if (action.popupMenuItems.isNotEmpty) {
-            return PopupMenuButton(
-              position: PopupMenuPosition.under,
-              icon: Icon(action.icon),
-              tooltip: action.tooltip,
-              itemBuilder: (context) => action.popupMenuItems,
+          if (action.children != null) {
+            return MenuAnchor(
+              builder: (context, menu, child) {
+                return IconButton(
+                  onPressed: () => menu.isOpen ? menu.close() : menu.open(),
+                  tooltip: action.tooltip,
+                  icon: Icon(action.icon),
+                );
+              },
+              menuChildren: action.children ?? [],
             );
           }
           return ToolbarAction(action: action);
@@ -77,16 +75,30 @@ class ActionBar extends StatelessWidget {
     );
   }
 
-  List<Action> getActions(BuildContext context) {
+  List<Action> _getActions(BuildContext context) {
     CameraState cameraState = context.read<CameraBloc>().state;
 
-    void filterCameras(FilterMode filterMode) {
+    void changeFilterMode(FilterMode filterMode) {
       context.read<CameraBloc>().add(FilterCamera(filterMode: filterMode));
     }
 
-    void searchCameras(SearchMode searchMode) {
+    void changeSearchMode(SearchMode searchMode) {
       context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
     }
+
+    void changeViewMode(ViewMode viewMode) {
+      context.read<CameraBloc>().add(ReloadCameras(viewMode: viewMode));
+    }
+
+    void changeSortMode(SortMode sortMode) {
+      context.read<CameraBloc>().add(SortCameras(sortMode: sortMode));
+    }
+
+    void changeCity(City city) {
+      context.read<CameraBloc>().changeCity(city);
+    }
+
+    List<Camera> selectedCameras = cameraState.selectedCameras;
 
     Action clear = Action(
       icon: Icons.clear_rounded,
@@ -94,13 +106,11 @@ class ActionBar extends StatelessWidget {
       onClick: () => context.read<CameraBloc>().add(ClearSelection()),
     );
 
-    List<Camera> selectedCameras = cameraState.selectedCameras;
-
     Action view = Action(
       condition: selectedCameras.length <= 8,
       icon: Icons.camera_alt_rounded,
       tooltip: AppLocalizations.of(context)!.showCameras,
-      onClick: () => showCameras(context, selectedCameras),
+      onClick: () => _showCameras(context, selectedCameras),
     );
 
     bool allFav = selectedCameras.every((cam) => cam.isFavourite);
@@ -116,18 +126,17 @@ class ActionBar extends StatelessWidget {
       },
     );
 
-    bool allIsHidden = selectedCameras.every((cam) => !cam.isVisible);
-    String hideToolTip = allIsHidden
+    bool allHidden = selectedCameras.every((cam) => !cam.isVisible);
+    String hideToolTip = allHidden
         ? AppLocalizations.of(context)!.unhide
         : AppLocalizations.of(context)!.hide;
     IconData hideIcon =
-        allIsHidden ? Icons.visibility_rounded : Icons.visibility_off_rounded;
-
+        allHidden ? Icons.visibility_rounded : Icons.visibility_off_rounded;
     Action hide = Action(
       icon: hideIcon,
       tooltip: hideToolTip,
       onClick: () {
-        context.read<CameraBloc>().hideSelectedCameras(allIsHidden);
+        context.read<CameraBloc>().hideSelectedCameras(allHidden);
       },
     );
 
@@ -143,7 +152,7 @@ class ActionBar extends StatelessWidget {
           cameraState.searchMode != SearchMode.camera,
       icon: Icons.search_rounded,
       tooltip: AppLocalizations.of(context)!.search,
-      onClick: () => searchCameras(SearchMode.camera),
+      onClick: () => changeSearchMode(SearchMode.camera),
     );
 
     Action searchNeighbourhood = Action(
@@ -151,7 +160,7 @@ class ActionBar extends StatelessWidget {
           cameraState.searchMode != SearchMode.neighbourhood,
       icon: Icons.travel_explore_rounded,
       tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
-      onClick: () => searchCameras(SearchMode.neighbourhood),
+      onClick: () => changeSearchMode(SearchMode.neighbourhood),
     );
 
     String getTooltip(ViewMode viewMode) {
@@ -170,112 +179,88 @@ class ActionBar extends StatelessWidget {
       };
     }
 
-    void changeViewMode(ViewMode viewMode) {
-      Navigator.pop(context);
-      context.read<CameraBloc>().add(ReloadCameras(viewMode: viewMode));
-    }
-
     Action switchView = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: getIcon(cameraState.viewMode),
       tooltip: getTooltip(cameraState.viewMode),
-      popupMenuItems: [
-        RadioMenuItem<ViewMode>(
+      children: <RadioMenuButton<ViewMode>>[
+        RadioMenuButton<ViewMode>(
           value: ViewMode.list,
-          text: AppLocalizations.of(context)!.list,
           groupValue: cameraState.viewMode,
-          onChanged: changeViewMode,
-          onTap: () => changeViewMode(ViewMode.list),
+          onChanged: (_) => changeViewMode(ViewMode.list),
+          child: Text(AppLocalizations.of(context)!.list),
         ),
-        RadioMenuItem<ViewMode>(
-          value: ViewMode.map,
-          text: AppLocalizations.of(context)!.map,
-          groupValue: cameraState.viewMode,
-          onChanged: changeViewMode,
-          onTap: () => changeViewMode(ViewMode.map),
-        ),
-        RadioMenuItem<ViewMode>(
+        if (defaultTargetPlatform != TargetPlatform.windows || kIsWeb)
+          RadioMenuButton<ViewMode>(
+            value: ViewMode.map,
+            groupValue: cameraState.viewMode,
+            onChanged: (_) => changeViewMode(ViewMode.map),
+            child: Text(AppLocalizations.of(context)!.map),
+          ),
+        RadioMenuButton<ViewMode>(
           value: ViewMode.gallery,
-          text: AppLocalizations.of(context)!.gallery,
           groupValue: cameraState.viewMode,
-          onChanged: changeViewMode,
-          onTap: () => changeViewMode(ViewMode.gallery),
+          onChanged: (_) => changeViewMode(ViewMode.gallery),
+          child: Text(AppLocalizations.of(context)!.gallery),
         ),
       ],
     );
-
-    void changeSortMode(SortMode sortMode) {
-      Navigator.pop(context);
-      context.read<CameraBloc>().add(SortCameras(sortMode: sortMode));
-    }
 
     Action sort = Action(
       condition: cameraState.status == CameraStatus.success &&
           cameraState.viewMode != ViewMode.map,
       icon: Icons.sort_rounded,
       tooltip: AppLocalizations.of(context)!.sort,
-      popupMenuItems: [
-        RadioMenuItem<SortMode>(
+      children: [
+        RadioMenuButton<SortMode>(
           value: SortMode.name,
-          text: AppLocalizations.of(context)!.sortName,
           groupValue: cameraState.sortMode,
-          onChanged: changeSortMode,
-          onTap: () => changeSortMode(SortMode.name),
+          onChanged: (_) => changeSortMode(SortMode.name),
+          child: Text(AppLocalizations.of(context)!.sortName),
         ),
-        RadioMenuItem<SortMode>(
+        RadioMenuButton<SortMode>(
           value: SortMode.distance,
-          text: AppLocalizations.of(context)!.sortDistance,
           groupValue: cameraState.sortMode,
-          onChanged: changeSortMode,
-          onTap: () => changeSortMode(SortMode.distance),
+          onChanged: (_) => changeSortMode(SortMode.distance),
+          child: Text(AppLocalizations.of(context)!.sortDistance),
         ),
-        RadioMenuItem<SortMode>(
+        RadioMenuButton<SortMode>(
           value: SortMode.neighbourhood,
-          text: AppLocalizations.of(context)!.sortNeighbourhood,
           groupValue: cameraState.sortMode,
-          onChanged: changeSortMode,
-          onTap: () => changeSortMode(SortMode.neighbourhood),
+          onChanged: (_) => changeSortMode(SortMode.neighbourhood),
+          child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
         ),
       ],
     );
-
-    void changeCity(City city) {
-      Navigator.pop(context);
-      context.read<CameraBloc>().changeCity(city);
-    }
 
     Action city = Action(
       condition: cameraState.searchMode == SearchMode.none,
       icon: Icons.location_city_rounded,
       tooltip: AppLocalizations.of(context)!.city,
-      popupMenuItems: [
-        RadioMenuItem<City>(
+      children: [
+        RadioMenuButton<City>(
           value: City.ottawa,
-          text: AppLocalizations.of(context)!.ottawa,
           groupValue: cameraState.city,
-          onChanged: changeCity,
-          onTap: () => changeCity(City.ottawa),
+          onChanged: (_) => changeCity(City.ottawa),
+          child: Text(AppLocalizations.of(context)!.ottawa),
         ),
-        RadioMenuItem<City>(
+        RadioMenuButton<City>(
           value: City.toronto,
-          text: AppLocalizations.of(context)!.toronto,
           groupValue: cameraState.city,
-          onChanged: changeCity,
-          onTap: () => changeCity(City.toronto),
+          onChanged: (_) => changeCity(City.toronto),
+          child: Text(AppLocalizations.of(context)!.toronto),
         ),
-        RadioMenuItem<City>(
+        RadioMenuButton<City>(
           value: City.montreal,
-          text: AppLocalizations.of(context)!.montreal,
           groupValue: cameraState.city,
-          onChanged: changeCity,
-          onTap: () => changeCity(City.montreal),
+          onChanged: (_) => changeCity(City.montreal),
+          child: Text(AppLocalizations.of(context)!.montreal),
         ),
-        RadioMenuItem<City>(
+        RadioMenuButton<City>(
           value: City.calgary,
-          text: AppLocalizations.of(context)!.calgary,
           groupValue: cameraState.city,
-          onChanged: changeCity,
-          onTap: () => changeCity(City.calgary),
+          onChanged: (_) => changeCity(City.calgary),
+          child: Text(AppLocalizations.of(context)!.calgary),
         ),
       ],
     );
@@ -285,7 +270,7 @@ class ActionBar extends StatelessWidget {
       icon: Icons.star_rounded,
       tooltip: AppLocalizations.of(context)!.favourites,
       checked: cameraState.filterMode == FilterMode.favourite,
-      onClick: () => filterCameras(FilterMode.favourite),
+      onClick: () => changeFilterMode(FilterMode.favourite),
     );
 
     Action hidden = Action(
@@ -293,14 +278,14 @@ class ActionBar extends StatelessWidget {
       icon: Icons.visibility_off_rounded,
       tooltip: AppLocalizations.of(context)!.hidden,
       checked: cameraState.filterMode == FilterMode.hidden,
-      onClick: () => filterCameras(FilterMode.hidden),
+      onClick: () => changeFilterMode(FilterMode.hidden),
     );
 
     Action random = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: Icons.casino_rounded,
       tooltip: AppLocalizations.of(context)!.random,
-      onClick: () => showRandomCamera(context),
+      onClick: () => _showRandomCamera(context),
     );
 
     Action shuffle = Action(
@@ -308,7 +293,7 @@ class ActionBar extends StatelessWidget {
       icon: Icons.shuffle_rounded,
       tooltip: AppLocalizations.of(context)!.shuffle,
       onClick: () {
-        showCameras(
+        _showCameras(
           context,
           context.read<CameraBloc>().state.visibleCameras,
           shuffle: true,
@@ -319,7 +304,7 @@ class ActionBar extends StatelessWidget {
     Action about = Action(
       tooltip: AppLocalizations.of(context)!.about,
       icon: Icons.info_rounded,
-      onClick: () => showAbout(context),
+      onClick: () => _showAbout(context),
     );
 
     if (selectedCameras.isEmpty) {
@@ -345,18 +330,18 @@ class ActionBar extends StatelessWidget {
     ];
   }
 
-  void showRandomCamera(BuildContext context) {
+  void _showRandomCamera(BuildContext context) {
     List<Camera> visibleCameras =
         context.read<CameraBloc>().state.visibleCameras;
     if (visibleCameras.isNotEmpty) {
-      showCameras(
+      _showCameras(
         context,
         [visibleCameras[Random().nextInt(visibleCameras.length)]],
       );
     }
   }
 
-  void showAbout(BuildContext context) async {
+  void _showAbout(BuildContext context) async {
     var packageInfo = await PackageInfo.fromPlatform();
     if (context.mounted) {
       showAboutDialog(
@@ -367,7 +352,7 @@ class ActionBar extends StatelessWidget {
     }
   }
 
-  void showCameras(
+  void _showCameras(
     BuildContext context,
     List<Camera> cameras, {
     bool shuffle = false,
