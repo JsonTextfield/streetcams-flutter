@@ -12,3 +12,4 @@ key.properties
 **/*.keystore
 **/*.jks
 /app/src/main/res/values/strings.xml
+/app/src/release/res/values/strings.xml
