@@ -12,7 +12,7 @@ import 'package:latlong2/latlong.dart' as latlon;
 import '../../blocs/camera_bloc.dart';
 import '../../constants.dart';
 import '../../entities/camera.dart';
-import '../../services/location_service.dart';
+import '../../entities/city.dart';
 
 class MapWidget extends StatelessWidget {
   final List<Camera> cameras;
@@ -31,16 +31,27 @@ class MapWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('building map');
+    City city = context.read<CameraBloc>().state.city;
     if (defaultTargetPlatform == TargetPlatform.windows && !kIsWeb) {
       flutter_map.LatLngBounds? bounds = getBounds();
       List<flutter_map.Marker> markers = [];
       _getMapMarkers(context, markers);
+      latlon.LatLng initCamPos = bounds?.center ??
+          switch (city) {
+            City.ottawa => latlon.LatLng(45.424722, -75.695),
+            City.toronto => latlon.LatLng(43.741667, -79.373333),
+            City.montreal => latlon.LatLng(45.508889, -73.554167),
+            City.calgary => latlon.LatLng(51.05, -114.066667),
+          };
       return flutter_map.FlutterMap(
         mapController: flutterMapController,
         options: flutter_map.MapOptions(
           bounds: bounds,
-          boundsOptions: const flutter_map_api.FitBoundsOptions(inside: true),
-          center: bounds?.center ?? latlon.LatLng(45.4, -75.7),
+          boundsOptions: const flutter_map_api.FitBoundsOptions(
+            inside: true,
+            padding: EdgeInsets.all(50),
+          ),
+          center: initCamPos,
           minZoom: 9,
           maxZoom: 16,
         ),
@@ -53,36 +64,38 @@ class MapWidget extends StatelessWidget {
         ],
       );
     }
-    return FutureBuilder<bool>(
-      future: LocationService.requestPermission(),
+    return FutureBuilder<String>(
+      future: rootBundle.loadString('assets/dark_mode.json'),
       builder: (context, data) {
-        LatLng initCamPos = const LatLng(45.4, -75.7);
         LatLngBounds? bounds = getBounds();
+
+        LatLng initCamPos = bounds?.centre ??
+            switch (city) {
+              City.ottawa => const LatLng(45.424722, -75.695),
+              City.toronto => const LatLng(43.741667, -79.373333),
+              City.montreal => const LatLng(45.508889, -73.554167),
+              City.calgary => const LatLng(51.05, -114.066667),
+            };
+
         Set<Marker> markers = {};
         _getMapMarkers(context, markers);
 
         if (data.hasData) {
-          return FutureBuilder<String>(
-            future: rootBundle.loadString('assets/dark_mode.json'),
-            builder: (context, mapSnapshot) {
-              if (mapSnapshot.hasData) {
-                setDarkMode(GoogleMapController controller) {
-                  if (Theme.of(context).brightness == Brightness.dark) {
-                    controller.setMapStyle(mapSnapshot.data);
-                  }
-                }
+          setDarkMode(GoogleMapController controller) {
+            if (Theme.of(context).brightness == Brightness.dark) {
+              controller.setMapStyle(data.data);
+            }
+          }
 
-                return GoogleMap(
-                  myLocationEnabled: data.requireData,
-                  cameraTargetBounds: CameraTargetBounds(bounds),
-                  initialCameraPosition: CameraPosition(target: initCamPos),
-                  minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
-                  markers: markers,
-                  onMapCreated: setDarkMode,
-                );
-              }
-              return const Center(child: CircularProgressIndicator());
-            },
+          return GoogleMap(
+            cameraTargetBounds: CameraTargetBounds(bounds),
+            initialCameraPosition: CameraPosition(
+              target: initCamPos,
+              zoom: 10,
+            ),
+            minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
+            markers: markers,
+            onMapCreated: setDarkMode,
           );
         }
         return const Center(child: CircularProgressIndicator());
@@ -191,4 +204,11 @@ class MapWidget extends StatelessWidget {
     }
     return BitmapDescriptor.defaultMarker;
   }
+}
+
+extension on LatLngBounds {
+  LatLng get centre => LatLng(
+        (northeast.latitude + southwest.latitude) / 2,
+        (northeast.longitude + southwest.longitude) / 2,
+      );
 }
