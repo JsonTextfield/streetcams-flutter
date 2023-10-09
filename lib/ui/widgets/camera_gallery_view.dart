@@ -2,7 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:streetcams_flutter/services/download_service.dart';
+
 import '../../entities/camera.dart';
+import '../../entities/city.dart';
 import 'camera_gallery_widget.dart';
 
 class CameraGalleryView extends StatelessWidget {
@@ -41,10 +44,33 @@ class CameraGalleryView extends StatelessWidget {
               ),
             );
           }
+          Camera camera = cameras[index];
+          if (camera.city == City.vancouver) {
+            return FutureBuilder<String>(
+              future: DownloadService.getHtmlImages(camera.url),
+              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+                if (snapshot.hasData) {
+                  return GestureDetector(
+                    onLongPress: () => onItemLongClick?.call(camera),
+                    onTap: () => onItemClick?.call(camera),
+                    child: CameraGalleryWidget(
+                      camera,
+                      otherUrl: snapshot.requireData,
+                    ),
+                  );
+                }
+                return GestureDetector(
+                  onLongPress: () => onItemLongClick?.call(camera),
+                  onTap: () => onItemClick?.call(camera),
+                  child: CameraGalleryWidget(camera),
+                );
+              },
+            );
+          }
           return GestureDetector(
-            onLongPress: () => onItemLongClick?.call(cameras[index]),
-            onTap: () => onItemClick?.call(cameras[index]),
-            child: CameraGalleryWidget(cameras[index]),
+            onLongPress: () => onItemLongClick?.call(camera),
+            onTap: () => onItemClick?.call(camera),
+            child: CameraGalleryWidget(camera),
           );
         },
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

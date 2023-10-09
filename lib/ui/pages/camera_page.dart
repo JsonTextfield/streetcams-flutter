@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:http/http.dart' as http;
+import 'package:streetcams_flutter/services/download_service.dart';
 
 import '../../entities/bilingual_object.dart';
 import '../../entities/camera.dart';
@@ -69,7 +69,7 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                     cameras[shuffle ? Random().nextInt(cameras.length) : index];
                 if (camera.city == City.vancouver) {
                   return FutureBuilder<String>(
-                    future: getHtmlImages(camera.url),
+                    future: DownloadService.getHtmlImages(camera.url),
                     builder:
                         (BuildContext context, AsyncSnapshot<String> snapshot) {
                       if (snapshot.hasData) {
@@ -78,7 +78,7 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                           otherUrl: snapshot.requireData,
                         );
                       }
-                      return const Center();
+                      return CameraWidget(camera);
                     },
                   );
                 }
@@ -102,20 +102,5 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       ),
     );
-  }
-
-  Future<String> getHtmlImages(String url) async {
-    String data = await http.read(Uri.parse(url));
-
-    RegExp regex = RegExp('cameraimages/.*?"');
-    List<String> matches = regex.allMatches(data).map((RegExpMatch match) {
-      return match.group(0)!.replaceAll('"', '');
-    }).toList();
-
-    String str = matches[Random().nextInt(matches.length)];
-    String result = 'https://trafficcams.vancouver.ca/$str'.replaceAll('"', '');
-
-    debugPrint(result);
-    return result;
   }
 }

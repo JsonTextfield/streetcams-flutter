@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,21 @@ import '../entities/city.dart';
 import '../entities/neighbourhood.dart';
 
 class DownloadService {
+  static Future<String> getHtmlImages(String url) async {
+    String data = await http.read(Uri.parse(url));
+
+    RegExp regex = RegExp('cameraimages/.*?"');
+    List<String> matches = regex.allMatches(data).map((RegExpMatch match) {
+      return match.group(0)!.replaceAll('"', '');
+    }).toList();
+
+    String str = matches[Random().nextInt(matches.length)];
+    String result = 'https://trafficcams.vancouver.ca/$str'.replaceAll('"', '');
+
+    debugPrint(result);
+    return result;
+  }
+
   static Future<List<Camera>> _downloadCameras(City city) async {
     Map<City, String> urls = {
       City.ottawa: 'https://traffic.ottawa.ca/beta/camera_list',
