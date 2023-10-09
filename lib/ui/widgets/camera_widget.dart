@@ -3,12 +3,14 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 
 import '../../entities/camera.dart';
+import '../../entities/city.dart';
 
 class CameraWidget extends StatelessWidget {
   // Widget for an individual camera feed
   final Camera camera;
+  final String otherUrl;
 
-  const CameraWidget(this.camera, {super.key});
+  const CameraWidget(this.camera, {super.key, this.otherUrl = ''});
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +30,14 @@ class CameraWidget extends StatelessWidget {
               tileMode: TileMode.decal,
             ),
             child: Image.network(
-              camera.url,
+              camera.city == City.vancouver ? otherUrl : camera.url,
               fit: BoxFit.fitWidth,
               gaplessPlayback: true,
               width: MediaQuery.sizeOf(context).width,
             ),
           ),
           Image.network(
-            camera.url,
+            camera.city == City.vancouver ? otherUrl : camera.url,
             errorBuilder: (context, exception, stackTrace) {
               return Container(
                 padding: const EdgeInsets.all(50),

@@ -33,6 +33,7 @@ class Camera extends BilingualObject with EquatableMixin {
       City.montreal => Camera._fromJsonMontreal(json),
       City.calgary => Camera._fromJsonCalgary(json),
       City.ottawa => Camera._fromJsonOttawa(json),
+      City.vancouver => Camera._fromJsonVancouver(json),
     };
   }
 
@@ -85,6 +86,17 @@ class Camera extends BilingualObject with EquatableMixin {
     );
   }
 
+  factory Camera._fromJsonVancouver(Map<String, dynamic> json) {
+    Map<String, dynamic> geom = json['geom'] ?? {};
+    Map<String, dynamic> geometry = geom['geometry'] ?? {};
+    return Camera(
+      city: City.vancouver,
+      location: Location.fromJsonArray(geometry['coordinates'] ?? [0.0, 0.0]),
+      nameEn: json['name'] ?? '',
+      url: json['url'] ?? '',
+    )..neighbourhood = json['geo_local_area'] ?? '';
+  }
+
   @override
   String get sortableName {
     if (city != City.montreal) {
@@ -118,6 +130,7 @@ class Camera extends BilingualObject with EquatableMixin {
         return 'http://opendata.toronto.ca/transportation/tmc/rescucameraimages/CameraImages/loc$num.jpg';
       case City.montreal:
       case City.calgary:
+      case City.vancouver:
         return _url;
       case City.ottawa:
       default:

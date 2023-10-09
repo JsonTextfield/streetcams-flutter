@@ -49,6 +49,12 @@ class ChangeCityMenu extends StatelessWidget {
               onChanged: (_) => changeCity(City.calgary),
               child: Text(AppLocalizations.of(context)!.calgary),
             ),
+            RadioMenuButton<City>(
+              value: City.vancouver,
+              groupValue: state.city,
+              onChanged: (_) => changeCity(City.vancouver),
+              child: Text(AppLocalizations.of(context)!.vancouver),
+            ),
           ],
         );
       },

@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
-import '../entities/city.dart';
 import '../entities/camera.dart';
+import '../entities/city.dart';
 import '../entities/neighbourhood.dart';
 
 class DownloadService {
@@ -16,6 +16,8 @@ class DownloadService {
       City.montreal:
           'https://ville.montreal.qc.ca/circulation/sites/ville.montreal.qc.ca.circulation/files/cameras-de-circulation.json',
       City.calgary: 'https://data.calgary.ca/resource/k7p9-kppz.json',
+      City.vancouver:
+          'https://opendata.vancouver.ca/api/explore/v2.1/catalog/datasets/web-cam-url-links/exports/json?lang=en&timezone=America%2FNew_York',
     };
     Uri url = Uri.parse(urls[city] ?? '');
     return compute(_parseCameraJson, [city, await http.read(url)]);
@@ -33,6 +35,7 @@ class DownloadService {
         break;
       case City.calgary:
       case City.ottawa:
+      case City.vancouver:
       default:
         jsonArray = json.decode(jsonString);
         break;
@@ -41,6 +44,9 @@ class DownloadService {
   }
 
   static Future<List<Neighbourhood>> _downloadNeighbourhoods(City city) async {
+    if (city == City.vancouver) {
+      return [];
+    }
     Map<City, String> urls = {
       City.ottawa:
           'https://services.arcgis.com/G6F8XLCl5KtAlZ2G/arcgis/rest/services/Gen_2_ONS_Boundaries/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson',
@@ -49,6 +55,7 @@ class DownloadService {
       City.montreal:
           'https://donnees.montreal.ca/dataset/f38c91a1-e33f-4475-a112-3b84b1c60c1e/resource/a80e611f-5336-4306-ba2a-fd657f0f00fa/download/quartierreferencehabitation.geojson',
       City.calgary: 'https://data.calgary.ca/resource/surr-xmvs.json',
+      City.vancouver: '',
     };
     Uri url = Uri.parse(urls[city] ?? '');
     return compute(_parseNeighbourhoodJson, [city, await http.read(url)]);

@@ -3,9 +3,11 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:http/http.dart' as http;
 
 import '../../entities/bilingual_object.dart';
 import '../../entities/camera.dart';
+import '../../entities/city.dart';
 import '../widgets/camera_widget.dart';
 
 class CameraPage extends StatefulWidget {
@@ -63,9 +65,24 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
             ListView.builder(
               itemCount: shuffle ? 1 : cameras.length,
               itemBuilder: (context, index) {
-                return CameraWidget(
-                  cameras[shuffle ? Random().nextInt(cameras.length) : index],
-                );
+                Camera camera =
+                    cameras[shuffle ? Random().nextInt(cameras.length) : index];
+                if (camera.city == City.vancouver) {
+                  return FutureBuilder<String>(
+                    future: getHtmlImages(camera.url),
+                    builder:
+                        (BuildContext context, AsyncSnapshot<String> snapshot) {
+                      if (snapshot.hasData) {
+                        return CameraWidget(
+                          camera,
+                          otherUrl: snapshot.requireData,
+                        );
+                      }
+                      return const Center();
+                    },
+                  );
+                }
+                return CameraWidget(camera);
               },
             ),
             Container(
@@ -85,5 +102,20 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
         ),
       ),
     );
+  }
+
+  Future<String> getHtmlImages(String url) async {
+    String data = await http.read(Uri.parse(url));
+
+    RegExp regex = RegExp('cameraimages/.*?"');
+    List<String> matches = regex.allMatches(data).map((RegExpMatch match) {
+      return match.group(0)!.replaceAll('"', '');
+    }).toList();
+
+    String str = matches[Random().nextInt(matches.length)];
+    String result = 'https://trafficcams.vancouver.ca/$str'.replaceAll('"', '');
+
+    debugPrint(result);
+    return result;
   }
 }

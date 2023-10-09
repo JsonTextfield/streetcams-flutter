@@ -262,6 +262,12 @@ class ActionBar extends StatelessWidget {
           onChanged: (_) => changeCity(City.calgary),
           child: Text(AppLocalizations.of(context)!.calgary),
         ),
+        RadioMenuButton<City>(
+          value: City.vancouver,
+          groupValue: cameraState.city,
+          onChanged: (_) => changeCity(City.vancouver),
+          child: Text(AppLocalizations.of(context)!.vancouver),
+        ),
       ],
     );
 
