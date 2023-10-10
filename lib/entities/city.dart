@@ -4,4 +4,5 @@ enum City {
   montreal,
   calgary,
   vancouver,
+  surrey,
 }

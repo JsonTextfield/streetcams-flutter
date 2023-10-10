@@ -27,13 +27,14 @@ class Camera extends BilingualObject with EquatableMixin {
     _url = url;
   }
 
-  factory Camera.fromJson(Map<String, dynamic> json, City city) {
+  factory Camera.fromJson(dynamic json, City city) {
     return switch (city) {
       City.toronto => Camera._fromJsonToronto(json),
       City.montreal => Camera._fromJsonMontreal(json),
       City.calgary => Camera._fromJsonCalgary(json),
       City.ottawa => Camera._fromJsonOttawa(json),
       City.vancouver => Camera._fromJsonVancouver(json),
+      City.surrey => Camera._fromJsonSurrey(json),
     };
   }
 
@@ -97,6 +98,20 @@ class Camera extends BilingualObject with EquatableMixin {
     )..neighbourhood = json['geo_local_area'] ?? '';
   }
 
+  factory Camera._fromJsonSurrey(List<dynamic> json) {
+    return Camera(
+      city: City.surrey,
+      location: Location.fromJsonArray(
+        [
+          double.parse(json[4]),
+          double.parse(json[5]),
+        ],
+      ),
+      nameEn: json[1] ?? '',
+      url: json[2] ?? '',
+    );
+  }
+
   @override
   String get sortableName {
     if (city != City.montreal) {
@@ -131,6 +146,7 @@ class Camera extends BilingualObject with EquatableMixin {
       case City.montreal:
       case City.calgary:
       case City.vancouver:
+      case City.surrey:
         return _url;
       case City.ottawa:
       default:

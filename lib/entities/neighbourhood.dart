@@ -1,10 +1,12 @@
 import 'dart:math';
 
 import 'package:change_case/change_case.dart';
+import 'package:flutter/rendering.dart';
+import 'package:proj4dart/proj4dart.dart';
 
 import 'bilingual_object.dart';
-import 'city.dart';
 import 'camera.dart';
+import 'city.dart';
 import 'location.dart';
 
 class Neighbourhood extends BilingualObject {
@@ -39,6 +41,13 @@ class Neighbourhood extends BilingualObject {
           boundaries: boundaries,
           nameEn: name.toCapitalCase(),
         );
+      case City.surrey:
+        debugPrint(boundaries.toString());
+        String name = properties['NAME'] ?? '';
+        return Neighbourhood(
+          boundaries: boundaries,
+          nameEn: name.toCapitalCase(),
+        );
       case City.ottawa:
       default:
         return Neighbourhood(
@@ -62,6 +71,7 @@ class Neighbourhood extends BilingualObject {
 
     switch (city) {
       case City.ottawa:
+      case City.surrey:
         areas = geometryCoordinates;
         break;
       case City.toronto:
@@ -80,8 +90,19 @@ class Neighbourhood extends BilingualObject {
 
     for (int i = 0; i < areas.length; i++) {
       var area = (hasMultipleParts ? areas[i][0] : areas[0]) as List<dynamic>;
-      List<Location> locationList =
-          area.map((jsonArray) => Location.fromJsonArray(jsonArray)).toList();
+      List<Location> locationList = area.map((jsonArray) {
+        if (city == City.surrey) {
+          String def =
+              '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs';
+          Projection projection = Projection.add('EPSG:26910', def);
+          Point point = projection.transform(
+            Projection.get('EPSG:4326')!,
+            Point.fromArray([jsonArray[0] as double, jsonArray[1] as double]),
+          );
+          return Location.fromJsonArray(point.toArray());
+        }
+        return Location.fromJsonArray(jsonArray);
+      }).toList();
       boundaries.add(locationList);
     }
     return boundaries;

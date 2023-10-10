@@ -43,6 +43,7 @@ class MapWidget extends StatelessWidget {
             City.montreal => latlon.LatLng(45.508889, -73.554167),
             City.calgary => latlon.LatLng(51.05, -114.066667),
             City.vancouver => latlon.LatLng(49.258513387198, -123.1012956358),
+            City.surrey => latlon.LatLng(49.058513387198, -123.1012956358),
           };
       return flutter_map.FlutterMap(
         mapController: flutterMapController,
@@ -77,6 +78,7 @@ class MapWidget extends StatelessWidget {
               City.montreal => const LatLng(45.508889, -73.554167),
               City.calgary => const LatLng(51.05, -114.066667),
               City.vancouver => const LatLng(49.258513387198, -123.1012956358),
+              City.surrey => const LatLng(49.058513387198, -123.1012956358),
             };
 
         Set<Marker> markers = {};
