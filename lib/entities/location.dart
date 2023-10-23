@@ -16,7 +16,7 @@ class Location {
     );
   }
 
-  factory Location.fromJsonArray(List<dynamic> json) {
+  factory Location.fromJsonArray(List<double> json) {
     return Location(
       lat: json[1],
       lon: json[0],

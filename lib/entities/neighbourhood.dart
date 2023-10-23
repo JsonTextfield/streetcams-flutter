@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:change_case/change_case.dart';
-import 'package:flutter/rendering.dart';
 import 'package:proj4dart/proj4dart.dart';
 
 import 'bilingual_object.dart';
@@ -20,38 +19,36 @@ class Neighbourhood extends BilingualObject {
   }) : super(id: id, nameEn: nameEn, nameFr: nameFr);
 
   factory Neighbourhood.fromJson(Map<String, dynamic> json, City city) {
-    List<List<Location>> boundaries = _getBoundaries(json, city);
     Map<String, dynamic> properties = json['properties'] ?? {};
     switch (city) {
       case City.toronto:
         return Neighbourhood(
-          boundaries: boundaries,
+          boundaries: _createBoundaries(city, json['geometry'] ?? {}),
           id: properties['AREA_ID'] ?? 0,
           nameEn: properties['AREA_NAME'] ?? '',
         );
       case City.montreal:
         return Neighbourhood(
-          boundaries: boundaries,
+          boundaries: _createBoundaries(city, json['geometry'] ?? {}),
           id: int.parse(properties['no_qr'] ?? '0', radix: 16),
           nameFr: properties['nom_qr'] ?? '',
         );
       case City.calgary:
         String name = json['name'] ?? '';
         return Neighbourhood(
-          boundaries: boundaries,
+          boundaries: _createBoundaries(city, json['multipolygon'] ?? {}),
           nameEn: name.toCapitalCase(),
         );
       case City.surrey:
-        debugPrint(boundaries.toString());
         String name = properties['NAME'] ?? '';
         return Neighbourhood(
-          boundaries: boundaries,
+          boundaries: _createBoundaries(city, json['geometry'] ?? {}),
           nameEn: name.toCapitalCase(),
         );
       case City.ottawa:
       default:
         return Neighbourhood(
-          boundaries: boundaries,
+          boundaries: _createBoundaries(city, json['geometry'] ?? {}),
           id: properties['ONS_ID'] ?? 0,
           nameEn: properties['Name'] ?? '',
           nameFr: properties['Name_FR'] ?? '',
@@ -59,51 +56,39 @@ class Neighbourhood extends BilingualObject {
     }
   }
 
-  static List<List<Location>> _getBoundaries(
-    Map<String, dynamic> json,
+  static List<List<Location>> _createBoundaries(
     City city,
+    Map<String, dynamic> geometry,
   ) {
-    List<dynamic> areas = [];
-    Map<String, dynamic> geometry = json['geometry'] ?? {};
-    List<dynamic> geometryCoordinates = geometry['coordinates'] ?? [];
-    Map<String, dynamic> multiPolygon = json['multipolygon'] ?? {};
-    List<dynamic> multiPolygonCoordinates = multiPolygon['coordinates'] ?? [];
+    List<List<Location>> boundaries = [];
+    List<dynamic> neighbourhoodZones = [];
 
-    switch (city) {
-      case City.ottawa:
-      case City.surrey:
-        areas = geometryCoordinates;
-        break;
-      case City.toronto:
-      case City.montreal:
-        areas = geometryCoordinates[0] ?? [];
-        break;
-      case City.calgary:
-        areas = multiPolygonCoordinates[0] ?? [];
-        break;
-      default:
-        break;
+    if (geometry['type'].toString().toLowerCase() == 'polygon') {
+      neighbourhoodZones.add(geometry['coordinates']);
+    } else {
+      neighbourhoodZones = geometry['coordinates'];
     }
 
-    bool hasMultipleParts = areas.length > 1;
-    List<List<Location>> boundaries = [];
-
-    for (int i = 0; i < areas.length; i++) {
-      var area = (hasMultipleParts ? areas[i][0] : areas[0]) as List<dynamic>;
-      List<Location> locationList = area.map((jsonArray) {
+    for (int item = 0; item < neighbourhoodZones.length; item++) {
+      List<dynamic> points = neighbourhoodZones[item][0];
+      List<Location> list = [];
+      for (int i = 0; i < points.length; i++) {
         if (city == City.surrey) {
-          String def =
-              '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs';
-          Projection projection = Projection.add('EPSG:26910', def);
+          Projection projection = Projection.add(
+            'EPSG:26910',
+            '+proj=utm +zone=10 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs',
+          );
           Point point = projection.transform(
             Projection.get('EPSG:4326')!,
-            Point.fromArray([jsonArray[0] as double, jsonArray[1] as double]),
+            Point.fromArray(List<double>.from(points[i])),
           );
-          return Location.fromJsonArray(point.toArray());
+          list.add(Location.fromJsonArray(point.toArray()));
+        } //
+        else {
+          list.add(Location.fromJsonArray(List<double>.from(points[i])));
         }
-        return Location.fromJsonArray(jsonArray);
-      }).toList();
-      boundaries.add(locationList);
+      }
+      boundaries.add(list);
     }
     return boundaries;
   }

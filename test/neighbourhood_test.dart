@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/location.dart';
 import 'package:streetcams_flutter/entities/neighbourhood.dart';
 
@@ -38,6 +38,7 @@ void main() {
     var neighbourhood = Neighbourhood.fromJson(
       {
         'geometry': {
+          'type': 'polygon',
           'coordinates': [
             [
               [-78.0, 45.0],
