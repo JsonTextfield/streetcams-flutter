@@ -34,17 +34,18 @@ class CameraWidget extends StatelessWidget {
               fit: BoxFit.fitWidth,
               gaplessPlayback: true,
               width: MediaQuery.sizeOf(context).width,
+              errorBuilder: (context, exception, stacktrace) {
+                return const SizedBox();
+              },
             ),
           ),
           Image.network(
             camera.city == City.vancouver ? otherUrl : camera.url,
             errorBuilder: (context, exception, stackTrace) {
               return Container(
-                padding: const EdgeInsets.all(50),
-                width: MediaQuery.sizeOf(context).width,
-                child: const Text(
-                  'Image unavailable 😢',
-                  textAlign: TextAlign.center,
+                constraints: const BoxConstraints(maxHeight: 200),
+                child: const Center(
+                  child: Icon(Icons.videocam_off_rounded, size: 50),
                 ),
               );
             },

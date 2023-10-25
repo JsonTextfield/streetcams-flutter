@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
+import 'package:streetcams_flutter/ui/widgets/loading_gallery_widget.dart';
 
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
@@ -46,23 +47,24 @@ class CameraGalleryView extends StatelessWidget {
           }
           Camera camera = cameras[index];
           if (camera.city == City.vancouver) {
-            return FutureBuilder<String>(
+            return FutureBuilder<List<String>>(
               future: DownloadService.getHtmlImages(camera.url),
-              builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+              builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return GestureDetector(
                     onLongPress: () => onItemLongClick?.call(camera),
                     onTap: () => onItemClick?.call(camera),
                     child: CameraGalleryWidget(
                       camera,
-                      otherUrl: snapshot.requireData,
+                      otherUrl: snapshot.requireData[
+                          Random().nextInt(snapshot.requireData.length)],
                     ),
                   );
                 }
                 return GestureDetector(
                   onLongPress: () => onItemLongClick?.call(camera),
                   onTap: () => onItemClick?.call(camera),
-                  child: CameraGalleryWidget(camera),
+                  child: LoadingGalleryWidget(camera),
                 );
               },
             );

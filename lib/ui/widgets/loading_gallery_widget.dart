@@ -3,13 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/camera_bloc.dart';
 import '../../entities/camera.dart';
-import '../../entities/city.dart';
 
-class CameraGalleryWidget extends StatelessWidget {
+class LoadingGalleryWidget extends StatelessWidget {
   final Camera camera;
-  final String otherUrl;
 
-  const CameraGalleryWidget(this.camera, {super.key, this.otherUrl = ''});
+  const LoadingGalleryWidget(this.camera, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,20 +17,6 @@ class CameraGalleryWidget extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           Container(color: Colors.grey),
-          Image.network(
-            camera.city == City.vancouver ? otherUrl : camera.url,
-            gaplessPlayback: true,
-            fit: BoxFit.cover,
-            errorBuilder: (context, exception, stackTrace) {
-              return Container(
-                color: Colors.grey,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                width: MediaQuery.sizeOf(context).width,
-                child: const Center(child: Icon(Icons.videocam_off_rounded)),
-              );
-            },
-          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(

@@ -25,7 +25,7 @@ class ActionBar extends StatelessWidget {
             _getActions(context).where((action) => action.condition).toList();
 
         // the number of 48-width buttons that can fit in 1/3 the width of the window
-        int maxActions = (MediaQuery.sizeOf(context).width / 3 / 48).floor();
+        int maxActions = (MediaQuery.sizeOf(context).width / 2 / 48).floor();
         if (maxActions > 0 && visibleActions.length > maxActions) {
           List<Action> overflowActions = visibleActions.sublist(maxActions - 1);
           visibleActions = visibleActions.sublist(0, maxActions - 1);
