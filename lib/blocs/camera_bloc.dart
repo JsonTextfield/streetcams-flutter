@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl_standalone.dart'
@@ -8,14 +7,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
 
-import '../entities/city.dart';
 import '../entities/bilingual_object.dart';
 import '../entities/camera.dart';
+import '../entities/city.dart';
 import '../entities/location.dart';
-import '../entities/neighbourhood.dart';
 
 part 'camera_event.dart';
-
 part 'camera_state.dart';
 
 class LocaleListener with WidgetsBindingObserver {
@@ -59,30 +56,25 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraLoaded>((event, emit) async {
       BilingualObject.locale = await intl.findSystemLocale();
       prefs ??= await SharedPreferences.getInstance();
-      City city = City.ottawa;
-      if ((prefs?.getString('city') ?? '').isNotEmpty) {
-        String str = prefs!.getString('city')!;
-        city = City.values.firstWhere((City c) => describeEnum(c) == str);
-      }
-      ViewMode viewMode = ViewMode.gallery;
-      if ((prefs?.getString('viewMode') ?? '').isNotEmpty) {
-        String str = prefs!.getString('viewMode')!;
-        viewMode =
-            ViewMode.values.firstWhere((ViewMode v) => describeEnum(v) == str);
-      }
-      (List<Camera>, List<Neighbourhood>) allData;
+      City city = City.values.firstWhere(
+        (City c) => c.name == prefs?.getString('city'),
+        orElse: () => City.ottawa,
+      );
+      ViewMode viewMode = ViewMode.values.firstWhere(
+        (ViewMode v) => v.name == prefs?.getString('viewMode'),
+        orElse: () => ViewMode.gallery,
+      );
+      List<Camera> allCameras = [];
       try {
-        allData = await DownloadService.downloadAll(city);
+        allCameras = await DownloadService.downloadCameras(city);
       } on Exception catch (_) {
         return emit(state.copyWith(
           status: CameraStatus.failure,
         ));
       }
-      List<Camera> allCameras = allData.$1;
       _readSharedPrefs(allCameras);
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
-        neighbourhoods: allData.$2,
         allCameras: allCameras,
         status: CameraStatus.success,
         city: city,

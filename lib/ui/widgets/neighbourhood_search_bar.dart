@@ -5,7 +5,6 @@ import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
 
 import '../../blocs/camera_bloc.dart';
-import '../../entities/neighbourhood.dart';
 
 class NeighbourhoodSearchBar extends StatelessWidget {
   const NeighbourhoodSearchBar({super.key});
@@ -13,14 +12,17 @@ class NeighbourhoodSearchBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('building neighbourhood search bar');
-    List<Neighbourhood> neighbourhoods =
-        context.read<CameraBloc>().state.neighbourhoods;
+    List<String> neighbourhoods = context
+        .read<CameraBloc>()
+        .state
+        .allCameras
+        .map((camera) => camera.neighbourhood)
+        .toSet()
+        .toList();
+
     return Autocomplete<String>(
       onSelected: (value) => context.read<CameraBloc>().add(
-            SearchCameras(
-              searchMode: SearchMode.neighbourhood,
-              query: value,
-            ),
+            SearchCameras(searchMode: SearchMode.neighbourhood, query: value),
           ),
       optionsBuilder: (value) => getAutoCompleteOptions(value, neighbourhoods),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
@@ -37,12 +39,10 @@ class NeighbourhoodSearchBar extends StatelessWidget {
 
   Iterable<String> getAutoCompleteOptions(
     TextEditingValue value,
-    List<Neighbourhood> neighbourhoods,
+    List<String> options,
   ) {
     return value.text.isEmpty
         ? []
-        : neighbourhoods
-            .map((neighbourhood) => neighbourhood.name)
-            .where((name) => name.containsIgnoreCase(value.text.trim()));
+        : options.where((String s) => s.containsIgnoreCase(value.text.trim()));
   }
 }

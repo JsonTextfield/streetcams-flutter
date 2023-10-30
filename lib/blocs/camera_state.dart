@@ -14,7 +14,6 @@ class CameraState extends Equatable {
   final List<Camera> allCameras;
   final List<Camera> displayedCameras;
   final List<Camera> selectedCameras;
-  final List<Neighbourhood> neighbourhoods;
   final CameraStatus status;
   final SortMode sortMode;
   final SearchMode searchMode;
@@ -43,7 +42,6 @@ class CameraState extends Equatable {
         allCameras,
         displayedCameras,
         selectedCameras,
-        neighbourhoods,
         status,
         sortMode,
         searchMode,
@@ -54,7 +52,6 @@ class CameraState extends Equatable {
       ];
 
   const CameraState({
-    this.neighbourhoods = const <Neighbourhood>[],
     this.allCameras = const <Camera>[],
     this.displayedCameras = const <Camera>[],
     this.selectedCameras = const <Camera>[],
@@ -68,7 +65,6 @@ class CameraState extends Equatable {
   });
 
   CameraState copyWith({
-    List<Neighbourhood>? neighbourhoods,
     List<Camera>? allCameras,
     List<Camera>? displayedCameras,
     List<Camera>? selectedCameras,
@@ -81,7 +77,6 @@ class CameraState extends Equatable {
     City? city,
   }) {
     return CameraState(
-      neighbourhoods: neighbourhoods ?? this.neighbourhoods,
       allCameras: allCameras ?? this.allCameras,
       displayedCameras: displayedCameras ?? this.displayedCameras,
       selectedCameras: selectedCameras ?? this.selectedCameras,

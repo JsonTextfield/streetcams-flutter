@@ -7,8 +7,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_widget.dart';
 
 void main() {
@@ -22,8 +22,8 @@ void main() {
         'descriptionFr': '(MTO) Autoroute 416 bretelle vers autoroute 417 est',
         'type': 'MTO',
         'longitude': -75.81467,
+        'city': City.ottawa.name,
       },
-      City.ottawa,
     );
     // Build our app and trigger a frame.
     await tester.pumpWidget(CameraWidget(ottawaCamera));

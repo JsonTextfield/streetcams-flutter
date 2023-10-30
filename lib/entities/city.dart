@@ -5,4 +5,6 @@ enum City {
   calgary,
   vancouver,
   surrey,
+  ontario,
+  alberta,
 }

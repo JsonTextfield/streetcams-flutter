@@ -77,8 +77,10 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                             return CameraWidget(camera, otherUrl: url);
                           }).toList(),
                         );
+                      } else if (snapshot.hasError) {
+                        return CameraWidget(camera);
                       }
-                      return CameraWidget(camera);
+                      return const SizedBox();
                     },
                   );
                 }

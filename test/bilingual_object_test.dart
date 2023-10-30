@@ -4,7 +4,6 @@ import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
 class _MyBilingualObject extends BilingualObject {
   _MyBilingualObject({
-    super.id,
     super.nameEn,
     super.nameFr,
   });
@@ -15,7 +14,6 @@ void main() {
     String nameEn = 'nameEn';
     String nameFr = 'nameFr';
     var myBilingualObject = _MyBilingualObject(
-      id: 0,
       nameEn: nameEn,
       nameFr: nameFr,
     );
@@ -50,7 +48,6 @@ void main() {
     String nameEn = 'nameEn';
     String nameFr = 'nameFr';
     var myBilingualObject = _MyBilingualObject(
-      id: 0,
       nameEn: nameEn,
       nameFr: nameFr,
     );
@@ -77,7 +74,6 @@ void main() {
     String nameFr =
         'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_F~!@#\$%^&*()+_r';
     var myBilingualObject = _MyBilingualObject(
-      id: 0,
       nameEn: nameEn,
       nameFr: nameFr,
     );

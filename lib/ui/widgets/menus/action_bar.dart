@@ -211,70 +211,28 @@ class ActionBar extends StatelessWidget {
           cameraState.viewMode != ViewMode.map,
       icon: Icons.sort_rounded,
       tooltip: AppLocalizations.of(context)!.sort,
-      children: [
-        RadioMenuButton<SortMode>(
-          value: SortMode.name,
+      children: SortMode.values.map((SortMode sortMode) {
+        return RadioMenuButton<SortMode>(
+          value: sortMode,
           groupValue: cameraState.sortMode,
-          onChanged: (_) => changeSortMode(SortMode.name),
-          child: Text(AppLocalizations.of(context)!.sortName),
-        ),
-        RadioMenuButton<SortMode>(
-          value: SortMode.distance,
-          groupValue: cameraState.sortMode,
-          onChanged: (_) => changeSortMode(SortMode.distance),
-          child: Text(AppLocalizations.of(context)!.sortDistance),
-        ),
-        RadioMenuButton<SortMode>(
-          value: SortMode.neighbourhood,
-          groupValue: cameraState.sortMode,
-          onChanged: (_) => changeSortMode(SortMode.neighbourhood),
-          child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
-        ),
-      ],
+          onChanged: (_) => changeSortMode(sortMode),
+          child: Text(AppLocalizations.of(context)!.getSortMode(sortMode.name)),
+        );
+      }).toList(),
     );
 
     Action city = Action(
       condition: cameraState.searchMode == SearchMode.none,
       icon: Icons.location_city_rounded,
       tooltip: AppLocalizations.of(context)!.city,
-      children: [
-        RadioMenuButton<City>(
-          value: City.ottawa,
+      children: City.values.map((City city) {
+        return RadioMenuButton<City>(
+          value: city,
           groupValue: cameraState.city,
-          onChanged: (_) => changeCity(City.ottawa),
-          child: Text(AppLocalizations.of(context)!.ottawa),
-        ),
-        RadioMenuButton<City>(
-          value: City.toronto,
-          groupValue: cameraState.city,
-          onChanged: (_) => changeCity(City.toronto),
-          child: Text(AppLocalizations.of(context)!.toronto),
-        ),
-        RadioMenuButton<City>(
-          value: City.montreal,
-          groupValue: cameraState.city,
-          onChanged: (_) => changeCity(City.montreal),
-          child: Text(AppLocalizations.of(context)!.montreal),
-        ),
-        RadioMenuButton<City>(
-          value: City.calgary,
-          groupValue: cameraState.city,
-          onChanged: (_) => changeCity(City.calgary),
-          child: Text(AppLocalizations.of(context)!.calgary),
-        ),
-        RadioMenuButton<City>(
-          value: City.vancouver,
-          groupValue: cameraState.city,
-          onChanged: (_) => changeCity(City.vancouver),
-          child: Text(AppLocalizations.of(context)!.vancouver),
-        ),
-        RadioMenuButton<City>(
-          value: City.surrey,
-          groupValue: cameraState.city,
-          onChanged: (_) => changeCity(City.surrey),
-          child: Text(AppLocalizations.of(context)!.surrey),
-        ),
-      ],
+          onChanged: (_) => changeCity(city),
+          child: Text(AppLocalizations.of(context)!.getCity(city.name)),
+        );
+      }).toList(),
     );
 
     Action favourites = Action(
@@ -304,13 +262,11 @@ class ActionBar extends StatelessWidget {
       condition: cameraState.status == CameraStatus.success,
       icon: Icons.shuffle_rounded,
       tooltip: AppLocalizations.of(context)!.shuffle,
-      onClick: () {
-        _showCameras(
-          context,
-          context.read<CameraBloc>().state.visibleCameras,
-          shuffle: true,
-        );
-      },
+      onClick: () => _showCameras(
+        context,
+        context.read<CameraBloc>().state.visibleCameras,
+        shuffle: true,
+      ),
     );
 
     Action about = Action(

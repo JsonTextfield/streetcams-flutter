@@ -62,10 +62,33 @@
     }
   },
   "city": "City",
+
+  "getSortMode": "{sortMode, select, distance{Sort by distance} neighbourhood{Sort by\nneighbourhood} name{Sort by name} other{Sort by name}}",
+  "@getSortMode": {
+    "description": "SortMode type",
+    "placeholders": {
+      "sortMode": {
+        "type" : "String"
+      }
+    }
+  },
+
+  "getCity": "{city, select, ottawa{Ottawa} montreal{Montreal} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} other{Ottawa}}",
+  "@getCity": {
+    "description": "City type",
+    "placeholders": {
+      "city": {
+        "type" : "String"
+      }
+    }
+  },
+
   "ottawa": "Ottawa",
   "toronto": "Toronto",
   "montreal": "Montreal",
   "calgary": "Calgary",
   "vancouver": "Vancouver",
-  "surrey": "Surrey"
+  "surrey": "Surrey",
+  "ontario": "Ontario",
+  "alberta": "Alberta"
 }

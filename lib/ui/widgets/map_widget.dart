@@ -44,6 +44,8 @@ class MapWidget extends StatelessWidget {
             City.calgary => latlon.LatLng(51.05, -114.066667),
             City.vancouver => latlon.LatLng(49.258513387198, -123.1012956358),
             City.surrey => latlon.LatLng(49.058513387198, -123.1012956358),
+            City.ontario => latlon.LatLng(46.489692, -80.999936),
+            City.alberta => latlon.LatLng(53.544136630027, -113.494843970093),
           };
       return flutter_map.FlutterMap(
         mapController: flutterMapController,
@@ -79,6 +81,8 @@ class MapWidget extends StatelessWidget {
               City.calgary => const LatLng(51.05, -114.066667),
               City.vancouver => const LatLng(49.258513387198, -123.1012956358),
               City.surrey => const LatLng(49.058513387198, -123.1012956358),
+              City.ontario => const LatLng(46.48969, -80.99993),
+              City.alberta => const LatLng(53.544136630027, -113.494843970093),
             };
 
         Set<Marker> markers = {};
@@ -95,9 +99,18 @@ class MapWidget extends StatelessWidget {
             cameraTargetBounds: CameraTargetBounds(bounds),
             initialCameraPosition: CameraPosition(
               target: initCamPos,
-              zoom: 10,
+              zoom: switch (city) {
+                City.ottawa ||
+                City.toronto ||
+                City.montreal ||
+                City.calgary ||
+                City.vancouver ||
+                City.surrey =>
+                  10,
+                City.ontario || City.alberta => 5,
+              },
             ),
-            minMaxZoomPreference: const MinMaxZoomPreference(9, 16),
+            minMaxZoomPreference: const MinMaxZoomPreference(5, 16),
             markers: markers,
             onMapCreated: setDarkMode,
           );
