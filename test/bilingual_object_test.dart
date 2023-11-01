@@ -56,26 +56,24 @@ void main() {
       BilingualObject.locale = 'fr-CA';
       expect(
         myBilingualObject.sortableName,
-        nameFr.replaceAll(RegExp('[\\W_]'), '').toUpperCase(),
+        nameFr.replaceAll(RegExp('[^0-9a-zA-Zà-öÀ-Ö]'), '').toUpperCase(),
       );
     });
     Intl.withLocale('en-CA', () {
       BilingualObject.locale = 'en-CA';
       expect(
         myBilingualObject.sortableName,
-        nameEn.replaceAll(RegExp('[\\W_]'), '').toUpperCase(),
+        nameEn.replaceAll(RegExp('[^0-9a-zA-Zà-öÀ-Ö]'), '').toUpperCase(),
       );
     });
   });
 
   test('test sortable name special characters', () {
-    String nameEn =
-        'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_E~!@#\$%^&*()+_n';
-    String nameFr =
-        'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_F~!@#\$%^&*()+_r';
     var myBilingualObject = _MyBilingualObject(
-      nameEn: nameEn,
-      nameFr: nameFr,
+      nameEn:
+          'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_E~!@#\$%^&*()+_n',
+      nameFr:
+          'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_F~!@#\$%^&*()+_r',
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {

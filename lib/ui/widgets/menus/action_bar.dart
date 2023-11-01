@@ -134,9 +134,7 @@ class ActionBar extends StatelessWidget {
     Action hide = Action(
       icon: hideIcon,
       tooltip: hideToolTip,
-      onClick: () {
-        context.read<CameraBloc>().hideSelectedCameras(allHidden);
-      },
+      onClick: () => context.read<CameraBloc>().hideSelectedCameras(!allHidden),
     );
 
     Action selectAll = Action(

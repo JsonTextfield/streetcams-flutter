@@ -18,21 +18,21 @@ class Camera extends BilingualObject with EquatableMixin {
   Camera({
     required this.location,
     required this.city,
-    nameEn = '',
-    nameFr = '',
+    super.nameEn = '',
+    super.nameFr = '',
     url = '',
     this.neighbourhood = '',
-  }) : super(nameEn: nameEn, nameFr: nameFr) {
+  }) {
     _url = url;
   }
 
   factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
-      nameEn: json['nameEn'],
-      nameFr: json['nameFr'],
-      location: Location.fromJson(json['location']),
-      neighbourhood: json['neighbourhood'],
-      url: json['url'],
+      nameEn: json['nameEn'] ?? '',
+      nameFr: json['nameFr'] ?? '',
+      location: Location.fromJson(json['location'] ?? {}),
+      neighbourhood: json['neighbourhood'] ?? '',
+      url: json['url'] ?? '',
       city: City.values.firstWhere(
         (city) => city.name == json['city'],
         orElse: () => City.ottawa,

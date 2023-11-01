@@ -11,7 +11,7 @@ abstract class BilingualObject {
   });
 
   String get sortableName =>
-      name.replaceAll(RegExp('[^0-9A-ZÀ-Ö]'), '').toUpperCase();
+      name.replaceAll(RegExp('[^0-9a-zA-Zà-öÀ-Ö]'), '').toUpperCase();
 
   String get name {
     if ((locale.contains('fr') && isNotBlank(nameFr)) || isBlank(nameEn)) {
