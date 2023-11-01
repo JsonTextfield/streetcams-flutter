@@ -9,25 +9,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
+import 'package:streetcams_flutter/entities/location.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_widget.dart';
 
 void main() {
   testWidgets('test camera widget', (WidgetTester tester) async {
-    Camera ottawaCamera = Camera.fromJson(
-      {
-        'number': 2025,
-        'latitude': 45.341343,
-        'description': '(MTO) Hwy 416 NB ramp to Hwy 417 East',
-        'id': 309,
-        'descriptionFr': '(MTO) Autoroute 416 bretelle vers autoroute 417 est',
-        'type': 'MTO',
-        'longitude': -75.81467,
-        'city': City.ottawa.name,
-      },
+    Camera ottawaCamera = Camera(
+      city: City.ottawa,
+      nameEn: 'Bank & Heron',
+      nameFr: 'Bank et Heron',
+      neighbourhood: 'Alta Vista',
+      url: 'https://traffic.ottawa.ca/beta/camera?id=81',
+      location: const Location(
+        lat: 45.4545,
+        lon: -75.6969,
+      ),
     );
     // Build our app and trigger a frame.
-    await tester.pumpWidget(CameraWidget(ottawaCamera));
+    await tester.pumpWidget(Directionality(
+      textDirection: TextDirection.ltr,
+      child: CameraWidget(ottawaCamera),
+    ));
+    expect(find.byType(Image), findsNWidgets(2));
     expect(find.text(ottawaCamera.name), findsOneWidget);
-    expect(find.byType(Image), findsOneWidget);
   });
 }
