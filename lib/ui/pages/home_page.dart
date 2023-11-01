@@ -1,15 +1,17 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import '../../blocs/camera_bloc.dart';
-import '../widgets/camera_gallery_view.dart';
-import '../widgets/map_widget.dart';
+import 'package:streetcams_flutter/ui/widgets/flutter_map_widget.dart';
 
+import '../../blocs/camera_bloc.dart';
 import '../../constants.dart';
 import '../../entities/camera.dart';
-import '../widgets/menus/action_bar.dart';
+import '../widgets/camera_gallery_view.dart';
 import '../widgets/camera_list_view.dart';
+import '../widgets/map_widget.dart';
+import '../widgets/menus/action_bar.dart';
 import '../widgets/neighbourhood_search_bar.dart';
 import '../widgets/search_text_field.dart';
 import '../widgets/section_index.dart';
@@ -134,6 +136,14 @@ class HomePage extends StatelessWidget {
                   }
                   switch (state.viewMode) {
                     case ViewMode.map:
+                      if (defaultTargetPlatform == TargetPlatform.windows &&
+                          !kIsWeb) {
+                        return FlutterMapWidget(
+                          cameras: state.displayedCameras,
+                          onItemClick: onClick,
+                          onItemLongClick: onLongClick,
+                        );
+                      }
                       return MapWidget(
                         cameras: state.displayedCameras,
                         onItemClick: onClick,

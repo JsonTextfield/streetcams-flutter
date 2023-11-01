@@ -8,7 +8,7 @@ enum SortMode { name, distance, neighbourhood }
 
 enum FilterMode { visible, hidden, favourite }
 
-enum ViewMode { list, gallery, map }
+enum ViewMode { list, map, gallery }
 
 class CameraState extends Equatable {
   final List<Camera> allCameras;
