@@ -1,27 +1,20 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_map/flutter_map.dart' as flutter_map;
-import 'package:flutter_map/plugin_api.dart' as flutter_map_api;
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:latlong2/latlong.dart' as latlon;
 
 import '../../blocs/camera_bloc.dart';
-import '../../constants.dart';
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
 
 class MapWidget extends StatelessWidget {
   final List<Camera> cameras;
-  final flutter_map.MapController flutterMapController =
-      flutter_map.MapController();
   final void Function(Camera)? onItemClick;
   final void Function(Camera)? onItemLongClick;
 
-  MapWidget({
+  const MapWidget({
     super.key,
     required this.cameras,
     this.onItemClick,
@@ -31,69 +24,27 @@ class MapWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint('building map');
-    City city = context.read<CameraBloc>().state.city;
-    if (defaultTargetPlatform == TargetPlatform.windows && !kIsWeb) {
-      flutter_map.LatLngBounds? bounds = getBounds();
-      List<flutter_map.Marker> markers = [];
-      _getMapMarkers(context, markers);
-      latlon.LatLng initCamPos = bounds?.center ??
-          switch (city) {
-            City.ottawa => latlon.LatLng(45.424722, -75.695),
-            City.toronto => latlon.LatLng(43.741667, -79.373333),
-            City.montreal => latlon.LatLng(45.508889, -73.554167),
-            City.calgary => latlon.LatLng(51.05, -114.066667),
-            City.vancouver => latlon.LatLng(49.258513387198, -123.1012956358),
-            City.surrey => latlon.LatLng(49.058513387198, -123.1012956358),
-            City.ontario => latlon.LatLng(46.489692, -80.999936),
-            City.alberta => latlon.LatLng(53.544136630027, -113.494843970093),
-          };
-      return flutter_map.FlutterMap(
-        mapController: flutterMapController,
-        options: flutter_map.MapOptions(
-          bounds: bounds,
-          boundsOptions: const flutter_map_api.FitBoundsOptions(
-            inside: true,
-            padding: EdgeInsets.all(50),
-          ),
-          center: initCamPos,
-          minZoom: 9,
-          maxZoom: 16,
-        ),
-        children: [
-          flutter_map.TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'com.jsontextfield.streetcams_flutter',
-          ),
-          flutter_map.MarkerLayer(markers: markers),
-        ],
-      );
-    }
     return FutureBuilder<String>(
       future: rootBundle.loadString('assets/dark_mode.json'),
       builder: (context, data) {
-        LatLngBounds? bounds = getBounds();
-
-        LatLng initCamPos = bounds?.centre ??
-            switch (city) {
-              City.ottawa => const LatLng(45.424722, -75.695),
-              City.toronto => const LatLng(43.741667, -79.373333),
-              City.montreal => const LatLng(45.508889, -73.554167),
-              City.calgary => const LatLng(51.05, -114.066667),
-              City.vancouver => const LatLng(49.258513387198, -123.1012956358),
-              City.surrey => const LatLng(49.058513387198, -123.1012956358),
-              City.ontario => const LatLng(46.48969, -80.99993),
-              City.alberta => const LatLng(53.544136630027, -113.494843970093),
-            };
-
-        Set<Marker> markers = {};
-        _getMapMarkers(context, markers);
-
         if (data.hasData) {
-          setDarkMode(GoogleMapController controller) {
-            if (Theme.of(context).brightness == Brightness.dark) {
-              controller.setMapStyle(data.data);
-            }
-          }
+          City city = context.read<CameraBloc>().state.city;
+          LatLngBounds? bounds = _getBounds();
+          LatLng initCamPos = bounds?.centre ??
+              switch (city) {
+                City.ottawa => const LatLng(45.424722, -75.695),
+                City.toronto => const LatLng(43.741667, -79.373333),
+                City.montreal => const LatLng(45.508889, -73.554167),
+                City.calgary => const LatLng(51.05, -114.066667),
+                City.vancouver =>
+                  const LatLng(49.258513387198, -123.1012956358),
+                City.surrey => const LatLng(49.058513387198, -123.1012956358),
+                City.ontario => const LatLng(46.48969, -80.99993),
+                City.alberta =>
+                  const LatLng(53.544136630027, -113.494843970093),
+              };
+
+          Set<Marker> markers = _getMapMarkers(context);
 
           return GoogleMap(
             cameraTargetBounds: CameraTargetBounds(bounds),
@@ -112,7 +63,11 @@ class MapWidget extends StatelessWidget {
             ),
             minMaxZoomPreference: const MinMaxZoomPreference(5, 16),
             markers: markers,
-            onMapCreated: setDarkMode,
+            onMapCreated: (controller) {
+              if (Theme.of(context).brightness == Brightness.dark) {
+                controller.setMapStyle(data.data);
+              }
+            },
           );
         }
         return const Center(child: CircularProgressIndicator());
@@ -120,96 +75,42 @@ class MapWidget extends StatelessWidget {
     );
   }
 
-  List<double> getMinMaxLatLon() {
-    if (cameras.isNotEmpty) {
-      double minLat = cameras.first.location.lat;
-      double maxLat = cameras.first.location.lat;
-      double minLon = cameras.first.location.lon;
-      double maxLon = cameras.first.location.lon;
-      for (Camera camera in cameras) {
-        minLat = min(minLat, camera.location.lat);
-        maxLat = max(maxLat, camera.location.lat);
-        minLon = min(minLon, camera.location.lon);
-        maxLon = max(maxLon, camera.location.lon);
-      }
-      return [minLat, minLon, maxLat, maxLon];
+  LatLngBounds? _getBounds() {
+    if (cameras.isEmpty) {
+      return null;
     }
-    return [];
+    double minLat = cameras.first.location.lat;
+    double maxLat = cameras.first.location.lat;
+    double minLon = cameras.first.location.lon;
+    double maxLon = cameras.first.location.lon;
+    for (Camera camera in cameras) {
+      minLat = min(minLat, camera.location.lat);
+      maxLat = max(maxLat, camera.location.lat);
+      minLon = min(minLon, camera.location.lon);
+      maxLon = max(maxLon, camera.location.lon);
+    }
+    return LatLngBounds(
+      southwest: LatLng(minLat, minLon),
+      northeast: LatLng(maxLat, maxLon),
+    );
   }
 
-  dynamic getBounds() {
-    var boundsList = getMinMaxLatLon();
-    if (boundsList.isNotEmpty) {
-      double minLat = boundsList[0];
-      double minLon = boundsList[1];
-      double maxLat = boundsList[2];
-      double maxLon = boundsList[3];
-      if (defaultTargetPlatform == TargetPlatform.windows && !kIsWeb) {
-        return flutter_map.LatLngBounds(
-          latlon.LatLng(minLat, minLon),
-          latlon.LatLng(maxLat, maxLon),
-        );
-      }
-      return LatLngBounds(
-        southwest: LatLng(minLat, minLon),
-        northeast: LatLng(maxLat, maxLon),
-      );
-    }
-    return null;
-  }
-
-  void _getMapMarkers(BuildContext context, Iterable markers) {
-    for (var camera in cameras) {
-      if (markers is List<flutter_map.Marker>) {
-        markers.add(
-          flutter_map.Marker(
-            point: latlon.LatLng(camera.location.lat, camera.location.lon),
-            anchorPos: flutter_map.AnchorPos.exactly(
-              flutter_map.Anchor(5.0, -20.0),
-            ),
-            builder: (context) => GestureDetector(
-              child: Stack(
-                children: [
-                  Icon(
-                    Icons.location_pin,
-                    size: 48,
-                    color: context
-                            .read<CameraBloc>()
-                            .state
-                            .selectedCameras
-                            .contains(camera)
-                        ? Constants.accentColour
-                        : camera.isFavourite
-                            ? Colors.yellow
-                            : Colors.red,
-                  ),
-                  const Icon(Icons.location_on_outlined, size: 48),
-                ],
-              ),
-            ),
-          ),
-        );
-      } else if (markers is Set<Marker>) {
-        markers.add(
-          Marker(
-            icon: _getMarkerIcon(context, camera),
-            markerId: MarkerId(camera.cameraId),
-            position: LatLng(camera.location.lat, camera.location.lon),
-            infoWindow: InfoWindow(
-              title: camera.name,
-              onTap: () => onItemLongClick?.call(camera),
-            ),
-            zIndex: context
-                    .read<CameraBloc>()
-                    .state
-                    .selectedCameras
-                    .contains(camera)
+  Set<Marker> _getMapMarkers(BuildContext context) {
+    return cameras.map((camera) {
+      return Marker(
+        icon: _getMarkerIcon(context, camera),
+        markerId: MarkerId(camera.cameraId),
+        position: LatLng(camera.location.lat, camera.location.lon),
+        infoWindow: InfoWindow(
+          title: camera.name,
+          onTap: () => onItemLongClick?.call(camera),
+        ),
+        zIndex:
+            context.read<CameraBloc>().state.selectedCameras.contains(camera)
                 ? 1.0
                 : 0.0,
-          ),
-        );
-      }
-    }
+      );
+    }).toSet();
   }
 
   BitmapDescriptor _getMarkerIcon(BuildContext context, Camera camera) {
