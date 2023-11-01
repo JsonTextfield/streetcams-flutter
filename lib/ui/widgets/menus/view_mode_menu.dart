@@ -10,14 +10,6 @@ class ViewModeMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String getTooltip(ViewMode viewMode) {
-      return switch (viewMode) {
-        ViewMode.map => AppLocalizations.of(context)!.map,
-        ViewMode.gallery => AppLocalizations.of(context)!.gallery,
-        ViewMode.list => AppLocalizations.of(context)!.list
-      };
-    }
-
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
         void changeViewMode(ViewMode viewMode) {
@@ -29,30 +21,24 @@ class ViewModeMenu extends StatelessWidget {
             return IconButton(
               onPressed: () => menu.isOpen ? menu.close() : menu.open(),
               icon: Icon(getIcon(state.viewMode)),
-              tooltip: getTooltip(state.viewMode),
+              tooltip: AppLocalizations.of(context)!
+                  .getViewMode(state.viewMode.name),
             );
           },
-          menuChildren: <RadioMenuButton<ViewMode>>[
-            RadioMenuButton<ViewMode>(
-              value: ViewMode.list,
+          menuChildren: ViewMode.values.where((ViewMode viewMode) {
+            return viewMode != ViewMode.map ||
+                defaultTargetPlatform != TargetPlatform.windows ||
+                kIsWeb;
+          }).map((ViewMode viewMode) {
+            return RadioMenuButton<ViewMode>(
+              value: viewMode,
               groupValue: state.viewMode,
-              onChanged: (_) => changeViewMode(ViewMode.list),
-              child: Text(AppLocalizations.of(context)!.list),
-            ),
-            if (defaultTargetPlatform != TargetPlatform.windows || kIsWeb)
-              RadioMenuButton<ViewMode>(
-                value: ViewMode.map,
-                groupValue: state.viewMode,
-                onChanged: (_) => changeViewMode(ViewMode.map),
-                child: Text(AppLocalizations.of(context)!.map),
+              onChanged: (_) => changeViewMode(viewMode),
+              child: Text(
+                AppLocalizations.of(context)!.getViewMode(viewMode.name),
               ),
-            RadioMenuButton<ViewMode>(
-              value: ViewMode.gallery,
-              groupValue: state.viewMode,
-              onChanged: (_) => changeViewMode(ViewMode.gallery),
-              child: Text(AppLocalizations.of(context)!.gallery),
-            ),
-          ],
+            );
+          }).toList(),
         );
       },
     );

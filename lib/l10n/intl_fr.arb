@@ -7,14 +7,8 @@
   "selectAll": "Sélectionner toutes",
   "about": "À propos de",
   "search": "Chercher",
-  "sortName": "Trier par nom",
-  "sortDistance": "Trier par distance",
-  "sortNeighbourhood": "Trier par\nquartier",
   "searchNeighbourhood": "Chercher par\nquartier",
   "sort": "Trier",
-  "list": "Liste",
-  "map": "Carte",
-  "gallery": "Galerie",
   "showCameras": "Voir",
   "hidden": "Cachées",
   "hide": "Cacher",
@@ -59,7 +53,24 @@
     }
   },
   "city": "Ville",
-
+  "getSortMode": "{sortMode, select, distance{Trier par distance} neighbourhood{Trier par quartier} name{Trier par nom} other{Trier par nom}}",
+  "@getSortMode": {
+    "description": "SortMode type",
+    "placeholders": {
+      "sortMode": {
+        "type": "String"
+      }
+    }
+  },
+  "getViewMode": "{viewMode, select, list{Liste} map{Carte} gallery{Galerie} other{Gallery}}",
+  "@getViewMode": {
+    "description": "View mode type",
+    "placeholders": {
+      "viewMode": {
+        "type": "String"
+      }
+    }
+  },
   "getCity": "{city, select, ottawa{Ottawa} montreal{Montréal} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} other{Ottawa}}",
   "@getCity": {
     "description": "City type",
@@ -68,24 +79,5 @@
         "type": "String"
       }
     }
-  },
-
-  "getSortMode": "{sortMode, select, distance{Trier par distance} neighbourhood{Trier par quartier} name{Trier par nom} other{Trier par nom}}",
-  "@getSortMode": {
-    "description": "SortMode type",
-    "placeholders": {
-      "sortMode": {
-        "type" : "String"
-      }
-    }
-  },
-
-  "ottawa": "Ottawa",
-  "toronto": "Toronto",
-  "montreal": "Montréal",
-  "calgary": "Calgary",
-  "vancouver": "Vancouver",
-  "surrey": "Surrey",
-  "ontario": "Ontario",
-  "alberta": "Alberta"
+  }
 }

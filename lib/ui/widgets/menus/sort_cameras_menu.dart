@@ -23,26 +23,16 @@ class SortCamerasMenu extends StatelessWidget {
               tooltip: AppLocalizations.of(context)!.sort,
             );
           },
-          menuChildren: [
-            RadioMenuButton<SortMode>(
-              value: SortMode.name,
+          menuChildren: SortMode.values.map((sortMode) {
+            return RadioMenuButton<SortMode>(
+              value: sortMode,
               groupValue: state.sortMode,
-              onChanged: (_) => sortCameras(SortMode.name),
-              child: Text(AppLocalizations.of(context)!.sortName),
-            ),
-            RadioMenuButton<SortMode>(
-              value: SortMode.distance,
-              groupValue: state.sortMode,
-              onChanged: (_) => sortCameras(SortMode.distance),
-              child: Text(AppLocalizations.of(context)!.sortDistance),
-            ),
-            RadioMenuButton<SortMode>(
-              value: SortMode.neighbourhood,
-              groupValue: state.sortMode,
-              onChanged: (_) => sortCameras(SortMode.neighbourhood),
-              child: Text(AppLocalizations.of(context)!.sortNeighbourhood),
-            ),
-          ],
+              onChanged: (_) => sortCameras(sortMode),
+              child: Text(
+                AppLocalizations.of(context)!.getSortMode(sortMode.name),
+              ),
+            );
+          }).toList(),
         );
       },
     );

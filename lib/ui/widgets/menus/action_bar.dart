@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide Action;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -163,14 +162,6 @@ class ActionBar extends StatelessWidget {
       onClick: () => changeSearchMode(SearchMode.neighbourhood),
     );
 
-    String getTooltip(ViewMode viewMode) {
-      return switch (viewMode) {
-        ViewMode.map => AppLocalizations.of(context)!.map,
-        ViewMode.gallery => AppLocalizations.of(context)!.gallery,
-        ViewMode.list => AppLocalizations.of(context)!.list
-      };
-    }
-
     IconData getIcon(ViewMode viewMode) {
       return switch (viewMode) {
         ViewMode.map => Icons.place,
@@ -182,28 +173,18 @@ class ActionBar extends StatelessWidget {
     Action switchView = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: getIcon(cameraState.viewMode),
-      tooltip: getTooltip(cameraState.viewMode),
-      children: <RadioMenuButton<ViewMode>>[
-        RadioMenuButton<ViewMode>(
-          value: ViewMode.list,
+      tooltip:
+          AppLocalizations.of(context)!.getViewMode(cameraState.viewMode.name),
+      children: ViewMode.values.map((ViewMode viewMode) {
+        return RadioMenuButton<ViewMode>(
+          value: viewMode,
           groupValue: cameraState.viewMode,
-          onChanged: (_) => changeViewMode(ViewMode.list),
-          child: Text(AppLocalizations.of(context)!.list),
-        ),
-        if (defaultTargetPlatform != TargetPlatform.windows || kIsWeb)
-          RadioMenuButton<ViewMode>(
-            value: ViewMode.map,
-            groupValue: cameraState.viewMode,
-            onChanged: (_) => changeViewMode(ViewMode.map),
-            child: Text(AppLocalizations.of(context)!.map),
+          onChanged: (_) => changeViewMode(viewMode),
+          child: Text(
+            AppLocalizations.of(context)!.getViewMode(viewMode.name),
           ),
-        RadioMenuButton<ViewMode>(
-          value: ViewMode.gallery,
-          groupValue: cameraState.viewMode,
-          onChanged: (_) => changeViewMode(ViewMode.gallery),
-          child: Text(AppLocalizations.of(context)!.gallery),
-        ),
-      ],
+        );
+      }).toList(),
     );
 
     Action sort = Action(

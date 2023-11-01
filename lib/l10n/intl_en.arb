@@ -10,14 +10,8 @@
   "selectAll": "Select all",
   "about": "About",
   "search": "Search",
-  "sortName": "Sort by name",
-  "sortDistance": "Sort by distance",
-  "sortNeighbourhood": "Sort by\nneighbourhood",
   "searchNeighbourhood": "Search by\nneighbourhood",
   "sort": "Sort",
-  "list": "List",
-  "map": "Map",
-  "gallery": "Gallery",
   "showCameras": "View",
   "hidden": "Hidden",
   "hide": "Hide",
@@ -73,6 +67,16 @@
     }
   },
 
+  "getViewMode": "{viewMode, select, list{List} map{Map} gallery{Gallery} other{Gallery}}",
+  "@getViewMode": {
+    "description": "View mode type",
+    "placeholders": {
+      "viewMode": {
+        "type" : "String"
+      }
+    }
+  },
+
   "getCity": "{city, select, ottawa{Ottawa} montreal{Montreal} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} other{Ottawa}}",
   "@getCity": {
     "description": "City type",
@@ -81,14 +85,5 @@
         "type" : "String"
       }
     }
-  },
-
-  "ottawa": "Ottawa",
-  "toronto": "Toronto",
-  "montreal": "Montreal",
-  "calgary": "Calgary",
-  "vancouver": "Vancouver",
-  "surrey": "Surrey",
-  "ontario": "Ontario",
-  "alberta": "Alberta"
+  }
 }

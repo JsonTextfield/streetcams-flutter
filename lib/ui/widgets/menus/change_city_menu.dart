@@ -24,44 +24,14 @@ class ChangeCityMenu extends StatelessWidget {
               tooltip: AppLocalizations.of(context)!.city,
             );
           },
-          menuChildren: [
-            RadioMenuButton<City>(
-              value: City.ottawa,
+          menuChildren: City.values.map((city) {
+            return RadioMenuButton<City>(
+              value: city,
               groupValue: state.city,
-              onChanged: (_) => changeCity(City.ottawa),
-              child: Text(AppLocalizations.of(context)!.ottawa),
-            ),
-            RadioMenuButton<City>(
-              value: City.toronto,
-              groupValue: state.city,
-              onChanged: (_) => changeCity(City.toronto),
-              child: Text(AppLocalizations.of(context)!.toronto),
-            ),
-            RadioMenuButton<City>(
-              value: City.montreal,
-              groupValue: state.city,
-              onChanged: (_) => changeCity(City.montreal),
-              child: Text(AppLocalizations.of(context)!.montreal),
-            ),
-            RadioMenuButton<City>(
-              value: City.calgary,
-              groupValue: state.city,
-              onChanged: (_) => changeCity(City.calgary),
-              child: Text(AppLocalizations.of(context)!.calgary),
-            ),
-            RadioMenuButton<City>(
-              value: City.vancouver,
-              groupValue: state.city,
-              onChanged: (_) => changeCity(City.vancouver),
-              child: Text(AppLocalizations.of(context)!.vancouver),
-            ),
-            RadioMenuButton<City>(
-              value: City.surrey,
-              groupValue: state.city,
-              onChanged: (_) => changeCity(City.surrey),
-              child: Text(AppLocalizations.of(context)!.surrey),
-            ),
-          ],
+              onChanged: (_) => changeCity(city),
+              child: Text(AppLocalizations.of(context)!.getCity(city.name)),
+            );
+          }).toList(),
         );
       },
     );
