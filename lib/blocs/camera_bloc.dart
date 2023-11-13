@@ -66,9 +66,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       try {
         allCameras = await DownloadService.downloadCameras(city);
       } on Exception catch (_) {
-        return emit(state.copyWith(
-          status: CameraStatus.failure,
-        ));
+        return emit(state.copyWith(status: CameraStatus.failure));
       }
       _readSharedPrefs(allCameras);
       return emit(state.copyWith(
@@ -90,10 +88,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<SortCameras>((event, emit) async {
       await _sortCameras(event.sortMode);
-      return emit(state.copyWith(
-        displayedCameras: state.displayedCameras,
-        sortMode: event.sortMode,
-      ));
+      return emit(state.copyWith(sortMode: event.sortMode));
     });
 
     on<SearchCameras>((event, emit) async {
@@ -101,8 +96,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         displayedCameras: _searchCameras(
           event.searchMode,
           state.filterMode,
-          event.query,
+          event.searchText,
         ),
+        searchText: event.searchText,
         searchMode: event.searchMode,
       ));
     });
@@ -113,26 +109,35 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           : event.filterMode;
       return emit(state.copyWith(
         filterMode: mode,
-        displayedCameras: _filterCameras(mode),
+        displayedCameras: _searchCameras(
+          state.searchMode,
+          mode,
+          state.searchText,
+        ),
       ));
     });
 
     on<HideCameras>((event, emit) async {
       bool anyVisible = event.cameras.any((cam) => cam.isVisible);
-      for (Camera camera in state.displayedCameras) {
+      for (Camera camera in state.allCameras) {
         if (event.cameras.contains(camera)) {
           camera.isVisible = !anyVisible;
           prefs?.setBool('${camera.cameraId}.isVisible', !anyVisible);
         }
       }
       return emit(state.copyWith(
+        displayedCameras: _searchCameras(
+          state.searchMode,
+          state.filterMode,
+          state.searchText,
+        ),
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
       ));
     });
 
     on<FavouriteCameras>((event, emit) async {
       bool allFavourite = event.cameras.every((cam) => cam.isFavourite);
-      for (Camera camera in state.displayedCameras) {
+      for (Camera camera in state.allCameras) {
         if (event.cameras.contains(camera)) {
           camera.isFavourite = !allFavourite;
           prefs?.setBool('${camera.cameraId}.isFavourite', !allFavourite);
@@ -156,7 +161,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SelectAll>((event, emit) async {
-      for (Camera camera in state.displayedCameras) {
+      for (Camera camera in state.allCameras) {
         camera.isSelected = event.select;
       }
       return emit(state.copyWith(
@@ -166,18 +171,14 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<ResetFilters>((event, emit) async {
       return emit(state.copyWith(
-        displayedCameras: _searchCameras(
-          SearchMode.none,
-          FilterMode.visible,
-          '',
-        ),
+        displayedCameras: state.visibleCameras,
         searchMode: SearchMode.none,
         filterMode: FilterMode.visible,
       ));
     });
   }
 
-  List<Camera> _filterCameras(FilterMode filterMode) {
+  List<Camera> _getFilteredCameras(FilterMode filterMode) {
     return switch (filterMode) {
       FilterMode.favourite => state.favouriteCameras,
       FilterMode.visible => state.visibleCameras,
@@ -245,10 +246,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   List<Camera> _searchCameras(
     SearchMode searchMode,
     FilterMode filterMode,
-    String query,
+    String searchText,
   ) {
-    return _filterCameras(filterMode)
-        .where(_getSearchPredicate(searchMode, query))
+    return _getFilteredCameras(filterMode)
+        .where(_getSearchPredicate(searchMode, searchText))
         .toList();
   }
 

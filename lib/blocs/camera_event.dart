@@ -47,12 +47,12 @@ class SortCameras extends CameraEvent {
 
 class SearchCameras extends CameraEvent {
   final SearchMode searchMode;
-  final String query;
+  final String searchText;
 
-  SearchCameras({this.searchMode = SearchMode.camera, this.query = ''});
+  SearchCameras({this.searchMode = SearchMode.camera, this.searchText = ''});
 
   @override
-  List<Object?> get props => [searchMode, query];
+  List<Object?> get props => [searchMode, searchText];
 }
 
 class SelectCamera extends CameraEvent {

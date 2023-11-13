@@ -16,6 +16,7 @@ class CameraState extends Equatable {
   final CameraStatus status;
   final SortMode sortMode;
   final SearchMode searchMode;
+  final String searchText;
   final FilterMode filterMode;
   final ViewMode viewMode;
   final int lastUpdated;
@@ -45,6 +46,7 @@ class CameraState extends Equatable {
         displayedCameras,
         status,
         sortMode,
+        searchText,
         searchMode,
         filterMode,
         viewMode,
@@ -58,6 +60,7 @@ class CameraState extends Equatable {
     this.status = CameraStatus.initial,
     this.sortMode = SortMode.name,
     this.searchMode = SearchMode.none,
+    this.searchText = '',
     this.filterMode = FilterMode.visible,
     this.viewMode = ViewMode.gallery,
     this.lastUpdated = 0,
@@ -70,6 +73,7 @@ class CameraState extends Equatable {
     CameraStatus? status,
     SortMode? sortMode,
     SearchMode? searchMode,
+    String? searchText,
     FilterMode? filterMode,
     ViewMode? viewMode,
     int? lastUpdated,
@@ -81,6 +85,7 @@ class CameraState extends Equatable {
       status: status ?? this.status,
       sortMode: sortMode ?? this.sortMode,
       searchMode: searchMode ?? this.searchMode,
+      searchText: searchText ?? this.searchText,
       filterMode: filterMode ?? this.filterMode,
       viewMode: viewMode ?? this.viewMode,
       lastUpdated: lastUpdated ?? this.lastUpdated,

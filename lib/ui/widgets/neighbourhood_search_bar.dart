@@ -22,7 +22,10 @@ class NeighbourhoodSearchBar extends StatelessWidget {
 
     return Autocomplete<String>(
       onSelected: (value) => context.read<CameraBloc>().add(
-            SearchCameras(searchMode: SearchMode.neighbourhood, query: value),
+            SearchCameras(
+              searchMode: SearchMode.neighbourhood,
+              searchText: value,
+            ),
           ),
       optionsBuilder: (value) => getAutoCompleteOptions(value, neighbourhoods),
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
