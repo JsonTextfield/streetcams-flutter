@@ -13,7 +13,7 @@ class ViewModeMenu extends StatelessWidget {
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
         void changeViewMode(ViewMode viewMode) {
-          context.read<CameraBloc>().add(ReloadCameras(viewMode: viewMode));
+          context.read<CameraBloc>().add(ChangeViewMode(viewMode: viewMode));
         }
 
         return MenuAnchor(

@@ -9,13 +9,31 @@ class CameraLoading extends CameraEvent {}
 
 class CameraLoaded extends CameraEvent {}
 
-class ReloadCameras extends CameraEvent {
+class ChangeViewMode extends CameraEvent {
   final ViewMode viewMode;
 
-  ReloadCameras({this.viewMode = ViewMode.list});
+  ChangeViewMode({this.viewMode = ViewMode.list});
 
   @override
   List<Object?> get props => [viewMode];
+}
+
+class HideCameras extends CameraEvent {
+  final List<Camera> cameras;
+
+  HideCameras(this.cameras);
+
+  @override
+  List<Object?> get props => [cameras];
+}
+
+class FavouriteCameras extends CameraEvent {
+  final List<Camera> cameras;
+
+  FavouriteCameras(this.cameras);
+
+  @override
+  List<Object?> get props => [cameras];
 }
 
 class SortCameras extends CameraEvent {
@@ -39,17 +57,21 @@ class SearchCameras extends CameraEvent {
 
 class SelectCamera extends CameraEvent {
   final Camera camera;
-  final List<Camera> selectedCameras;
 
-  SelectCamera({required this.camera, this.selectedCameras = const <Camera>[]});
+  SelectCamera({required this.camera});
 
   @override
-  List<Object?> get props => [camera, selectedCameras];
+  List<Object?> get props => [camera];
 }
 
-class ClearSelection extends CameraEvent {}
+class SelectAll extends CameraEvent {
+  final bool select;
 
-class SelectAll extends CameraEvent {}
+  SelectAll({this.select = true});
+
+  @override
+  List<Object?> get props => [select];
+}
 
 class ResetFilters extends CameraEvent {}
 

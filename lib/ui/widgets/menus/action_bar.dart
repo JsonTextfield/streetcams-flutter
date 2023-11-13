@@ -86,7 +86,7 @@ class ActionBar extends StatelessWidget {
     }
 
     void changeViewMode(ViewMode viewMode) {
-      context.read<CameraBloc>().add(ReloadCameras(viewMode: viewMode));
+      context.read<CameraBloc>().add(ChangeViewMode(viewMode: viewMode));
     }
 
     void changeSortMode(SortMode sortMode) {
@@ -97,12 +97,22 @@ class ActionBar extends StatelessWidget {
       context.read<CameraBloc>().changeCity(city);
     }
 
+    void hideSelectedCameras() {
+      context.read<CameraBloc>().add(HideCameras(cameraState.selectedCameras));
+    }
+
+    void favouriteSelectedCameras() {
+      context
+          .read<CameraBloc>()
+          .add(FavouriteCameras(cameraState.selectedCameras));
+    }
+
     List<Camera> selectedCameras = cameraState.selectedCameras;
 
     Action clear = Action(
       icon: Icons.clear_rounded,
       tooltip: AppLocalizations.of(context)!.clear,
-      onClick: () => context.read<CameraBloc>().add(ClearSelection()),
+      onClick: () => context.read<CameraBloc>().add(SelectAll(select: false)),
     );
 
     Action view = Action(
@@ -120,9 +130,7 @@ class ActionBar extends StatelessWidget {
     Action favourite = Action(
       icon: favIcon,
       tooltip: favToolTip,
-      onClick: () {
-        context.read<CameraBloc>().favouriteSelectedCameras(!allFav);
-      },
+      onClick: favouriteSelectedCameras,
     );
 
     bool allHidden = selectedCameras.every((cam) => !cam.isVisible);
@@ -134,7 +142,7 @@ class ActionBar extends StatelessWidget {
     Action hide = Action(
       icon: hideIcon,
       tooltip: hideToolTip,
-      onClick: () => context.read<CameraBloc>().hideSelectedCameras(!allHidden),
+      onClick: hideSelectedCameras,
     );
 
     Action selectAll = Action(

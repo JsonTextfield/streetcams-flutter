@@ -39,9 +39,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     this.localeListener,
     this.prefs,
   }) : super(const CameraState()) {
-    localeListener ??= LocaleListener(callback: () {
-      add(ReloadCameras(viewMode: ViewMode.list));
-    });
+    localeListener ??= LocaleListener(callback: () => add(ChangeViewMode()));
 
     on<CameraLoading>((event, emit) async {
       BilingualObject.locale = await intl.findSystemLocale();
@@ -85,17 +83,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       ));
     });
 
-    on<ReloadCameras>((event, emit) async {
-      _readSharedPrefs(state.displayedCameras);
-      _readSharedPrefs(state.allCameras);
+    on<ChangeViewMode>((event, emit) async {
       prefs?.setString('viewMode', event.viewMode.name);
-
-      return emit(state.copyWith(
-        displayedCameras: state.displayedCameras,
-        allCameras: state.allCameras,
-        viewMode: event.viewMode,
-        lastUpdated: DateTime.now().millisecondsSinceEpoch,
-      ));
+      return emit(state.copyWith(viewMode: event.viewMode));
     });
 
     on<SortCameras>((event, emit) async {
@@ -122,35 +112,65 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           ? FilterMode.visible
           : event.filterMode;
       return emit(state.copyWith(
-        selectedCameras: [],
         filterMode: mode,
         displayedCameras: _filterCameras(mode),
       ));
     });
 
-    on<SelectCamera>((event, emit) async {
-      List<Camera> selectedCameras = state.selectedCameras.toList();
-      if (selectedCameras.contains(event.camera)) {
-        selectedCameras.remove(event.camera);
-      } else {
-        selectedCameras.add(event.camera);
+    on<HideCameras>((event, emit) async {
+      bool anyVisible = event.cameras.any((cam) => cam.isVisible);
+      for (Camera camera in state.displayedCameras) {
+        if (event.cameras.contains(camera)) {
+          camera.isVisible = !anyVisible;
+          prefs?.setBool('${camera.cameraId}.isVisible', !anyVisible);
+        }
       }
-      return emit(state.copyWith(selectedCameras: selectedCameras));
+      return emit(state.copyWith(
+        lastUpdated: DateTime.now().millisecondsSinceEpoch,
+      ));
+    });
+
+    on<FavouriteCameras>((event, emit) async {
+      bool allFavourite = event.cameras.every((cam) => cam.isFavourite);
+      for (Camera camera in state.displayedCameras) {
+        if (event.cameras.contains(camera)) {
+          camera.isFavourite = !allFavourite;
+          prefs?.setBool('${camera.cameraId}.isFavourite', !allFavourite);
+        }
+      }
+      return emit(state.copyWith(
+        lastUpdated: DateTime.now().millisecondsSinceEpoch,
+      ));
+    });
+
+    on<SelectCamera>((event, emit) async {
+      for (Camera camera in state.allCameras) {
+        if (camera == event.camera) {
+          camera.isSelected = !camera.isSelected;
+          break;
+        }
+      }
+      return emit(state.copyWith(
+        lastUpdated: DateTime.now().millisecondsSinceEpoch,
+      ));
     });
 
     on<SelectAll>((event, emit) async {
-      return emit(state.copyWith(selectedCameras: state.displayedCameras));
-    });
-
-    on<ClearSelection>((event, emit) async {
-      return emit(state.copyWith(selectedCameras: const []));
+      for (Camera camera in state.displayedCameras) {
+        camera.isSelected = event.select;
+      }
+      return emit(state.copyWith(
+        lastUpdated: DateTime.now().millisecondsSinceEpoch,
+      ));
     });
 
     on<ResetFilters>((event, emit) async {
       return emit(state.copyWith(
-        displayedCameras:
-            _searchCameras(SearchMode.none, FilterMode.visible, ''),
-        selectedCameras: [],
+        displayedCameras: _searchCameras(
+          SearchMode.none,
+          FilterMode.visible,
+          '',
+        ),
         searchMode: SearchMode.none,
         filterMode: FilterMode.visible,
       ));
@@ -233,46 +253,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   }
 
   bool Function(Camera) _getSearchPredicate(SearchMode searchMode, String str) {
-    switch (searchMode) {
-      case SearchMode.camera:
-        return (camera) => camera.name.containsIgnoreCase(str.trim());
-      case SearchMode.neighbourhood:
-        return (camera) => camera.neighbourhood.containsIgnoreCase(str.trim());
-      case SearchMode.none:
-      default:
-        return (camera) => true;
-    }
-  }
-
-  void favouriteSelectedCameras(bool favourite) {
-    for (Camera camera in state.selectedCameras) {
-      prefs?.setBool('${camera.cameraId}.isFavourite', favourite);
-    }
-    add(ReloadCameras(viewMode: state.viewMode));
-    add(FilterCamera(filterMode: state.filterMode));
-    add(SortCameras(sortMode: state.sortMode));
-  }
-
-  void hideSelectedCameras(bool hide) {
-    for (Camera cam in state.selectedCameras) {
-      prefs?.setBool('${cam.cameraId}.isVisible', !hide);
-    }
-    add(ReloadCameras(viewMode: state.viewMode));
-    add(FilterCamera(filterMode: state.filterMode));
-    add(SortCameras(sortMode: state.sortMode));
-  }
-
-  void updateCamera(Camera camera) {
-    for (Camera cam in state.allCameras) {
-      if (cam == camera) {
-        cam.isVisible = camera.isVisible;
-        prefs?.setBool('${camera.cameraId}.isVisible', camera.isVisible);
-        cam.isFavourite = camera.isFavourite;
-        prefs?.setBool('${camera.cameraId}.isFavourite', camera.isFavourite);
-        break;
-      }
-    }
-    add(ReloadCameras(viewMode: state.viewMode));
+    return switch (searchMode) {
+      SearchMode.camera => (cam) => cam.name.containsIgnoreCase(str.trim()),
+      SearchMode.neighbourhood => (cam) =>
+          cam.neighbourhood.containsIgnoreCase(str.trim()),
+      SearchMode.none => (cam) => true,
+    };
   }
 
   void changeCity(City city) {

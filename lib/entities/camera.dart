@@ -8,6 +8,7 @@ class Camera extends BilingualObject with EquatableMixin {
   String distance = '';
   bool isVisible = true;
   bool isFavourite = false;
+  bool isSelected = false;
 
   final City city;
   final Location location;

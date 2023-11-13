@@ -13,7 +13,6 @@ enum ViewMode { list, map, gallery }
 class CameraState extends Equatable {
   final List<Camera> allCameras;
   final List<Camera> displayedCameras;
-  final List<Camera> selectedCameras;
   final CameraStatus status;
   final SortMode sortMode;
   final SearchMode searchMode;
@@ -21,6 +20,9 @@ class CameraState extends Equatable {
   final ViewMode viewMode;
   final int lastUpdated;
   final City city;
+
+  List<Camera> get selectedCameras =>
+      allCameras.where((camera) => camera.isSelected).toList();
 
   List<Camera> get visibleCameras =>
       allCameras.where((camera) => camera.isVisible).toList();
@@ -41,7 +43,6 @@ class CameraState extends Equatable {
   List<Object?> get props => [
         allCameras,
         displayedCameras,
-        selectedCameras,
         status,
         sortMode,
         searchMode,
@@ -54,7 +55,6 @@ class CameraState extends Equatable {
   const CameraState({
     this.allCameras = const <Camera>[],
     this.displayedCameras = const <Camera>[],
-    this.selectedCameras = const <Camera>[],
     this.status = CameraStatus.initial,
     this.sortMode = SortMode.name,
     this.searchMode = SearchMode.none,
@@ -67,7 +67,6 @@ class CameraState extends Equatable {
   CameraState copyWith({
     List<Camera>? allCameras,
     List<Camera>? displayedCameras,
-    List<Camera>? selectedCameras,
     CameraStatus? status,
     SortMode? sortMode,
     SearchMode? searchMode,
@@ -79,7 +78,6 @@ class CameraState extends Equatable {
     return CameraState(
       allCameras: allCameras ?? this.allCameras,
       displayedCameras: displayedCameras ?? this.displayedCameras,
-      selectedCameras: selectedCameras ?? this.selectedCameras,
       status: status ?? this.status,
       sortMode: sortMode ?? this.sortMode,
       searchMode: searchMode ?? this.searchMode,
