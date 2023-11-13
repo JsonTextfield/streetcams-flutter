@@ -23,14 +23,6 @@ class CameraListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    void hideCamera(Camera camera) {
-      context.read<CameraBloc>().add(HideCameras([camera]));
-    }
-
-    void favouriteCamera(Camera camera) {
-      context.read<CameraBloc>().add(FavouriteCameras([camera]));
-    }
-
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
         debugPrint('building camera listview');
@@ -57,7 +49,7 @@ class CameraListView extends StatelessWidget {
               } else {
                 state.displayedCameras.insert(index, cam);
               }
-              hideCamera(cam);
+              context.read<CameraBloc>().add(HideCameras([cam]));
             }
 
             dismissed() {
@@ -111,7 +103,9 @@ class CameraListView extends StatelessWidget {
                       ? Icons.star_rounded
                       : Icons.star_border_rounded),
                   color: cam.isFavourite ? Colors.yellow : null,
-                  onPressed: () => favouriteCamera(cam),
+                  onPressed: () {
+                    context.read<CameraBloc>().add(FavouriteCameras([cam]));
+                  },
                 ),
                 onTap: () => onItemClick?.call(cameras[index]),
                 onLongPress: () => onItemLongClick?.call(cameras[index]),
