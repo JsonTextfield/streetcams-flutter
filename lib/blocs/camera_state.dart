@@ -92,4 +92,35 @@ class CameraState extends Equatable {
       city: city ?? this.city,
     );
   }
+
+  bool Function(Camera) _getSearchPredicate(
+    SearchMode searchMode,
+    String searchText,
+  ) {
+    return switch (searchMode) {
+      SearchMode.camera => (cam) =>
+          cam.name.containsIgnoreCase(searchText.trim()),
+      SearchMode.neighbourhood => (cam) =>
+          cam.neighbourhood.containsIgnoreCase(searchText.trim()),
+      SearchMode.none => (cam) => true,
+    };
+  }
+
+  List<Camera> _getFilteredCameras(FilterMode filterMode) {
+    return switch (filterMode) {
+      FilterMode.favourite => favouriteCameras,
+      FilterMode.visible => visibleCameras,
+      FilterMode.hidden => hiddenCameras,
+    };
+  }
+
+  List<Camera> getSearchResults(
+    SearchMode searchMode,
+    FilterMode filterMode,
+    String searchText,
+  ) {
+    return _getFilteredCameras(filterMode)
+        .where(_getSearchPredicate(searchMode, searchText))
+        .toList();
+  }
 }

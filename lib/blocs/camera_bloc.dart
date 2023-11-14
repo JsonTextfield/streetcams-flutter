@@ -93,7 +93,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<SearchCameras>((event, emit) async {
       return emit(state.copyWith(
-        displayedCameras: _searchCameras(
+        displayedCameras: state.getSearchResults(
           event.searchMode,
           state.filterMode,
           event.searchText,
@@ -109,7 +109,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           : event.filterMode;
       return emit(state.copyWith(
         filterMode: mode,
-        displayedCameras: _searchCameras(
+        displayedCameras: state.getSearchResults(
           state.searchMode,
           mode,
           state.searchText,
@@ -126,7 +126,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         }
       }
       return emit(state.copyWith(
-        displayedCameras: _searchCameras(
+        displayedCameras: state.getSearchResults(
           state.searchMode,
           state.filterMode,
           state.searchText,
@@ -162,7 +162,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<SelectAll>((event, emit) async {
       for (Camera camera in state.allCameras) {
-        camera.isSelected = event.select;
+        if (state.displayedCameras.contains(camera)) {
+          camera.isSelected = event.select;
+        }
       }
       return emit(state.copyWith(
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
@@ -176,14 +178,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         filterMode: FilterMode.visible,
       ));
     });
-  }
-
-  List<Camera> _getFilteredCameras(FilterMode filterMode) {
-    return switch (filterMode) {
-      FilterMode.favourite => state.favouriteCameras,
-      FilterMode.visible => state.visibleCameras,
-      FilterMode.hidden => state.hiddenCameras,
-    };
   }
 
   Future<void> _sortCameras(SortMode sortMode) async {
@@ -241,25 +235,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       int result = a.neighbourhood.compareTo(b.neighbourhood);
       return result == 0 ? a.sortableName.compareTo(b.sortableName) : result;
     });
-  }
-
-  List<Camera> _searchCameras(
-    SearchMode searchMode,
-    FilterMode filterMode,
-    String searchText,
-  ) {
-    return _getFilteredCameras(filterMode)
-        .where(_getSearchPredicate(searchMode, searchText))
-        .toList();
-  }
-
-  bool Function(Camera) _getSearchPredicate(SearchMode searchMode, String str) {
-    return switch (searchMode) {
-      SearchMode.camera => (cam) => cam.name.containsIgnoreCase(str.trim()),
-      SearchMode.neighbourhood => (cam) =>
-          cam.neighbourhood.containsIgnoreCase(str.trim()),
-      SearchMode.none => (cam) => true,
-    };
   }
 
   void changeCity(City city) {
