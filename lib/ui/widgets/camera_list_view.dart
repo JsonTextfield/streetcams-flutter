@@ -96,7 +96,7 @@ class CameraListView extends StatelessWidget {
                     ? Text(cam.neighbourhood)
                     : null,
                 leading: state.sortMode == SortMode.distance
-                    ? Text(cam.distance, textAlign: TextAlign.center)
+                    ? Text(cam.distanceString, textAlign: TextAlign.center)
                     : null,
                 trailing: IconButton(
                   icon: Icon(cam.isFavourite

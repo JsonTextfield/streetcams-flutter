@@ -5,7 +5,7 @@ import 'city.dart';
 import 'location.dart';
 
 class Camera extends BilingualObject with EquatableMixin {
-  String distance = '';
+  double distance = -1;
   bool isVisible = true;
   bool isFavourite = false;
   bool isSelected = false;
@@ -74,6 +74,21 @@ class Camera extends BilingualObject with EquatableMixin {
       return '$_url&timems=$time';
     }
     return _url;
+  }
+
+  String get distanceString {
+    double distance = this.distance;
+    if (distance > 9000e3) {
+      return '>9000\nkm';
+    }
+    if (distance >= 100e3) {
+      return '${(distance / 1000).round()}\nkm';
+    }
+    if (distance >= 500) {
+      distance = (distance / 100).roundToDouble() / 10;
+      return '$distance\nkm';
+    }
+    return '${distance.round()}\nm';
   }
 
   @override

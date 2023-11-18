@@ -68,15 +68,15 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       } on Exception catch (_) {
         return emit(state.copyWith(status: CameraStatus.failure));
       }
-      _readSharedPrefs(allCameras);
+      for (Camera c in allCameras) {
+        c.isFavourite = prefs?.getBool('${c.cameraId}.isFavourite') ?? false;
+        c.isVisible = prefs?.getBool('${c.cameraId}.isVisible') ?? true;
+      }
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
         allCameras: allCameras,
         status: CameraStatus.success,
         city: city,
-        sortMode: SortMode.name,
-        filterMode: FilterMode.visible,
-        searchMode: SearchMode.none,
         viewMode: viewMode,
       ));
     });
@@ -87,16 +87,24 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SortCameras>((event, emit) async {
-      await _sortCameras(event.sortMode);
-      return emit(state.copyWith(sortMode: event.sortMode));
+      if (event.sortMode == SortMode.distance) {
+        var position = await LocationService.getCurrentLocation();
+        var location = Location.fromPosition(position);
+        for (Camera cam in state.allCameras) {
+          cam.distance = location.distanceTo(cam.location);
+        }
+      }
+      return emit(state.copyWith(
+        sortMode: event.sortMode,
+        displayedCameras: state.getDisplayedCameras(sortMode: event.sortMode),
+      ));
     });
 
     on<SearchCameras>((event, emit) async {
       return emit(state.copyWith(
-        displayedCameras: state.getSearchResults(
-          event.searchMode,
-          state.filterMode,
-          event.searchText,
+        displayedCameras: state.getDisplayedCameras(
+          searchMode: event.searchMode,
+          searchText: event.searchText,
         ),
         searchText: event.searchText,
         searchMode: event.searchMode,
@@ -109,11 +117,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
           : event.filterMode;
       return emit(state.copyWith(
         filterMode: mode,
-        displayedCameras: state.getSearchResults(
-          state.searchMode,
-          mode,
-          state.searchText,
-        ),
+        displayedCameras: state.getDisplayedCameras(filterMode: mode),
       ));
     });
 
@@ -126,11 +130,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         }
       }
       return emit(state.copyWith(
-        displayedCameras: state.getSearchResults(
-          state.searchMode,
-          state.filterMode,
-          state.searchText,
-        ),
+        displayedCameras: state.getDisplayedCameras(),
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
       ));
     });
@@ -180,73 +180,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
   }
 
-  Future<void> _sortCameras(SortMode sortMode) async {
-    switch (sortMode) {
-      case SortMode.distance:
-        var position = await LocationService.getCurrentLocation();
-        var location = Location.fromPosition(position);
-        for (Camera cam in state.allCameras) {
-          cam.distance = getDistanceString(location.distanceTo(cam.location));
-        }
-        _sortByDistance(location);
-        break;
-      case SortMode.neighbourhood:
-        _sortByNeighbourhood();
-        break;
-      case SortMode.name:
-      default:
-        _sortByName();
-        break;
-    }
-  }
-
-  void _sortByName() {
-    state.displayedCameras
-        .sort((a, b) => a.sortableName.compareTo(b.sortableName));
-  }
-
-  String getDistanceString(double distance) {
-    if (distance > 9000e3) {
-      return '>9000\nkm';
-    }
-    if (distance >= 100e3) {
-      return '${(distance / 1000).round()}\nkm';
-    }
-    if (distance >= 500) {
-      distance = (distance / 100).roundToDouble() / 10;
-      return '$distance\nkm';
-    }
-    return '${distance.round()}\nm';
-  }
-
-  void _sortByDistance(Location location) {
-    state.displayedCameras.sort((a, b) {
-      double distanceA = location.distanceTo(a.location);
-      double distanceB = location.distanceTo(b.location);
-      a.distance = getDistanceString(distanceA);
-      b.distance = getDistanceString(distanceB);
-      int result = distanceA.compareTo(distanceB);
-      return result == 0 ? a.sortableName.compareTo(b.sortableName) : result;
-    });
-  }
-
-  void _sortByNeighbourhood() {
-    state.displayedCameras.sort((a, b) {
-      int result = a.neighbourhood.compareTo(b.neighbourhood);
-      return result == 0 ? a.sortableName.compareTo(b.sortableName) : result;
-    });
-  }
-
   void changeCity(City city) {
     add(CameraLoading());
     prefs?.setString('city', city.name);
     add(CameraLoaded());
-  }
-
-  void _readSharedPrefs(List<Camera> cameras) {
-    for (Camera c in cameras) {
-      c.isFavourite = prefs?.getBool('${c.cameraId}.isFavourite') ?? false;
-      c.isVisible = prefs?.getBool('${c.cameraId}.isVisible') ?? true;
-    }
   }
 }

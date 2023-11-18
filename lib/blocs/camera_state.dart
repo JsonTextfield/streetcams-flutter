@@ -114,13 +114,39 @@ class CameraState extends Equatable {
     };
   }
 
-  List<Camera> getSearchResults(
-    SearchMode searchMode,
-    FilterMode filterMode,
-    String searchText,
-  ) {
+  int Function(Camera, Camera) _getCameraComparator(SortMode sortMode) {
+    int sortByName(a, b) => a.sortableName.compareTo(b.sortableName);
+
+    int sortByDistance(a, b) {
+      int result = a.distance.compareTo(b.distance);
+      return result == 0 ? sortByName(a, b) : result;
+    }
+
+    int sortByNeighbourhood(a, b) {
+      int result = a.neighbourhood.compareTo(b.neighbourhood);
+      return result == 0 ? sortByName(a, b) : result;
+    }
+
+    return switch (sortMode) {
+      SortMode.name => sortByName,
+      SortMode.distance => sortByDistance,
+      SortMode.neighbourhood => sortByNeighbourhood,
+    };
+  }
+
+  List<Camera> getDisplayedCameras({
+    SearchMode? searchMode,
+    FilterMode? filterMode,
+    String? searchText,
+    SortMode? sortMode,
+  }) {
+    searchMode ??= this.searchMode;
+    filterMode ??= this.filterMode;
+    searchText ??= this.searchText;
+    sortMode ??= this.sortMode;
     return _getFilteredCameras(filterMode)
         .where(_getSearchPredicate(searchMode, searchText))
-        .toList();
+        .toList()
+      ..sort(_getCameraComparator(sortMode));
   }
 }
