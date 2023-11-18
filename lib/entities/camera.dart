@@ -1,3 +1,4 @@
+import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
 
 import 'bilingual_object.dart';
@@ -27,7 +28,7 @@ class Camera extends BilingualObject with EquatableMixin {
     _url = url;
   }
 
-  factory Camera.fromJson(Map<String, dynamic> json) {
+  /*factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
       nameEn: json['nameEn'] ?? '',
       nameFr: json['nameFr'] ?? '',
@@ -38,6 +39,116 @@ class Camera extends BilingualObject with EquatableMixin {
         (city) => city.name == json['city'],
         orElse: () => City.ottawa,
       ),
+    );
+  }*/
+
+  factory Camera.fromJson(dynamic json, City city) {
+    return switch (city) {
+      City.toronto => Camera._fromJsonToronto(json),
+      City.montreal => Camera._fromJsonMontreal(json),
+      City.calgary => Camera._fromJsonCalgary(json),
+      City.ottawa => Camera._fromJsonOttawa(json),
+      City.vancouver => Camera._fromJsonVancouver(json),
+      City.surrey => Camera._fromJsonSurrey((json as List<dynamic>).asMap()),
+      City.ontario => Camera._fromJsonOntario(json),
+      City.alberta => Camera._fromJsonAlberta(json),
+    };
+  }
+
+  factory Camera._fromJsonOttawa(Map<String, dynamic> json) {
+    return Camera(
+        city: City.ottawa,
+        location: Location.fromJson(json),
+        nameEn: json['description'] ?? '',
+        nameFr: json['descriptionFr'] ?? '',
+        url: 'https://traffic.ottawa.ca/beta/camera?id=${json['number']}');
+  }
+
+  factory Camera._fromJsonToronto(Map<String, dynamic> json) {
+    Map<String, dynamic> properties = json['properties'] ?? {};
+    Map<String, dynamic> geometry = json['geometry'] ?? {};
+    Map<int, dynamic> coordinates = (geometry['coordinates'] ?? []).asMap();
+    String mainRoad = (properties['MAINROAD'] as String).toCapitalCase();
+    String sideRoad = (properties['CROSSROAD'] as String).toCapitalCase();
+    return Camera(
+      city: City.toronto,
+      nameEn: '$mainRoad & $sideRoad',
+      location: Location.fromJsonArray(List<double>.from(coordinates[0])),
+      url: properties['IMAGEURL'] ?? '',
+    );
+  }
+
+  factory Camera._fromJsonMontreal(Map<String, dynamic> json) {
+    Map<String, dynamic> properties = json['properties'] ?? {};
+    Map<String, dynamic> geometry = json['geometry'] ?? {};
+    return Camera(
+      city: City.montreal,
+      nameFr: properties['titre'] ?? '',
+      location:
+          Location.fromJsonArray(List<double>.from(geometry['coordinates'])),
+      url: properties['url-image-en-direct'] ?? '',
+    );
+  }
+
+  factory Camera._fromJsonCalgary(Map<String, dynamic> json) {
+    Map<String, dynamic> point = json['point'] ?? {};
+    Map<String, dynamic> cameraUrl = json['camera_url'] ?? {};
+    return Camera(
+      city: City.calgary,
+      nameEn: json['camera_location'] ?? '',
+      location: Location.fromJsonArray(List<double>.from(point['coordinates'])),
+      url: cameraUrl['url'] ?? '',
+    );
+  }
+
+  factory Camera._fromJsonVancouver(Map<String, dynamic> json) {
+    Map<String, dynamic> geom = json['geom'] ?? {};
+    Map<String, dynamic> geometry = geom['geometry'] ?? {};
+    return Camera(
+      city: City.vancouver,
+      nameEn: json['name'] ?? '',
+      location:
+          Location.fromJsonArray(List<double>.from(geometry['coordinates'])),
+      url: json['url'] ?? '',
+    )..neighbourhood = json['geo_local_area'] ?? '';
+  }
+
+  factory Camera._fromJsonSurrey(Map<int, dynamic> json) {
+    return Camera(
+      city: City.surrey,
+      nameEn: json[1] ?? '',
+      location: Location.fromJsonArray(
+        [
+          double.tryParse(json[4] ?? '0.0') ?? 0.0,
+          double.tryParse(json[5] ?? '0.0') ?? 0.0,
+        ],
+      ),
+      url: json[2] ?? '',
+    );
+  }
+
+  factory Camera._fromJsonOntario(Map<String, dynamic> json) {
+    return Camera(
+      city: City.ontario,
+      nameEn: json['Name'] ?? '',
+      nameFr: json['Description'] ?? '',
+      location: Location(
+        lat: json['Latitude'] ?? 0.0,
+        lon: json['Longitude'] ?? 0.0,
+      ),
+      url: json['Url'] ?? '',
+    );
+  }
+
+  factory Camera._fromJsonAlberta(Map<String, dynamic> json) {
+    return Camera(
+      city: City.alberta,
+      nameEn: json['Name'] ?? '',
+      location: Location(
+        lat: json['Latitude'] ?? 0.0,
+        lon: json['Longitude'] ?? 0.0,
+      ),
+      url: json['Url'] ?? '',
     );
   }
 
@@ -50,17 +161,17 @@ class Camera extends BilingualObject with EquatableMixin {
     String sortableName = name;
 
     int startIndex = 0;
-    if (sortableName.startsWith('Avenue ')) {
-      startIndex = 'Avenue '.length;
-    } //
-    else if (sortableName.startsWith('Boulevard ')) {
-      startIndex = 'Boulevard '.length;
-    } //
-    else if (sortableName.startsWith('Chemin ')) {
-      startIndex = 'Chemin '.length;
-    } //
-    else if (sortableName.startsWith('Rue ')) {
-      startIndex = 'Rue '.length;
+
+    for (String str in [
+      'Avenue ',
+      'Boulevard ',
+      'Chemin ',
+      'Rue ',
+      'Place ',
+    ]) {
+      if (sortableName.startsWith(str)) {
+        startIndex = str.length;
+      }
     }
     sortableName = sortableName.substring(startIndex);
 

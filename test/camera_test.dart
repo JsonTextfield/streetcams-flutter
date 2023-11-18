@@ -60,10 +60,10 @@ void main() {
   });
 
   test('camera creation city from json', () {
-    var camera = Camera.fromJson(<String, dynamic>{'city': City.ottawa.name});
+    var camera = Camera.fromJson({}, City.ottawa);
     expect(camera.city, City.ottawa);
 
-    camera = Camera.fromJson(<String, dynamic>{'city': City.toronto.name});
+    camera = Camera.fromJson({}, City.toronto);
     expect(camera.city, City.toronto);
   });
 }
