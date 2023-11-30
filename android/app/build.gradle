@@ -7,7 +7,7 @@ if (localPropertiesFile.exists()) {
 }
 
 def keystoreProperties = new Properties()
-def keystorePropertiesFile = rootProject.file('C:\\Users\\jason\\.gradle\\gradle.properties')
+def keystorePropertiesFile = rootProject.file('C:/Users/jason/.gradle/gradle.properties')
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
