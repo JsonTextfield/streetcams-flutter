@@ -27,8 +27,6 @@ void main() {
   });
 
   test('test equality with non-equatable fields', () {
-    int num = 1337;
-    int id = 9999;
     String name = 'Camera';
     String nameFr = 'CameraFr';
     Location location = const Location(lat: 45.454545, lon: -75.696969);
@@ -60,10 +58,10 @@ void main() {
   });
 
   test('camera creation city from json', () {
-    var camera = Camera.fromJson({}, City.ottawa);
+    var camera = Camera.fromJson(<String, dynamic>{}, City.ottawa);
     expect(camera.city, City.ottawa);
 
-    camera = Camera.fromJson({}, City.toronto);
+    camera = Camera.fromJson(<String, dynamic>{}, City.toronto);
     expect(camera.city, City.toronto);
   });
 }

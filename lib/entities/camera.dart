@@ -68,12 +68,14 @@ class Camera extends BilingualObject with EquatableMixin {
     Map<String, dynamic> properties = json['properties'] ?? {};
     Map<String, dynamic> geometry = json['geometry'] ?? {};
     Map<int, dynamic> coordinates = (geometry['coordinates'] ?? []).asMap();
-    String mainRoad = (properties['MAINROAD'] as String).toCapitalCase();
-    String sideRoad = (properties['CROSSROAD'] as String).toCapitalCase();
+    String mainRd = ((properties['MAINROAD'] ?? '') as String).toCapitalCase();
+    String sideRd = ((properties['CROSSROAD'] ?? '') as String).toCapitalCase();
     return Camera(
       city: City.toronto,
-      nameEn: '$mainRoad & $sideRoad',
-      location: Location.fromJsonArray(List<double>.from(coordinates[0])),
+      nameEn: '$mainRd & $sideRd',
+      location: Location.fromJsonArray(
+        List<double>.from(coordinates[0] ?? [0.0, 0.0]),
+      ),
       url: properties['IMAGEURL'] ?? '',
     );
   }
