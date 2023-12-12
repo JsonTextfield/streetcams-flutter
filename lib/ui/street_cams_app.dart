@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../blocs/camera_bloc.dart';
 import '../constants.dart';
@@ -36,15 +35,15 @@ class StreetCamsApp extends StatelessWidget {
             statusBarColor: Constants.accentColour,
           ),
         ),
-        popupMenuTheme: PopupMenuThemeData(
+        popupMenuTheme: const PopupMenuThemeData(
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
         ),
-        menuTheme: MenuThemeData(
+        menuTheme: const MenuThemeData(
           style: MenuStyle(
             shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             )),
           ),
         ),
@@ -58,29 +57,24 @@ class StreetCamsApp extends StatelessWidget {
         ),
         appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
         scaffoldBackgroundColor: Colors.black,
-        popupMenuTheme: PopupMenuThemeData(
+        popupMenuTheme: const PopupMenuThemeData(
           color: Constants.darkMenuColour,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
         ),
-        menuTheme: MenuThemeData(
+        menuTheme: const MenuThemeData(
           style: MenuStyle(
             shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.all(Radius.circular(10)),
             )),
             backgroundColor:
-                const MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
+                MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
           ),
         ),
         dialogBackgroundColor: Constants.darkMenuColour,
       ),
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: const [
         Locale('en', 'CA'),
         Locale('fr', 'CA'),

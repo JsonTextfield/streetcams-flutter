@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/ui/widgets/flutter_map_widget.dart';
 
 import '../../blocs/camera_bloc.dart';
@@ -54,7 +54,7 @@ class HomePage extends StatelessWidget {
                     onPressed: () {
                       context.read<CameraBloc>().add(ResetFilters());
                     },
-                    tooltip: AppLocalizations.of(context)!.back,
+                    tooltip: context.translation.back,
                   )
                 : null,
             actions: const [ActionBar()],
@@ -69,7 +69,7 @@ class HomePage extends StatelessWidget {
                     case SearchMode.camera:
                       return SearchTextField(
                         controller: textEditingController,
-                        hintText: AppLocalizations.of(context)!
+                        hintText: context.translation
                             .searchCameras(state.displayedCameras.length),
                         searchMode: SearchMode.camera,
                       );
@@ -81,24 +81,14 @@ class HomePage extends StatelessWidget {
                   }
                 }
 
-                String title = '';
-                if (state.selectedCameras.isNotEmpty) {
-                  title = AppLocalizations.of(context)!
-                      .selectedCameras(state.selectedCameras.length);
-                } else {
-                  switch (state.filterMode) {
-                    case FilterMode.favourite:
-                      title = AppLocalizations.of(context)!.favourites;
-                      break;
-                    case FilterMode.hidden:
-                      title = AppLocalizations.of(context)!.hidden;
-                      break;
-                    case FilterMode.visible:
-                    default:
-                      title = AppLocalizations.of(context)!.appName;
-                      break;
-                  }
-                }
+                String title = state.selectedCameras.isNotEmpty
+                    ? context.translation
+                        .selectedCameras(state.selectedCameras.length)
+                    : switch (state.filterMode) {
+                        FilterMode.favourite => context.translation.favourites,
+                        FilterMode.hidden => context.translation.hidden,
+                        FilterMode.visible => context.translation.appName,
+                      };
                 return InkWell(
                   customBorder: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -117,7 +107,7 @@ class HomePage extends StatelessWidget {
               switch (state.status) {
                 case CameraStatus.failure:
                   return Center(
-                    child: Text(AppLocalizations.of(context)!.error),
+                    child: Text(context.translation.error),
                   );
                 case CameraStatus.success:
                   onClick(Camera camera) {

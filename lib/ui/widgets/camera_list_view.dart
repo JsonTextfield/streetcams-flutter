@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 
 import '../../blocs/camera_bloc.dart';
 import '../../constants.dart';
@@ -34,7 +34,7 @@ class CameraListView extends StatelessWidget {
               return ListTile(
                 title: Center(
                   child: Text(
-                    AppLocalizations.of(context)!.cameras(cameras.length),
+                    context.translation.cameras(cameras.length),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -59,12 +59,18 @@ class CameraListView extends StatelessWidget {
                   '${cam.name} ${cam.isVisible ? 'unhidden' : 'hidden'}',
                 ),
                 action: SnackBarAction(
-                  label: AppLocalizations.of(context)!.undo,
+                  label: context.translation.undo,
                   onPressed: hide,
                 ),
               ));
             }
 
+            String title = cam.isVisible
+                ? context.translation.hide
+                : context.translation.unhide;
+            IconData icon = cam.isVisible
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded;
             return Dismissible(
               key: UniqueKey(),
               direction: state.filterMode == FilterMode.favourite
@@ -72,16 +78,8 @@ class CameraListView extends StatelessWidget {
                   : DismissDirection.horizontal,
               onDismissed: (direction) => dismissed(),
               background: DismissibleBackground(
-                icon: cam.isVisible
-                    ? Icons.visibility_off_rounded
-                    : Icons.visibility_rounded,
-                alignment: Alignment.centerLeft,
-              ),
-              secondaryBackground: DismissibleBackground(
-                icon: cam.isVisible
-                    ? Icons.visibility_off_rounded
-                    : Icons.visibility_rounded,
-                alignment: Alignment.centerRight,
+                title: title,
+                icon: icon,
               ),
               child: ListTile(
                 selected: state.selectedCameras.contains(cam),
@@ -119,22 +117,27 @@ class CameraListView extends StatelessWidget {
 }
 
 class DismissibleBackground extends StatelessWidget {
+  final String title;
   final IconData icon;
-  final Alignment alignment;
 
   const DismissibleBackground({
     super.key,
+    required this.title,
     required this.icon,
-    required this.alignment,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       color: Constants.accentColour,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      alignment: alignment,
-      child: Icon(icon, color: Colors.white),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.white),
+          Expanded(child: Text(title, textAlign: TextAlign.center)),
+          Icon(icon, color: Colors.white),
+        ],
+      ),
     );
   }
 }

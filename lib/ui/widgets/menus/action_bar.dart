@@ -2,8 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart' hide Action;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/ui/widgets/menus/toolbar_action.dart';
 
 import '../../../blocs/camera_bloc.dart';
@@ -48,7 +48,7 @@ class ActionBar extends StatelessWidget {
           ).toList();
 
           Action more = Action(
-            tooltip: AppLocalizations.of(context)!.more,
+            tooltip: context.translation.more,
             icon: Icons.more_vert_rounded,
             children: overflowMenuItems,
           );
@@ -111,21 +111,21 @@ class ActionBar extends StatelessWidget {
 
     Action clear = Action(
       icon: Icons.clear_rounded,
-      tooltip: AppLocalizations.of(context)!.clear,
+      tooltip: context.translation.clear,
       onClick: () => context.read<CameraBloc>().add(SelectAll(select: false)),
     );
 
     Action view = Action(
       condition: selectedCameras.length <= 8,
       icon: Icons.camera_alt_rounded,
-      tooltip: AppLocalizations.of(context)!.showCameras,
+      tooltip: context.translation.showCameras,
       onClick: () => _showCameras(context, selectedCameras),
     );
 
     bool allFav = selectedCameras.every((cam) => cam.isFavourite);
     String favToolTip = allFav
-        ? AppLocalizations.of(context)!.unfavourite
-        : AppLocalizations.of(context)!.favourite;
+        ? context.translation.unfavourite
+        : context.translation.favourite;
     IconData favIcon = allFav ? Icons.star_border_rounded : Icons.star_rounded;
     Action favourite = Action(
       icon: favIcon,
@@ -134,9 +134,8 @@ class ActionBar extends StatelessWidget {
     );
 
     bool allHidden = selectedCameras.every((cam) => !cam.isVisible);
-    String hideToolTip = allHidden
-        ? AppLocalizations.of(context)!.unhide
-        : AppLocalizations.of(context)!.hide;
+    String hideToolTip =
+        allHidden ? context.translation.unhide : context.translation.hide;
     IconData hideIcon =
         allHidden ? Icons.visibility_rounded : Icons.visibility_off_rounded;
     Action hide = Action(
@@ -148,7 +147,7 @@ class ActionBar extends StatelessWidget {
     Action selectAll = Action(
       condition: selectedCameras.length < cameraState.displayedCameras.length,
       icon: Icons.select_all_rounded,
-      tooltip: AppLocalizations.of(context)!.selectAll,
+      tooltip: context.translation.selectAll,
       onClick: () => context.read<CameraBloc>().add(SelectAll()),
     );
 
@@ -156,14 +155,14 @@ class ActionBar extends StatelessWidget {
       condition: cameraState.status == CameraStatus.success &&
           cameraState.searchMode != SearchMode.camera,
       icon: Icons.search_rounded,
-      tooltip: AppLocalizations.of(context)!.search,
+      tooltip: context.translation.search,
       onClick: () => changeSearchMode(SearchMode.camera),
     );
 
     Action searchNeighbourhood = Action(
       condition: cameraState.showSearchNeighbourhood,
       icon: Icons.travel_explore_rounded,
-      tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
+      tooltip: context.translation.searchNeighbourhood,
       onClick: () => changeSearchMode(SearchMode.neighbourhood),
     );
 
@@ -178,15 +177,14 @@ class ActionBar extends StatelessWidget {
     Action switchView = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: getIcon(cameraState.viewMode),
-      tooltip:
-          AppLocalizations.of(context)!.getViewMode(cameraState.viewMode.name),
+      tooltip: context.translation.getViewMode(cameraState.viewMode.name),
       children: ViewMode.values.map((ViewMode viewMode) {
         return RadioMenuButton<ViewMode>(
           value: viewMode,
           groupValue: cameraState.viewMode,
           onChanged: (_) => changeViewMode(viewMode),
           child: Text(
-            AppLocalizations.of(context)!.getViewMode(viewMode.name),
+            context.translation.getViewMode(viewMode.name),
           ),
         );
       }).toList(),
@@ -196,13 +194,13 @@ class ActionBar extends StatelessWidget {
       condition: cameraState.status == CameraStatus.success &&
           cameraState.viewMode != ViewMode.map,
       icon: Icons.sort_rounded,
-      tooltip: AppLocalizations.of(context)!.sort,
+      tooltip: context.translation.sort,
       children: SortMode.values.map((SortMode sortMode) {
         return RadioMenuButton<SortMode>(
           value: sortMode,
           groupValue: cameraState.sortMode,
           onChanged: (_) => changeSortMode(sortMode),
-          child: Text(AppLocalizations.of(context)!.getSortMode(sortMode.name)),
+          child: Text(context.translation.getSortMode(sortMode.name)),
         );
       }).toList(),
     );
@@ -210,13 +208,13 @@ class ActionBar extends StatelessWidget {
     Action city = Action(
       condition: cameraState.searchMode == SearchMode.none,
       icon: Icons.location_city_rounded,
-      tooltip: AppLocalizations.of(context)!.city,
+      tooltip: context.translation.city,
       children: City.values.map((City city) {
         return RadioMenuButton<City>(
           value: city,
           groupValue: cameraState.city,
           onChanged: (_) => changeCity(city),
-          child: Text(AppLocalizations.of(context)!.getCity(city.name)),
+          child: Text(context.translation.getCity(city.name)),
         );
       }).toList(),
     );
@@ -224,7 +222,7 @@ class ActionBar extends StatelessWidget {
     Action favourites = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: Icons.star_rounded,
-      tooltip: AppLocalizations.of(context)!.favourites,
+      tooltip: context.translation.favourites,
       checked: cameraState.filterMode == FilterMode.favourite,
       onClick: () => changeFilterMode(FilterMode.favourite),
     );
@@ -232,7 +230,7 @@ class ActionBar extends StatelessWidget {
     Action hidden = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: Icons.visibility_off_rounded,
-      tooltip: AppLocalizations.of(context)!.hidden,
+      tooltip: context.translation.hidden,
       checked: cameraState.filterMode == FilterMode.hidden,
       onClick: () => changeFilterMode(FilterMode.hidden),
     );
@@ -240,14 +238,14 @@ class ActionBar extends StatelessWidget {
     Action random = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: Icons.casino_rounded,
-      tooltip: AppLocalizations.of(context)!.random,
+      tooltip: context.translation.random,
       onClick: () => _showRandomCamera(context),
     );
 
     Action shuffle = Action(
       condition: cameraState.status == CameraStatus.success,
       icon: Icons.shuffle_rounded,
-      tooltip: AppLocalizations.of(context)!.shuffle,
+      tooltip: context.translation.shuffle,
       onClick: () => _showCameras(
         context,
         context.read<CameraBloc>().state.visibleCameras,
@@ -256,7 +254,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action about = Action(
-      tooltip: AppLocalizations.of(context)!.about,
+      tooltip: context.translation.about,
       icon: Icons.info_rounded,
       onClick: () => _showAbout(context),
     );
@@ -300,7 +298,7 @@ class ActionBar extends StatelessWidget {
     if (context.mounted) {
       showAboutDialog(
         context: context,
-        applicationName: AppLocalizations.of(context)!.appName,
+        applicationName: context.translation.appName,
         applicationVersion: 'Version ${packageInfo.version}',
       );
     }

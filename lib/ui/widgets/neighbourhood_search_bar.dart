@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
 
 import '../../blocs/camera_bloc.dart';
@@ -32,8 +32,8 @@ class NeighbourhoodSearchBar extends StatelessWidget {
         return SearchTextField(
           focusNode: focusNode,
           controller: controller,
-          hintText: AppLocalizations.of(context)!
-              .searchNeighbourhoods(neighbourhoods.length),
+          hintText:
+              context.translation.searchNeighbourhoods(neighbourhoods.length),
           searchMode: SearchMode.neighbourhood,
         );
       },

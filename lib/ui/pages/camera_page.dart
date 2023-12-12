@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 
 import '../../entities/bilingual_object.dart';
@@ -95,7 +95,7 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
               margin: const EdgeInsets.all(5),
               child: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                tooltip: AppLocalizations.of(context)!.back,
+                tooltip: context.translation.back,
                 color: Colors.black,
                 onPressed: () => Navigator.of(context).pop(),
               ),

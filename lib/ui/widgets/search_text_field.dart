@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 
 import '../../blocs/camera_bloc.dart';
 
@@ -48,7 +48,7 @@ class SearchTextField extends StatelessWidget {
             ? IconButton(
                 icon: const Icon(Icons.clear_rounded, color: Colors.white),
                 onPressed: clear,
-                tooltip: AppLocalizations.of(context)!.clear,
+                tooltip: context.translation.clear,
               )
             : null,
         hintText: hintText,
