@@ -161,8 +161,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action searchNeighbourhood = Action(
-      condition: cameraState.status == CameraStatus.success &&
-          cameraState.searchMode != SearchMode.neighbourhood,
+      condition: cameraState.showSearchNeighbourhood,
       icon: Icons.travel_explore_rounded,
       tooltip: AppLocalizations.of(context)!.searchNeighbourhood,
       onClick: () => changeSearchMode(SearchMode.neighbourhood),

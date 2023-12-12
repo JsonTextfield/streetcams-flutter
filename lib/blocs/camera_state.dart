@@ -38,7 +38,13 @@ class CameraState extends Equatable {
       filterMode == FilterMode.visible &&
       sortMode == SortMode.name &&
       searchMode == SearchMode.none &&
-      viewMode == ViewMode.list;
+      viewMode != ViewMode.map;
+
+  bool get showSearchNeighbourhood =>
+      status == CameraStatus.success &&
+      searchMode != SearchMode.neighbourhood &&
+      city != City.alberta &&
+      city != City.ontario;
 
   @override
   List<Object?> get props => [
