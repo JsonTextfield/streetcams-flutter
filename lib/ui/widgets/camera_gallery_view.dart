@@ -1,9 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
-import 'package:streetcams_flutter/ui/widgets/loading_gallery_widget.dart';
 
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
@@ -39,7 +38,7 @@ class CameraGalleryView extends StatelessWidget {
             return ListTile(
               title: Center(
                 child: Text(
-                  AppLocalizations.of(context)!.cameras(cameras.length),
+                  context.translation.cameras(cameras.length),
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -56,15 +55,14 @@ class CameraGalleryView extends StatelessWidget {
                     onTap: () => onItemClick?.call(camera),
                     child: CameraGalleryWidget(
                       camera,
-                      otherUrl: snapshot.requireData[
-                          Random().nextInt(snapshot.requireData.length)],
+                      otherUrl: snapshot.requireData.first,
                     ),
                   );
                 }
                 return GestureDetector(
                   onLongPress: () => onItemLongClick?.call(camera),
                   onTap: () => onItemClick?.call(camera),
-                  child: LoadingGalleryWidget(camera),
+                  child: CameraGalleryWidget(camera, isLoaded: false),
                 );
               },
             );

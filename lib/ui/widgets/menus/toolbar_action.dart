@@ -12,13 +12,12 @@ class ToolbarAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Visibility(
-      visible: action.condition,
-      child: IconButton(
-        onPressed: action.onClick,
-        icon: Icon(action.icon),
-        tooltip: action.tooltip,
-      ),
-    );
+    return action.condition
+        ? IconButton(
+            onPressed: action.onClick,
+            icon: Icon(action.icon),
+            tooltip: action.tooltip,
+          )
+        : const SizedBox.shrink();
   }
 }

@@ -1,15 +1,23 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../blocs/camera_bloc.dart';
+import '../../constants.dart';
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
 
 class CameraGalleryWidget extends StatelessWidget {
   final Camera camera;
   final String otherUrl;
+  final bool isLoaded;
 
-  const CameraGalleryWidget(this.camera, {super.key, this.otherUrl = ''});
+  const CameraGalleryWidget(
+    this.camera, {
+    super.key,
+    this.otherUrl = '',
+    this.isLoaded = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,21 +26,18 @@ class CameraGalleryWidget extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          Container(color: Colors.grey),
-          Image.network(
-            camera.city == City.vancouver ? otherUrl : camera.url,
-            gaplessPlayback: true,
-            fit: BoxFit.cover,
-            errorBuilder: (context, exception, stackTrace) {
-              return Container(
-                color: Colors.grey,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.all(10),
-                width: MediaQuery.sizeOf(context).width,
-                child: const Center(child: Icon(Icons.videocam_off_rounded)),
-              );
-            },
-          ),
+          const DecoratedBox(decoration: BoxDecoration(color: Colors.grey)),
+          if (isLoaded)
+            CachedNetworkImage(
+              imageUrl: camera.city == City.vancouver ? otherUrl : camera.url,
+              fit: BoxFit.cover,
+              errorWidget: (context, exception, stackTrace) {
+                return const DecoratedBox(
+                  decoration: BoxDecoration(color: Colors.grey),
+                  child: Center(child: Icon(Icons.videocam_off_rounded)),
+                );
+              },
+            ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -49,22 +54,16 @@ class CameraGalleryWidget extends StatelessWidget {
               ),
             ),
           ),
-          Visibility(
-            visible: camera.isFavourite,
-            child: const Positioned(
+          if (camera.isFavourite)
+            const Positioned(
               top: 0,
               right: 0,
               child: Icon(Icons.star_rounded, color: Colors.yellow),
             ),
-          ),
-          Visibility(
-            visible: context
-                .read<CameraBloc>()
-                .state
-                .selectedCameras
-                .contains(camera),
-            child: Container(color: const Color(0x7722AAFF)),
-          ),
+          if (context.read<CameraBloc>().state.selectedCameras.contains(camera))
+            const DecoratedBox(
+              decoration: BoxDecoration(color: Constants.selectedColour),
+            ),
         ],
       ),
     );
