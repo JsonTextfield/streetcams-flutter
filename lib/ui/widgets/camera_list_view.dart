@@ -56,7 +56,9 @@ class CameraListView extends StatelessWidget {
               hide();
               ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                 content: Text(
-                  '${cam.name} ${cam.isVisible ? 'unhidden' : 'hidden'}',
+                  cam.isVisible
+                      ? context.translation.hiddenCamera(cam.name)
+                      : context.translation.unhiddenCamera(cam.name),
                 ),
                 action: SnackBarAction(
                   label: context.translation.undo,

@@ -20,6 +20,30 @@
   "more": "Plus",
   "undo": "Annuler",
   "back": "Retourner",
+  "hiddenCamera": "{camera} a été cachée",
+  "@hiddenCamera": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "unhiddenCamera": "{camera} a été révélée",
+  "@unhiddenCamera": {
+    "placeholders": {
+      "camera": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSaved": "{image} a été téléchargée",
+  "@imageSaved": {
+    "placeholders": {
+      "image": {
+        "type": "String"
+      }
+    }
+  },
   "cameras": "{count,plural, =0{0 caméras} =1{1 caméra} other{{count} caméras}}",
   "@cameras": {
     "placeholders": {

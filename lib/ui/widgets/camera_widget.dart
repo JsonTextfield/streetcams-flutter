@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:streetcams_flutter/l10n/translation.dart';
 
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
@@ -22,7 +23,7 @@ class CameraWidget extends StatelessWidget {
       onLongPress: () => _saveImage(camera).then((bool result) {
         if (result) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('${camera.name} saved'),
+            content: Text(context.translation.imageSaved(camera.name)),
           ));
         }
       }),
