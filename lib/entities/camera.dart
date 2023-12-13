@@ -1,5 +1,6 @@
 import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
+import 'package:intl/intl.dart';
 
 import 'bilingual_object.dart';
 import 'city.dart';
@@ -208,4 +209,9 @@ class Camera extends BilingualObject with EquatableMixin {
   List<Object?> get props => [nameEn, nameFr, location, city];
 
   String get cameraId => props.join();
+
+  String get fileName => '${name.replaceAll(
+        RegExp('[^0-9A-ZÀ-Ö]', caseSensitive: false),
+        '',
+      )}${DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
 }
