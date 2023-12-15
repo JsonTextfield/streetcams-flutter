@@ -208,7 +208,7 @@ class ActionBar extends StatelessWidget {
     Action city = Action(
       condition: cameraState.searchMode == SearchMode.none,
       icon: Icons.location_city_rounded,
-      tooltip: context.translation.city,
+      tooltip: context.translation.location,
       children: City.values.map((City city) {
         return RadioMenuButton<City>(
           value: city,

@@ -46,6 +46,10 @@ class CameraState extends Equatable {
       city != City.alberta &&
       city != City.ontario;
 
+  bool get showBackButton =>
+      (filterMode != FilterMode.visible || searchMode != SearchMode.none) &&
+      selectedCameras.isEmpty;
+
   @override
   List<Object?> get props => [
         allCameras,

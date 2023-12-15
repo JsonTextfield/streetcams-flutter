@@ -46,8 +46,7 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            leading: (state.filterMode != FilterMode.visible ||
-                    state.searchMode != SearchMode.none)
+            leading: state.showBackButton
                 ? IconButton(
                     constraints: const BoxConstraints(),
                     icon: const Icon(Icons.arrow_back_rounded),

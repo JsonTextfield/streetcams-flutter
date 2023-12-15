@@ -80,6 +80,7 @@
     }
   },
   "city": "City",
+  "location": "Location",
   "getSortMode": "{sortMode, select, distance{Sort by distance} neighbourhood{Sort by\nneighbourhood} name{Sort by name} other{Sort by name}}",
   "@getSortMode": {
     "description": "SortMode type",

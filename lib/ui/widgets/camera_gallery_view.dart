@@ -37,10 +37,14 @@ class CameraGalleryView extends StatelessWidget {
           if (index == cameras.length) {
             return ListTile(
               title: Center(
-                child: Text(
-                  context.translation.cameras(cameras.length),
-                  textAlign: TextAlign.center,
-                ),
+                child: FittedBox(
+                    fit: BoxFit.fitWidth,
+                    child: Text(
+                      context.translation
+                          .cameras(cameras.length)
+                          .replaceFirst(' ', '\n'),
+                      textAlign: TextAlign.center,
+                    )),
               ),
             );
           }
