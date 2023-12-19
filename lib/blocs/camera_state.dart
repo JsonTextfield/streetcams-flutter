@@ -50,6 +50,9 @@ class CameraState extends Equatable {
       (filterMode != FilterMode.visible || searchMode != SearchMode.none) &&
       selectedCameras.isEmpty;
 
+  List<String> get neighbourhoods =>
+      allCameras.map((camera) => camera.neighbourhood).toSet().toList();
+
   @override
   List<Object?> get props => [
         allCameras,

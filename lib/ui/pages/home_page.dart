@@ -73,7 +73,12 @@ class HomePage extends StatelessWidget {
                         searchMode: SearchMode.camera,
                       );
                     case SearchMode.neighbourhood:
-                      return const NeighbourhoodSearchBar();
+                      return NeighbourhoodSearchBar(
+                        hintText: textEditingController.text.isEmpty
+                            ? context.translation.searchNeighbourhoods(
+                                state.neighbourhoods.length)
+                            : '',
+                      );
                     case SearchMode.none:
                     default:
                       break;

@@ -1,25 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
-import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
 
 import '../../blocs/camera_bloc.dart';
 
 class NeighbourhoodSearchBar extends StatelessWidget {
-  const NeighbourhoodSearchBar({super.key});
+  final String hintText;
+
+  const NeighbourhoodSearchBar({super.key, this.hintText = ''});
 
   @override
   Widget build(BuildContext context) {
     debugPrint('building neighbourhood search bar');
-    List<String> neighbourhoods = context
-        .read<CameraBloc>()
-        .state
-        .allCameras
-        .map((camera) => camera.neighbourhood)
-        .toSet()
-        .toList();
-
+    List<String> neighbourhoods =
+        context.read<CameraBloc>().state.neighbourhoods;
     return Autocomplete<String>(
       onSelected: (value) => context.read<CameraBloc>().add(
             SearchCameras(
@@ -32,8 +27,7 @@ class NeighbourhoodSearchBar extends StatelessWidget {
         return SearchTextField(
           focusNode: focusNode,
           controller: controller,
-          hintText:
-              context.translation.searchNeighbourhoods(neighbourhoods.length),
+          hintText: hintText,
           searchMode: SearchMode.neighbourhood,
         );
       },
