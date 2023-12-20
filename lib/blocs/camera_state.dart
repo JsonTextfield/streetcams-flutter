@@ -38,7 +38,7 @@ class CameraState extends Equatable {
       filterMode == FilterMode.visible &&
       sortMode == SortMode.name &&
       searchMode == SearchMode.none &&
-      viewMode != ViewMode.map;
+      viewMode == ViewMode.list;
 
   bool get showSearchNeighbourhood =>
       status == CameraStatus.success &&
