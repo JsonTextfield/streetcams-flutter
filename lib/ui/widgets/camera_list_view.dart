@@ -136,7 +136,13 @@ class DismissibleBackground extends StatelessWidget {
       child: Row(
         children: [
           Icon(icon, color: Colors.white),
-          Expanded(child: Text(title, textAlign: TextAlign.center)),
+          Expanded(
+            child: Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white),
+            ),
+          ),
           Icon(icon, color: Colors.white),
         ],
       ),

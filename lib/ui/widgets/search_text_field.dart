@@ -39,7 +39,8 @@ class SearchTextField extends StatelessWidget {
     return Stack(
       alignment: Alignment.centerLeft,
       children: [
-        if (controller.text.isEmpty)
+        if (controller.text.isEmpty &&
+            MediaQuery.orientationOf(context) == Orientation.portrait)
           TextScroll(
             hintText,
             intervalSpaces: 10,
@@ -49,7 +50,11 @@ class SearchTextField extends StatelessWidget {
             velocity: const Velocity(pixelsPerSecond: Offset(30, 0)),
           ),
         TextField(
-          style: const TextStyle(color: Colors.white, fontSize: 14),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 14,
+            fontWeight: FontWeight.normal,
+          ),
           cursorColor: Colors.white,
           focusNode: focusNode,
           controller: controller,
@@ -64,6 +69,9 @@ class SearchTextField extends StatelessWidget {
                     tooltip: context.translation.clear,
                   )
                 : null,
+            hintText: MediaQuery.orientationOf(context) == Orientation.landscape
+                ? hintText
+                : '',
             hintStyle: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.normal,
