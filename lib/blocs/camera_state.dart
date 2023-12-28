@@ -44,7 +44,8 @@ class CameraState extends Equatable {
       status == CameraStatus.success &&
       searchMode != SearchMode.neighbourhood &&
       city != City.alberta &&
-      city != City.ontario;
+      city != City.ontario &&
+      city != City.britishColumbia;
 
   bool get showBackButton =>
       (filterMode != FilterMode.visible || searchMode != SearchMode.none) &&
