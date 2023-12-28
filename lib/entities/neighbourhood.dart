@@ -81,10 +81,10 @@ class Neighbourhood extends BilingualObject {
             Projection.get('EPSG:4326')!,
             Point.fromArray(List<double>.from(points[i])),
           );
-          list.add(Location.fromJsonArray(point.toArray()));
+          list.add(Location.fromList(point.toArray()));
         } //
         else {
-          list.add(Location.fromJsonArray(List<double>.from(points[i])));
+          list.add(Location.fromList(List<double>.from(points[i])));
         }
       }
       boundaries.add(list);

@@ -96,7 +96,7 @@
       }
     }
   },
-  "getCity": "{city, select, ottawa{Ottawa} montreal{Montréal} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} other{Ottawa}}",
+  "getCity": "{city, select, ottawa{Ottawa} montreal{Montréal} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} britishColumbia{Colombie-Britannique} other{Ottawa}}",
   "@getCity": {
     "description": "City type",
     "placeholders": {

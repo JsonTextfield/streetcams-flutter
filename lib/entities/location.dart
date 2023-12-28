@@ -9,14 +9,15 @@ class Location {
     required this.lon,
   });
 
-  factory Location.fromJson(Map<String, dynamic> json) {
+  factory Location.fromMap(Map<String, dynamic> json,
+      {bool useUppercase = false}) {
     return Location(
-      lat: json['latitude'] ?? 0.0,
-      lon: json['longitude'] ?? 0.0,
+      lat: json[useUppercase ? 'Latitude' : 'latitude'] ?? 0.0,
+      lon: json[useUppercase ? 'Longitude' : 'longitude'] ?? 0.0,
     );
   }
 
-  factory Location.fromJsonArray(List<double> json) {
+  factory Location.fromList(List<double> json) {
     return Location(
       lat: json[1],
       lon: json[0],

@@ -4,12 +4,12 @@ import 'package:streetcams_flutter/entities/location.dart';
 
 void main() {
   test('test location creation from json', () {
-    var location = Location.fromJson({'latitude': 13.37, 'longitude': 19.95});
+    var location = Location.fromMap({'latitude': 13.37, 'longitude': 19.95});
     expect(location.lat, 13.37);
     expect(location.lon, 19.95);
   });
   test('test location creation from json array', () {
-    var location = Location.fromJsonArray([19.95, 13.37]);
+    var location = Location.fromList([19.95, 13.37]);
     expect(location.lat, 13.37);
     expect(location.lon, 19.95);
   });

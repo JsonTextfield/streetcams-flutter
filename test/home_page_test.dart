@@ -16,7 +16,7 @@ void main() {
       //expect(find.byTooltip('More'), findsOneWidget);
       //expect(find.byIcon(Icons.more_vert_rounded), findsOneWidget);
 
-      expect(find.byTooltip('City'), findsOneWidget);
+      expect(find.byTooltip('Location'), findsOneWidget);
       expect(find.byIcon(Icons.location_city_rounded), findsOneWidget);
 
       //await tester.longPress(find.byType(ScrollablePositionedList));

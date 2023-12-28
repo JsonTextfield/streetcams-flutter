@@ -38,6 +38,8 @@ class FlutterMapWidget extends StatelessWidget {
           City.surrey => const LatLng(49.058513387198, -123.1012956358),
           City.ontario => const LatLng(46.489692, -80.999936),
           City.alberta => const LatLng(53.544136630027, -113.494843970093),
+          City.britishColumbia =>
+            const LatLng(53.544136630027, -123.494843970093),
         };
     return FlutterMap(
       options: MapOptions(

@@ -7,4 +7,5 @@ enum City {
   surrey,
   ontario,
   alberta,
+  britishColumbia,
 }

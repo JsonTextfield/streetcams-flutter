@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:csv/csv.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -33,40 +34,51 @@ class DownloadService {
         'https://data.surrey.ca/datastore/dump/18b8fdab-bbb4-41c7-9f1a-37794cb1b883?format=json',
       City.ontario => 'https://511on.ca/api/v2/get/cameras',
       City.alberta => 'https://511.alberta.ca/api/v2/get/cameras',
+      City.britishColumbia =>
+        'https://catalogue.data.gov.bc.ca/dataset/6b39a910-6c77-476f-ac96-7b4f18849b1c/resource/a9d52d85-8402-4ce7-b2ac-a2779837c48a/download/webcams.csv',
     };
 
-    return compute(_parseCameraJson, [city, await http.read(Uri.parse(url))]);
+    return compute(_parseCameras, [city, await http.read(Uri.parse(url))]);
   }
 
-  static List<Camera> _parseCameraJson(List<dynamic> data) {
+  static List<Camera> _parseCameras(List<dynamic> data) {
     City city = data.first;
-    String jsonString = data.last;
+    String dataString = data.last;
     List<dynamic> jsonArray = [];
 
     switch (city) {
       case City.toronto:
       case City.montreal:
-        Map<String, dynamic> jsonObject = json.decode(jsonString);
+        Map<String, dynamic> jsonObject = json.decode(dataString);
         jsonArray = jsonObject['features'];
         break;
       case City.surrey:
-        Map<String, dynamic> jsonObject = json.decode(jsonString);
+        Map<String, dynamic> jsonObject = json.decode(dataString);
         jsonArray = jsonObject['records'];
+        break;
+      case City.britishColumbia:
+        jsonArray = csvToMap(dataString);
         break;
       case City.calgary:
       case City.ottawa:
       case City.vancouver:
       case City.ontario:
       default:
-        jsonArray = json.decode(jsonString);
+        jsonArray = json.decode(dataString);
         break;
     }
     return jsonArray
         .where((json) =>
             (city != City.ontario && city != City.alberta) ||
             'Enabled' == json['Status'])
-        .map((json) => Camera.fromJson(json, city))
+        .map((json) => Camera.fromCityData(json, city))
         .toList();
+  }
+
+  static List<Map<String, dynamic>> csvToMap(String csvString) {
+    List<List<dynamic>> data = const CsvToListConverter().convert(csvString);
+    List<String> keys = data.first.map((item) => item.toString()).toList();
+    return data.skip(1).map((item) => Map.fromIterables(keys, item)).toList();
   }
 
   static Future<List<Neighbourhood>> downloadNeighbourhoods(City city) async {
@@ -95,6 +107,7 @@ class DownloadService {
       case City.vancouver:
       case City.alberta:
       case City.ontario:
+      case City.britishColumbia:
         return [];
     }
     return compute(_parseNeighbourhoodJson, [
@@ -116,7 +129,6 @@ class DownloadService {
       case City.toronto:
       case City.montreal:
       case City.surrey:
-      case City.ontario:
       default:
         jsonArray = json.decode(jsonString)['features'];
         break;
