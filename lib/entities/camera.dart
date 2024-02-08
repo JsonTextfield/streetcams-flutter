@@ -1,4 +1,3 @@
-import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
 
@@ -29,7 +28,7 @@ class Camera extends BilingualObject with EquatableMixin {
     _url = url;
   }
 
-  /*factory Camera.fromJson(Map<String, dynamic> json) {
+  factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
       nameEn: json['nameEn'] ?? '',
       nameFr: json['nameFr'] ?? '',
@@ -41,7 +40,7 @@ class Camera extends BilingualObject with EquatableMixin {
         orElse: () => City.ottawa,
       ),
     );
-  }*/
+  }
 
   factory Camera.fromCityData(dynamic data, City city) {
     return switch (city) {
@@ -70,8 +69,8 @@ class Camera extends BilingualObject with EquatableMixin {
     Map<String, dynamic> properties = camData['properties'] ?? {};
     Map<String, dynamic> geometry = camData['geometry'] ?? {};
     Map<int, dynamic> coordinates = (geometry['coordinates'] ?? []).asMap();
-    String mainRd = ((properties['MAINROAD'] ?? '') as String).toCapitalCase();
-    String sideRd = ((properties['CROSSROAD'] ?? '') as String).toCapitalCase();
+    String mainRd = (properties['MAINROAD'] ?? '').toCapitalCase();
+    String sideRd = (properties['CROSSROAD'] ?? '').toCapitalCase();
     return Camera(
       city: City.toronto,
       nameEn: '$mainRd & $sideRd',
