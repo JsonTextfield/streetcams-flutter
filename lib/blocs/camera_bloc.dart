@@ -93,7 +93,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<SortCameras>((event, emit) async {
       if (event.sortMode == SortMode.distance) {
         var position = await LocationService.getCurrentLocation();
-        var location = Location.fromPosition(position);
+        var location = LatLon.fromPosition(position);
         for (Camera cam in state.allCameras) {
           cam.distance = location.distanceTo(cam.location);
         }
