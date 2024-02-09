@@ -1,12 +1,12 @@
+import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
-import 'package:quiver/strings.dart';
 
 import 'bilingual_object.dart';
 import 'city.dart';
 import 'latlon.dart';
 
-class Camera extends BilingualObject with EquatableMixin {
+class Camera with EquatableMixin {
   double distance = -1;
   bool isVisible = true;
   bool isFavourite = false;
@@ -15,29 +15,34 @@ class Camera extends BilingualObject with EquatableMixin {
   final City city;
   final LatLon location;
 
-  String neighbourhoodEn = '';
-  String neighbourhoodFr = '';
+  late final BilingualObject _name;
+  late final BilingualObject _neighbourhood;
+
   String _url = '';
 
   Camera({
     required this.location,
     required this.city,
-    super.nameEn = '',
-    super.nameFr = '',
+    name = const BilingualObject(en: '', fr: ''),
+    neighbourhood = const BilingualObject(en: '', fr: ''),
     url = '',
-    this.neighbourhoodEn = '',
-    this.neighbourhoodFr = '',
   }) {
+    _name = name;
+    _neighbourhood = neighbourhood;
     _url = url;
   }
 
   factory Camera.fromJson(Map<String, dynamic> json) {
     return Camera(
-      nameEn: json['nameEn'] ?? '',
-      nameFr: json['nameFr'] ?? '',
+      name: BilingualObject(
+        en: json['nameEn'] ?? '',
+        fr: json['nameFr'] ?? '',
+      ),
+      neighbourhood: BilingualObject(
+        en: json['neighbourhoodEn'] ?? '',
+        fr: json['neighbourhoodFr'] ?? '',
+      ),
       location: LatLon.fromMap(json['location'] ?? {}),
-      neighbourhoodEn: json['neighbourhoodEn'] ?? '',
-      neighbourhoodFr: json['neighbourhoodFr'] ?? '',
       url: json['url'] ?? '',
       city: City.values.firstWhere(
         (city) => city.name == json['city'],
@@ -46,40 +51,21 @@ class Camera extends BilingualObject with EquatableMixin {
     );
   }
 
-  String get neighbourhood {
-    if ((BilingualObject.locale.contains('fr') &&
-            isNotBlank(neighbourhoodFr)) ||
-        isBlank(neighbourhoodEn)) {
-      return neighbourhoodFr;
-    }
-    return neighbourhoodEn;
-  }
+  String get name => _name.name;
 
-  @override
+  String get neighbourhood => _neighbourhood.name;
+
   String get sortableName {
     if (city != City.montreal) {
-      return super.sortableName;
+      return _name.sortableName;
     }
-
-    String sortableName = name;
-
-    int startIndex = 0;
-
-    for (String str in [
-      'Avenue ',
-      'Boulevard ',
-      'Chemin ',
-      'Rue ',
-      'Place ',
-    ]) {
-      if (sortableName.startsWith(str)) {
-        startIndex = str.length;
-      }
-    }
-    sortableName = sortableName.substring(startIndex);
-
-    var regex = RegExp('[0-9A-ZÀ-Ö]');
-    return sortableName.substring(sortableName.indexOf(regex));
+    int startIndex = ['Avenue ', 'Boulevard ', 'Chemin ', 'Rue ', 'Place ']
+        .firstWhere(name.startsWith, orElse: () => '')
+        .length;
+    String sortableName = name.substring(startIndex);
+    return sortableName
+        .substring(sortableName.indexOf(RegExp('[0-9A-ZÀ-Ö]')))
+        .toUpperCase();
   }
 
   String get url {
@@ -106,12 +92,10 @@ class Camera extends BilingualObject with EquatableMixin {
   }
 
   @override
-  List<Object?> get props => [nameEn, nameFr, location, city];
+  List<Object?> get props => [_name.en, _name.fr, location, city];
 
   String get cameraId => props.join();
 
-  String get fileName => '${name.replaceAll(
-        RegExp('[^0-9A-ZÀ-Ö]', caseSensitive: false),
-        '',
-      )}${DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
+  String get fileName =>
+      '${name.toPascalCase}${DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
 }

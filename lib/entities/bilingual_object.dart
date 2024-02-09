@@ -1,24 +1,21 @@
 import 'package:quiver/strings.dart';
 
-abstract class BilingualObject {
+final class BilingualObject {
   static String locale = 'en';
-  final String nameEn;
-  final String nameFr;
+
+  final String en;
+  final String fr;
 
   const BilingualObject({
-    this.nameEn = '',
-    this.nameFr = '',
+    this.en = '',
+    this.fr = '',
   });
 
   String get sortableName =>
-      name.replaceAll(RegExp('[^0-9a-zA-Zà-öÀ-Ö]'), '').toUpperCase();
+      name.toUpperCase().replaceAll(RegExp('[^0-9A-ZÀ-Ö]'), '');
 
-  String get name {
-    if ((locale.contains('fr') && isNotBlank(nameFr)) || isBlank(nameEn)) {
-      return nameFr;
-    }
-    return nameEn;
-  }
+  String get name =>
+      (locale.contains('fr') && isNotBlank(fr)) || isBlank(en) ? fr : en;
 }
 
 extension StringExtensions on String {
