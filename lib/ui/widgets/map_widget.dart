@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 
 import '../../blocs/camera_bloc.dart';
 import '../../entities/camera.dart';
-import '../../entities/city.dart';
 
 class MapWidget extends StatelessWidget {
   final List<Camera> cameras;
@@ -105,6 +105,7 @@ class MapWidget extends StatelessWidget {
         position: LatLng(camera.location.lat, camera.location.lon),
         infoWindow: InfoWindow(
           title: camera.name,
+          snippet: camera.neighbourhood.isEmpty ? null : camera.neighbourhood,
           onTap: () => onItemLongClick?.call(camera),
         ),
         zIndex:

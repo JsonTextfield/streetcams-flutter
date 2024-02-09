@@ -1,19 +1,15 @@
-import 'dart:convert';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl_standalone.dart'
     if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:streetcams_flutter/entities/neighbourhood.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
+import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
+import 'package:streetcams_flutter/entities/latlon.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
-
-import '../entities/bilingual_object.dart';
-import '../entities/camera.dart';
-import '../entities/city.dart';
-import '../entities/location.dart';
 
 part 'camera_event.dart';
 part 'camera_state.dart';
@@ -67,25 +63,14 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       );
       List<Camera> allCameras = [];
       try {
-        allCameras = await DownloadService.downloadCameras(city);
+        allCameras = await DownloadService.getCameras(city);
         allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
       } on Exception catch (_) {
         return emit(state.copyWith(status: CameraStatus.failure));
       }
-      List<Neighbourhood> neighbourhoods =
-          await DownloadService.downloadNeighbourhoods(city);
-
       for (Camera c in allCameras) {
         c.isFavourite = prefs?.getBool('${c.cameraId}.isFavourite') ?? false;
         c.isVisible = prefs?.getBool('${c.cameraId}.isVisible') ?? true;
-        for (Neighbourhood neighbourhood in neighbourhoods) {
-          if (neighbourhood.containsCamera(c)) {
-            c.neighbourhood = c.city == City.montreal
-                ? utf8.decode(neighbourhood.name.runes.toList())
-                : neighbourhood.name;
-            break;
-          }
-        }
       }
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
