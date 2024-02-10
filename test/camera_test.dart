@@ -1,56 +1,51 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
-import 'package:streetcams_flutter/entities/location.dart';
+import 'package:streetcams_flutter/entities/latlon.dart';
 
 void main() {
   test('test equality', () {
-    String name = 'Camera';
+    String nameEn = 'CameraEn';
     String nameFr = 'CameraFr';
-    Location location = const Location(lat: 45.454545, lon: -75.696969);
+    LatLon location = const LatLon(lat: 45.454545, lon: -75.696969);
     City city = City.ottawa;
 
     var camera1 = Camera(
-      city: city,
-      location: location,
-      nameEn: name,
-      nameFr: nameFr,
-    );
+        city: city,
+        location: location,
+        name: BilingualObject(en: nameEn, fr: nameFr));
     var camera2 = Camera(
-      city: city,
-      location: location,
-      nameEn: name,
-      nameFr: nameFr,
-    );
+        city: city,
+        location: location,
+        name: BilingualObject(en: nameEn, fr: nameFr));
 
     expect(camera1, camera2);
   });
 
   test('test equality with non-equatable fields', () {
-    String name = 'Camera';
+    String nameEn = 'CameraEn';
     String nameFr = 'CameraFr';
-    Location location = const Location(lat: 45.454545, lon: -75.696969);
+    LatLon location = const LatLon(lat: 45.454545, lon: -75.696969);
     City city = City.ottawa;
 
     var camera1 = Camera(
       city: city,
       location: location,
-      nameEn: name,
-      nameFr: nameFr,
+      name: BilingualObject(en: nameEn, fr: nameFr),
+      neighbourhood: const BilingualObject(en: 'Riverdale'),
       url: 'test.url',
     )
-      ..neighbourhood = 'Riverdale'
       ..isVisible = true
       ..isFavourite = false;
 
     var camera2 = Camera(
       city: city,
       location: location,
-      nameEn: name,
-      nameFr: nameFr,
+      name: BilingualObject(en: nameEn, fr: nameFr),
+      neighbourhood: const BilingualObject(en: 'Downtown'),
       url: 'url.test',
     )
-      ..neighbourhood = 'Downtown'
       ..isVisible = false
       ..isFavourite = true;
 
@@ -58,10 +53,10 @@ void main() {
   });
 
   test('camera creation city from json', () {
-    var camera = Camera.fromCityData(<String, dynamic>{}, City.ottawa);
+    var camera = Camera.fromJson(<String, dynamic>{'city': 'ottawa'});
     expect(camera.city, City.ottawa);
 
-    camera = Camera.fromCityData(<String, dynamic>{}, City.toronto);
+    camera = Camera.fromJson(<String, dynamic>{'city': 'toronto'});
     expect(camera.city, City.toronto);
   });
 }

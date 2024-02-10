@@ -7,23 +7,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
-import 'package:streetcams_flutter/entities/location.dart';
+import 'package:streetcams_flutter/entities/latlon.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_widget.dart';
 
 void main() {
   testWidgets('test camera widget', (WidgetTester tester) async {
     Camera ottawaCamera = Camera(
       city: City.ottawa,
-      nameEn: 'Bank & Heron',
-      nameFr: 'Bank et Heron',
-      neighbourhood: 'Alta Vista',
+      name: const BilingualObject(en: 'Bank & Heron', fr: 'Bank et Heron'),
+      neighbourhood: const BilingualObject(en: 'Alta Vista', fr: 'Alta Vista'),
       url: 'https://traffic.ottawa.ca/beta/camera?id=81',
-      location: const Location(
-        lat: 45.4545,
-        lon: -75.6969,
-      ),
+      location: const LatLon(lat: 45.4545, lon: -75.6969),
     );
     // Build our app and trigger a frame.
     await tester.pumpWidget(Directionality(

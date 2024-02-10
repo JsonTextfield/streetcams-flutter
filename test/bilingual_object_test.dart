@@ -2,20 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 
-class _MyBilingualObject extends BilingualObject {
-  _MyBilingualObject({
-    super.nameEn,
-    super.nameFr,
-  });
-}
-
 void main() {
   test('test locale-based name', () {
     String nameEn = 'nameEn';
     String nameFr = 'nameFr';
-    var myBilingualObject = _MyBilingualObject(
-      nameEn: nameEn,
-      nameFr: nameFr,
+    var myBilingualObject = BilingualObject(
+      en: nameEn,
+      fr: nameFr,
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {
@@ -34,22 +27,22 @@ void main() {
 
   test('test English name only', () {
     String nameEn = 'nameEn';
-    var myBilingualObject = _MyBilingualObject(nameEn: nameEn);
+    var myBilingualObject = BilingualObject(en: nameEn);
     expect(myBilingualObject.name, nameEn);
   });
 
   test('test French name only', () {
     String nameFr = 'nameFr';
-    var myBilingualObject = _MyBilingualObject(nameFr: nameFr);
+    var myBilingualObject = BilingualObject(fr: nameFr);
     expect(myBilingualObject.name, nameFr);
   });
 
   test('test sortable name', () {
     String nameEn = 'nameEn';
     String nameFr = 'nameFr';
-    var myBilingualObject = _MyBilingualObject(
-      nameEn: nameEn,
-      nameFr: nameFr,
+    var myBilingualObject = BilingualObject(
+      en: nameEn,
+      fr: nameFr,
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {
@@ -69,11 +62,9 @@ void main() {
   });
 
   test('test sortable name special characters', () {
-    var myBilingualObject = _MyBilingualObject(
-      nameEn:
-          'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_E~!@#\$%^&*()+_n',
-      nameFr:
-          'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_F~!@#\$%^&*()+_r',
+    var myBilingualObject = const BilingualObject(
+      en: 'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_E~!@#\$%^&*()+_n',
+      fr: 'n~!@#\$%^&*()+_a~!@#\$%^&*()+_m~!@#\$%^&*()+_e~!@#\$%^&*()+_F~!@#\$%^&*()+_r',
     );
     Intl.getCurrentLocale();
     Intl.withLocale('fr-CA', () {

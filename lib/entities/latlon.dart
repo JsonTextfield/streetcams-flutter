@@ -11,8 +11,8 @@ final class LatLon {
 
   factory LatLon.fromMap(Map<String, dynamic> json) {
     return LatLon(
-      lat: json['lat'],
-      lon: json['lon'],
+      lat: json['lat'] ?? 0.0,
+      lon: json['lon'] ?? 0.0,
     );
   }
 

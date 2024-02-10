@@ -12,6 +12,9 @@ class MockSharedPrefs extends Mock implements SharedPreferences {}
 void main() {
   MockLocaleListener? localeListener;
   MockSharedPrefs? sharedPrefs;
+
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUp(() {
     EquatableConfig.stringify = true;
     localeListener = MockLocaleListener();

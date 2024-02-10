@@ -5,7 +5,7 @@ import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
-import 'package:streetcams_flutter/entities/location.dart';
+import 'package:streetcams_flutter/entities/latlon.dart';
 
 void main() {
   test('test initial state', () {
@@ -60,21 +60,23 @@ void main() {
   test('test getDisplayedCameras', () {
     List<Camera> cameras = List.generate(100, (i) {
       return Camera(
-        location: Location(
+        location: LatLon(
           lat: Random().nextDouble() * 90,
           lon: Random().nextDouble() * 180 - 90,
         ),
         city: City.vancouver,
-        nameEn: i % 3 == 0
-            ? 'hello'
-            : i % 3 == 1
-                ? 'there'
-                : 'world',
-        neighbourhood: i % 3 == 0
-            ? 'town'
-            : i % 3 == 1
-                ? 'borough'
-                : 'city',
+        name: BilingualObject(
+            en: i % 3 == 0
+                ? 'hello'
+                : i % 3 == 1
+                    ? 'there'
+                    : 'world'),
+        neighbourhood: BilingualObject(
+            en: i % 3 == 0
+                ? 'town'
+                : i % 3 == 1
+                    ? 'borough'
+                    : 'city'),
       )
         ..isVisible = Random().nextBool()
         ..isFavourite = Random().nextBool();
