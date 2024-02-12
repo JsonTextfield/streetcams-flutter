@@ -5,7 +5,8 @@
 
 <table>
 <td>
-<img src="screenshots/streetcams_flutter 14 May 2023 4_32_45 PM.png" alt="drawing" width="300"/>
-<img src="screenshots/streetcams_flutter 14 May 2023 4_31_58 PM.png" alt="drawing" width="300"/>
+<img src="screenshots/Screenshot_20240212_111107.jpg" alt="drawing" width="300"/>
+<img src="screenshots/Screenshot_20240212_111035.jpg" alt="drawing" width="300"/>
+<img src="screenshots/Screenshot_20240212_110922.jpg" alt="drawing" width="300"/>
 </td>
 </table>
