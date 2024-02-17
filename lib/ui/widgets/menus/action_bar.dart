@@ -3,14 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart' hide Action;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:streetcams_flutter/blocs/camera_bloc.dart';
+import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
+import 'package:streetcams_flutter/ui/pages/camera_page.dart';
+import 'package:streetcams_flutter/ui/widgets/menus/action.dart';
 import 'package:streetcams_flutter/ui/widgets/menus/toolbar_action.dart';
 
-import '../../../blocs/camera_bloc.dart';
-import '../../../entities/camera.dart';
-import '../../../entities/city.dart';
-import '../../pages/camera_page.dart';
-import 'action.dart';
 
 class ActionBar extends StatelessWidget {
   const ActionBar({super.key});

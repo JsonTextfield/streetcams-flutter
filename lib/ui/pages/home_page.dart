@@ -2,19 +2,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:streetcams_flutter/blocs/camera_bloc.dart';
+import 'package:streetcams_flutter/constants.dart';
+import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
+import 'package:streetcams_flutter/ui/widgets/camera_gallery_view.dart';
+import 'package:streetcams_flutter/ui/widgets/camera_list_view.dart';
 import 'package:streetcams_flutter/ui/widgets/flutter_map_widget.dart';
+import 'package:streetcams_flutter/ui/widgets/map_widget.dart';
+import 'package:streetcams_flutter/ui/widgets/menus/action_bar.dart';
+import 'package:streetcams_flutter/ui/widgets/neighbourhood_search_bar.dart';
+import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
+import 'package:streetcams_flutter/ui/widgets/section_index.dart';
 
-import '../../blocs/camera_bloc.dart';
-import '../../constants.dart';
-import '../../entities/camera.dart';
-import '../widgets/camera_gallery_view.dart';
-import '../widgets/camera_list_view.dart';
-import '../widgets/map_widget.dart';
-import '../widgets/menus/action_bar.dart';
-import '../widgets/neighbourhood_search_bar.dart';
-import '../widgets/search_text_field.dart';
-import '../widgets/section_index.dart';
 import 'camera_page.dart';
 
 class HomePage extends StatelessWidget {

@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
-import '../../blocs/camera_bloc.dart';
-import '../../constants.dart';
-import '../../entities/camera.dart';
-import '../../entities/city.dart';
+import 'package:streetcams_flutter/blocs/camera_bloc.dart';
+import 'package:streetcams_flutter/constants.dart';
+import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 
 class FlutterMapWidget extends StatelessWidget {
   final List<Camera> cameras;

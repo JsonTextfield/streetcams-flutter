@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:streetcams_flutter/constants.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 
@@ -27,7 +28,7 @@ class CameraGalleryView extends StatelessWidget {
     debugPrint('building camera gridview');
     return RawScrollbar(
       controller: scrollController,
-      thumbColor: const Color(0xDD22AAFF),
+      thumbColor: Constants.accentColour,
       radius: const Radius.circular(10),
       thickness: 10,
       interactive: true,
