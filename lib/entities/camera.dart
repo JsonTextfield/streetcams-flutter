@@ -76,6 +76,8 @@ class Camera with EquatableMixin {
     return _url;
   }
 
+  String get preview => _url;
+
   String get distanceString {
     double distance = this.distance;
     if (distance > 9000e3) {

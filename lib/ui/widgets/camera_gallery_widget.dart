@@ -29,7 +29,8 @@ class CameraGalleryWidget extends StatelessWidget {
           const DecoratedBox(decoration: BoxDecoration(color: Colors.grey)),
           if (isLoaded)
             CachedNetworkImage(
-              imageUrl: camera.city == City.vancouver ? otherUrl : camera.url,
+              imageUrl:
+                  camera.city == City.vancouver ? otherUrl : camera.preview,
               fit: BoxFit.cover,
               errorWidget: (context, exception, stackTrace) {
                 return const DecoratedBox(

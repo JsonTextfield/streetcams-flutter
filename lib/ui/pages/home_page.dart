@@ -19,6 +19,7 @@ import 'camera_page.dart';
 
 class HomePage extends StatelessWidget {
   final ItemScrollController itemScrollController = ItemScrollController();
+  final ScrollController scrollController = ScrollController();
   final TextEditingController textEditingController = TextEditingController();
 
   HomePage({super.key});
@@ -97,11 +98,15 @@ class HomePage extends StatelessWidget {
                   customBorder: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
+                  onTap: state.viewMode == ViewMode.list
+                      ? () => _moveToListPosition(0)
+                      : state.viewMode == ViewMode.gallery
+                          ? () => scrollController.jumpTo(0)
+                          : null,
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Text(title),
                   ),
-                  onTap: () => _moveToListPosition(0),
                 );
               },
             ),
@@ -145,6 +150,7 @@ class HomePage extends StatelessWidget {
                       );
                     case ViewMode.gallery:
                       return CameraGalleryView(
+                        scrollController: scrollController,
                         cameras: state.displayedCameras,
                         onItemClick: onClick,
                         onItemLongClick: onLongClick,

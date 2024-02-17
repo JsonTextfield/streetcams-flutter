@@ -9,20 +9,22 @@ import '../../entities/city.dart';
 import 'camera_gallery_widget.dart';
 
 class CameraGalleryView extends StatelessWidget {
+  final ScrollController? scrollController;
   final List<Camera> cameras;
-  final scrollController = ScrollController();
   final void Function(Camera)? onItemClick;
   final void Function(Camera)? onItemLongClick;
 
-  CameraGalleryView({
+  const CameraGalleryView({
     super.key,
     required this.cameras,
+    this.scrollController,
     this.onItemClick,
     this.onItemLongClick,
   });
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('building camera gridview');
     return RawScrollbar(
       controller: scrollController,
       thumbColor: const Color(0xDD22AAFF),
@@ -38,13 +40,14 @@ class CameraGalleryView extends StatelessWidget {
             return ListTile(
               title: Center(
                 child: FittedBox(
-                    fit: BoxFit.fitWidth,
-                    child: Text(
-                      context.translation
-                          .cameras(cameras.length)
-                          .replaceFirst(' ', '\n'),
-                      textAlign: TextAlign.center,
-                    )),
+                  fit: BoxFit.fitWidth,
+                  child: Text(
+                    context.translation
+                        .cameras(cameras.length)
+                        .replaceFirst(' ', '\n'),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
             );
           }
