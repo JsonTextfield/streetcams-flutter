@@ -44,6 +44,12 @@ class MapWidget extends StatelessWidget {
                   const LatLng(53.544136630027, -113.494843970093),
                 City.britishColumbia =>
                   const LatLng(53.544136630027, -123.494843970093),
+                City.saskatchewan =>
+                  const LatLng(53.544136630027, -103.494843970093),
+                City.novaScotia =>
+                  const LatLng(53.544136630027, -64.494843970093),
+                City.manitoba =>
+                  const LatLng(53.544136630027, -109.494843970093),
               };
 
           Set<Marker> markers = _getMapMarkers(context);
@@ -60,7 +66,13 @@ class MapWidget extends StatelessWidget {
                 City.vancouver ||
                 City.surrey =>
                   10,
-                City.ontario || City.alberta || City.britishColumbia => 5,
+                City.ontario ||
+                City.alberta ||
+                City.britishColumbia ||
+                City.saskatchewan ||
+                City.manitoba ||
+                City.novaScotia =>
+                  5,
               },
             ),
             minMaxZoomPreference: const MinMaxZoomPreference(5, 16),
