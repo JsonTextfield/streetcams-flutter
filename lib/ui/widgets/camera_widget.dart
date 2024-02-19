@@ -5,7 +5,7 @@ import 'package:change_case/change_case.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:intl/intl.dart';
+import 'package:intl/intl.dart' as intl;
 import 'package:streetcams_flutter/l10n/translation.dart';
 
 import '../../entities/camera.dart';
@@ -101,7 +101,7 @@ class CameraWidget extends StatelessWidget {
       Uri url = Uri.parse(otherUrl.isNotEmpty ? otherUrl : camera.url);
       Uint8List bytes = await http.readBytes(url);
       String fileName =
-          '${camera.name.toPascalCase}${DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
+          '${camera.name.toPascalCase}${intl.DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
       await ImageGallerySaver.saveImage(bytes, name: fileName);
       return true;
     } on Exception catch (_) {
