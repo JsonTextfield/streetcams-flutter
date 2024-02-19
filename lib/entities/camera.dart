@@ -1,6 +1,4 @@
-import 'package:change_case/change_case.dart';
 import 'package:equatable/equatable.dart';
-import 'package:intl/intl.dart';
 
 import 'bilingual_object.dart';
 import 'city.dart';
@@ -16,7 +14,10 @@ class Camera with EquatableMixin {
   final LatLon location;
 
   late final BilingualObject _name;
+  String get name => _name.name;
+
   late final BilingualObject _neighbourhood;
+  String get neighbourhood => _neighbourhood.name;
 
   String _url = '';
 
@@ -51,10 +52,6 @@ class Camera with EquatableMixin {
     );
   }
 
-  String get name => _name.name;
-
-  String get neighbourhood => _neighbourhood.name;
-
   String get sortableName {
     if (city != City.montreal) {
       return _name.sortableName;
@@ -80,6 +77,10 @@ class Camera with EquatableMixin {
 
   String get distanceString {
     double distance = this.distance;
+
+    if (distance < 0) {
+      return '';
+    }
     if (distance > 9000e3) {
       return '>9000\nkm';
     }
@@ -97,7 +98,4 @@ class Camera with EquatableMixin {
   List<Object?> get props => [_name.en, _name.fr, location, city];
 
   String get cameraId => props.join();
-
-  String get fileName =>
-      '${name.toPascalCase}${DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
 }
