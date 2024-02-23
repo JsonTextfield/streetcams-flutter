@@ -30,28 +30,7 @@ class MapWidget extends StatelessWidget {
         if (data.hasData) {
           City city = context.read<CameraBloc>().state.city;
           LatLngBounds? bounds = _getBounds();
-          LatLng initCamPos = bounds?.centre ??
-              switch (city) {
-                City.ottawa => const LatLng(45.424722, -75.695),
-                City.toronto => const LatLng(43.741667, -79.373333),
-                City.montreal => const LatLng(45.508889, -73.554167),
-                City.calgary => const LatLng(51.05, -114.066667),
-                City.vancouver =>
-                  const LatLng(49.258513387198, -123.1012956358),
-                City.surrey => const LatLng(49.058513387198, -123.1012956358),
-                City.ontario => const LatLng(46.48969, -80.99993),
-                City.alberta =>
-                  const LatLng(53.544136630027, -113.494843970093),
-                City.britishColumbia =>
-                  const LatLng(53.544136630027, -123.494843970093),
-                City.saskatchewan =>
-                  const LatLng(53.544136630027, -103.494843970093),
-                City.novaScotia =>
-                  const LatLng(53.544136630027, -64.494843970093),
-                City.manitoba =>
-                  const LatLng(53.544136630027, -109.494843970093),
-              };
-
+          LatLng initCamPos = bounds?.centre ?? const LatLng(0, 0);
           Set<Marker> markers = _getMapMarkers(context);
 
           return GoogleMap(
@@ -66,13 +45,7 @@ class MapWidget extends StatelessWidget {
                 City.vancouver ||
                 City.surrey =>
                   10,
-                City.ontario ||
-                City.alberta ||
-                City.britishColumbia ||
-                City.saskatchewan ||
-                City.manitoba ||
-                City.novaScotia =>
-                  5,
+                _ => 5,
               },
             ),
             minMaxZoomPreference: const MinMaxZoomPreference(5, 16),

@@ -1,12 +1,20 @@
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../entities/camera.dart';
 import '../entities/city.dart';
 
 class DownloadService {
+  static Future<Uint8List?> getVideoFrame(String url) async {
+    return await VideoThumbnail.thumbnailData(
+      video: url,
+      imageFormat: ImageFormat.JPEG,
+      quality: 100,
+    );
+  }
+
   static Future<List<String>> getHtmlImages(String url) async {
     String data = await http.read(Uri.parse(url));
     RegExp regex = RegExp('cameraimages/.*?"');

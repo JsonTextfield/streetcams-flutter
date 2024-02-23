@@ -4,10 +4,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../entities/bilingual_object.dart';
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
+import '../widgets/camera_video_widget.dart';
 import '../widgets/camera_widget.dart';
 
 class CameraPage extends StatefulWidget {
@@ -55,7 +57,12 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
       }
     }
     timer ??= Timer.periodic(
-      Duration(seconds: shuffle ? 6 : 3),
+      Duration(
+          seconds: shuffle
+              ? 6
+              : cameras.first.city == City.quebec
+                  ? 30
+                  : 3),
       (t) => setState(() {}),
     );
     return Scaffold(
@@ -83,6 +90,11 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                       return const SizedBox();
                     },
                   );
+                } //
+                else if (camera.city == City.quebec) {
+                  VideoPlayerController vpc =
+                      VideoPlayerController.networkUrl(Uri.parse(camera.url));
+                  return CameraVideoWidget(camera: camera, controller: vpc);
                 }
                 return CameraWidget(camera);
               },

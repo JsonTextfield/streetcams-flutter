@@ -53,7 +53,7 @@ class Camera with EquatableMixin {
   }
 
   String get sortableName {
-    if (city != City.montreal) {
+    if (city != City.montreal && city != City.quebec) {
       return _name.sortableName;
     }
     int startIndex = ['Avenue ', 'Boulevard ', 'Chemin ', 'Rue ', 'Place ']
@@ -66,7 +66,7 @@ class Camera with EquatableMixin {
   }
 
   String get url {
-    if (city == City.ottawa) {
+    if (city == City.ottawa || city == City.quebec) {
       int time = DateTime.now().millisecondsSinceEpoch;
       return '$_url&timems=$time';
     }
