@@ -1,4 +1,5 @@
 import 'dart:collection';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 
@@ -7,8 +8,14 @@ import '../../constants.dart';
 class SectionIndex extends StatefulWidget {
   final List<String> data;
   final void Function(int) callback;
+  final int minIndexHeight;
 
-  const SectionIndex({super.key, required this.data, required this.callback});
+  const SectionIndex({
+    super.key,
+    required this.data,
+    required this.callback,
+    this.minIndexHeight = 30,
+  });
 
   @override
   State<StatefulWidget> createState() {
@@ -49,24 +56,38 @@ class _SectionIndexState extends State<SectionIndex> {
 
     _index = _createIndex();
 
-    List<Widget> result = _index.entries.map((entry) {
-      return SectionIndexItem(
-        title: entry.key,
-        selected: _selectedIndex == entry.value,
-      );
-    }).toList();
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        int minIndexHeight = widget.minIndexHeight;
+        int sectionsToShow = max(constraints.maxHeight ~/ minIndexHeight, 1);
+        int skip = max(_index.length ~/ sectionsToShow, 1);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
-      child: GestureDetector(
-        key: key,
-        child: Column(children: result),
-        onTapDown: (details) => _selectIndex(details.localPosition.dy),
-        onTapUp: (details) => _resetSelectedIndex(),
-        onVerticalDragUpdate: (details) =>
-            _selectIndex(details.localPosition.dy),
-        onVerticalDragEnd: (details) => _resetSelectedIndex(),
-      ),
+        List<Widget> result = _index.entries
+            .toList()
+            .asMap()
+            .entries
+            .where((entry) => entry.key % skip == 0)
+            .map((entry) => entry.value)
+            .map((entry) {
+          return SectionIndexItem(
+            title: entry.key,
+            selected: _selectedIndex == entry.value,
+          );
+        }).toList();
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          child: GestureDetector(
+            key: key,
+            child: Column(children: result),
+            onTapDown: (details) => _selectIndex(details.localPosition.dy),
+            onTapUp: (details) => _resetSelectedIndex(),
+            onVerticalDragUpdate: (details) =>
+                _selectIndex(details.localPosition.dy),
+            onVerticalDragEnd: (details) => _resetSelectedIndex(),
+          ),
+        );
+      },
     );
   }
 
