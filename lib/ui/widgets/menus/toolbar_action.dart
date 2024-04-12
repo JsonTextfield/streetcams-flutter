@@ -12,7 +12,7 @@ class ToolbarAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return action.condition
+    return action.isVisible
         ? IconButton(
             onPressed: action.onClick,
             icon: Icon(action.icon),
