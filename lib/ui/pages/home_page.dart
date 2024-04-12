@@ -37,7 +37,11 @@ class HomePage extends StatelessWidget {
         Navigator.pushNamed(
           context,
           CameraPage.routeName,
-          arguments: [cameras, shuffle],
+          arguments: [
+            cameras,
+            shuffle,
+            context.read<CameraBloc>().state.displayedCameras,
+          ],
         );
       }
     }
