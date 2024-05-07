@@ -107,5 +107,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "developedBy" : "Developed in Canada by JsonTextfield",
+  "close" : "Close",
+  "licences" : "Licences"
 }
