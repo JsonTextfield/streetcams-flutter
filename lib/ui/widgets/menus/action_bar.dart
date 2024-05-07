@@ -78,36 +78,35 @@ class ActionBar extends StatelessWidget {
   }
 
   List<Action> _getActions(BuildContext context) {
-    CameraState cameraState = context.read<CameraBloc>().state;
+    CameraBloc cameraBloc = context.read<CameraBloc>();
+    CameraState cameraState = cameraBloc.state;
 
     void changeFilterMode(FilterMode filterMode) {
-      context.read<CameraBloc>().add(FilterCamera(filterMode: filterMode));
+      cameraBloc.add(FilterCamera(filterMode: filterMode));
     }
 
     void changeSearchMode(SearchMode searchMode) {
-      context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
+      cameraBloc.add(SearchCameras(searchMode: searchMode));
     }
 
     void changeViewMode(ViewMode viewMode) {
-      context.read<CameraBloc>().add(ChangeViewMode(viewMode: viewMode));
+      cameraBloc.add(ChangeViewMode(viewMode: viewMode));
     }
 
     void changeSortMode(SortMode sortMode) {
-      context.read<CameraBloc>().add(SortCameras(sortMode: sortMode));
+      cameraBloc.add(SortCameras(sortMode: sortMode));
     }
 
     void changeCity(City city) {
-      context.read<CameraBloc>().changeCity(city);
+      cameraBloc.add(ChangeCity(city));
     }
 
     void hideSelectedCameras() {
-      context.read<CameraBloc>().add(HideCameras(cameraState.selectedCameras));
+      cameraBloc.add(HideCameras(cameraState.selectedCameras));
     }
 
     void favouriteSelectedCameras() {
-      context
-          .read<CameraBloc>()
-          .add(FavouriteCameras(cameraState.selectedCameras));
+      cameraBloc.add(FavouriteCameras(cameraState.selectedCameras));
     }
 
     List<Camera> selectedCameras = cameraState.selectedCameras;
@@ -115,7 +114,7 @@ class ActionBar extends StatelessWidget {
     Action clear = Action(
       icon: Icons.clear_rounded,
       tooltip: context.translation.clear,
-      onClick: () => context.read<CameraBloc>().add(SelectAll(select: false)),
+      onClick: () => cameraBloc.add(SelectAll(select: false)),
     );
 
     Action view = Action(
@@ -145,7 +144,7 @@ class ActionBar extends StatelessWidget {
       isVisible: selectedCameras.length < cameraState.displayedCameras.length,
       icon: Icons.select_all_rounded,
       tooltip: context.translation.selectAll,
-      onClick: () => context.read<CameraBloc>().add(SelectAll()),
+      onClick: () => cameraBloc.add(SelectAll()),
     );
 
     Action search = Action(
@@ -245,7 +244,7 @@ class ActionBar extends StatelessWidget {
       tooltip: context.translation.shuffle,
       onClick: () => _showCameras(
         context,
-        context.read<CameraBloc>().state.visibleCameras,
+        cameraState.visibleCameras,
         shuffle: true,
       ),
     );
@@ -293,10 +292,31 @@ class ActionBar extends StatelessWidget {
   void _showAbout(BuildContext context) async {
     var packageInfo = await PackageInfo.fromPlatform();
     if (context.mounted) {
-      showAboutDialog(
+      showDialog(
         context: context,
-        applicationName: context.translation.appName,
-        applicationVersion: 'Version ${packageInfo.version}',
+        builder: (context) {
+          return AlertDialog(
+            title: Text(context.translation.appName),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Version ${packageInfo.version}'),
+                Text(context.translation.developedBy),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => showLicensePage(context: context),
+                child: Text(context.translation.licences),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(context.translation.close),
+              ),
+            ],
+          );
+        },
       );
     }
   }
