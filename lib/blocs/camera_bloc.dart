@@ -127,12 +127,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<HideCameras>((event, emit) async {
       bool anyVisible = event.cameras.any((cam) => cam.isVisible);
-      for (Camera camera in state.allCameras) {
-        if (event.cameras.contains(camera)) {
-          camera.isVisible = !anyVisible;
-          prefs?.setBool('${camera.cameraId}.isVisible', !anyVisible);
-        }
-      }
+      state.allCameras.where(event.cameras.contains).forEach((camera) {
+        camera.isVisible = !anyVisible;
+        prefs?.setBool('${camera.cameraId}.isVisible', !anyVisible);
+      });
       return emit(state.copyWith(
         displayedCameras: state.getDisplayedCameras(),
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
@@ -141,12 +139,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     on<FavouriteCameras>((event, emit) async {
       bool allFavourite = event.cameras.every((cam) => cam.isFavourite);
-      for (Camera camera in state.allCameras) {
-        if (event.cameras.contains(camera)) {
-          camera.isFavourite = !allFavourite;
-          prefs?.setBool('${camera.cameraId}.isFavourite', !allFavourite);
-        }
-      }
+      state.allCameras.where(event.cameras.contains).forEach((camera) {
+        camera.isFavourite = !allFavourite;
+        prefs?.setBool('${camera.cameraId}.isFavourite', !allFavourite);
+      });
       return emit(state.copyWith(
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
       ));
@@ -165,11 +161,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<SelectAll>((event, emit) async {
-      for (Camera camera in state.allCameras) {
-        if (state.displayedCameras.contains(camera)) {
-          camera.isSelected = event.select;
-        }
-      }
+      state.allCameras
+          .where(state.displayedCameras.contains)
+          .forEach((camera) => camera.isSelected = event.select);
       return emit(state.copyWith(
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
       ));
@@ -182,11 +176,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         filterMode: FilterMode.visible,
       ));
     });
-  }
 
-  void changeCity(City city) {
-    add(CameraLoading());
-    prefs?.setString('city', city.name);
-    add(CameraLoaded());
+    on<ChangeCity>((event, emit) async {
+      add(CameraLoading());
+      prefs?.setString('city', event.city.name);
+      add(CameraLoaded());
+    });
   }
 }

@@ -45,6 +45,15 @@ class SortCameras extends CameraEvent {
   List<Object?> get props => [sortMode];
 }
 
+class ChangeCity extends CameraEvent {
+  final City city;
+
+  ChangeCity(this.city);
+
+  @override
+  List<Object?> get props => [city];
+}
+
 class SearchCameras extends CameraEvent {
   final SearchMode searchMode;
   final String searchText;
