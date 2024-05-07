@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/constants.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_gallery_view.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_list_view.dart';
@@ -21,6 +24,8 @@ class HomePage extends StatelessWidget {
   final ItemScrollController itemScrollController = ItemScrollController();
   final ScrollController scrollController = ScrollController();
   final TextEditingController textEditingController = TextEditingController();
+  final MapController flutterMapController = MapController();
+  late final GoogleMapController mapController;
 
   HomePage({super.key});
 
@@ -37,11 +42,7 @@ class HomePage extends StatelessWidget {
         Navigator.pushNamed(
           context,
           CameraPage.routeName,
-          arguments: [
-            cameras,
-            shuffle,
-            context.read<CameraBloc>().state.displayedCameras,
-          ],
+          arguments: [cameras, shuffle],
         );
       }
     }
@@ -98,15 +99,47 @@ class HomePage extends StatelessWidget {
                         FilterMode.hidden => context.translation.hidden,
                         FilterMode.visible => context.translation.appName,
                       };
+                titleTapped() async {
+                  switch (state.viewMode) {
+                    case ViewMode.list:
+                      _moveToListPosition(0);
+                      break;
+                    case ViewMode.gallery:
+                      scrollController.jumpTo(0);
+                      break;
+                    case ViewMode.map:
+                      double minZoom = switch (state.city) {
+                        City.ottawa ||
+                        City.toronto ||
+                        City.montreal ||
+                        City.calgary ||
+                        City.vancouver ||
+                        City.surrey =>
+                          10,
+                        _ => 5,
+                      };
+                      if (defaultTargetPlatform == TargetPlatform.windows) {
+                        flutterMapController.move(
+                          flutterMapController.camera.center,
+                          minZoom,
+                        );
+                      } //
+                      else {
+                        CameraUpdate cameraUpdate = CameraUpdate.newLatLngZoom(
+                          (await mapController.getVisibleRegion()).centre,
+                          minZoom,
+                        );
+                        mapController.animateCamera(cameraUpdate);
+                      }
+                      break;
+                  }
+                }
+
                 return InkWell(
                   customBorder: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  onTap: state.viewMode == ViewMode.list
-                      ? () => _moveToListPosition(0)
-                      : state.viewMode == ViewMode.gallery
-                          ? () => scrollController.jumpTo(0)
-                          : null,
+                  onTap: titleTapped,
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Text(title),
@@ -145,12 +178,14 @@ class HomePage extends StatelessWidget {
                           cameras: state.displayedCameras,
                           onItemClick: onClick,
                           onItemLongClick: onLongClick,
+                          controller: flutterMapController,
                         );
                       }
                       return MapWidget(
                         cameras: state.displayedCameras,
                         onItemClick: onClick,
                         onItemLongClick: onLongClick,
+                        onMapCreated: (gmc) => mapController = gmc,
                       );
                     case ViewMode.gallery:
                       return CameraGalleryView(
@@ -169,7 +204,7 @@ class HomePage extends StatelessWidget {
                               data: state.displayedCameras
                                   .map((cam) => cam.sortableName[0])
                                   .toList(),
-                              callback: _moveToListPosition,
+                              onIndexSelected: _moveToListPosition,
                             ),
                           ),
                         Expanded(

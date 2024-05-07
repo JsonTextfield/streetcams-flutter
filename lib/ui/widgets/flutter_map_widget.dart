@@ -12,10 +12,12 @@ class FlutterMapWidget extends StatelessWidget {
   final List<Camera> cameras;
   final void Function(Camera)? onItemClick;
   final void Function(Camera)? onItemLongClick;
+  final MapController controller;
 
   const FlutterMapWidget({
     super.key,
     required this.cameras,
+    required this.controller,
     this.onItemClick,
     this.onItemLongClick,
   });
@@ -27,6 +29,7 @@ class FlutterMapWidget extends StatelessWidget {
     List<Marker> markers = _getMapMarkers(context);
     LatLng initCamPos = bounds?.center ?? const LatLng(0, 0);
     return FlutterMap(
+      mapController: controller,
       options: MapOptions(
         initialCameraFit: bounds != null
             ? CameraFit.bounds(

@@ -13,12 +13,14 @@ class MapWidget extends StatelessWidget {
   final List<Camera> cameras;
   final void Function(Camera)? onItemClick;
   final void Function(Camera)? onItemLongClick;
+  final void Function(GoogleMapController)? onMapCreated;
 
   const MapWidget({
     super.key,
     required this.cameras,
     this.onItemClick,
     this.onItemLongClick,
+    this.onMapCreated,
   });
 
   @override
@@ -50,10 +52,11 @@ class MapWidget extends StatelessWidget {
             ),
             minMaxZoomPreference: const MinMaxZoomPreference(5, 16),
             markers: markers,
+            style: Theme.of(context).brightness == Brightness.dark
+                ? data.data
+                : '',
             onMapCreated: (controller) {
-              if (Theme.of(context).brightness == Brightness.dark) {
-                controller.setMapStyle(data.data);
-              }
+              onMapCreated?.call(controller);
             },
           );
         }
@@ -112,7 +115,7 @@ class MapWidget extends StatelessWidget {
   }
 }
 
-extension on LatLngBounds {
+extension Centre on LatLngBounds {
   LatLng get centre => LatLng(
         (northeast.latitude + southwest.latitude) / 2,
         (northeast.longitude + southwest.longitude) / 2,

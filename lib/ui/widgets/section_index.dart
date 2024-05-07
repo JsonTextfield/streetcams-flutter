@@ -7,13 +7,13 @@ import '../../constants.dart';
 
 class SectionIndex extends StatefulWidget {
   final List<String> data;
-  final void Function(int) callback;
+  final void Function(int)? onIndexSelected;
   final int minIndexHeight;
 
   const SectionIndex({
     super.key,
     required this.data,
-    required this.callback,
+    this.onIndexSelected,
     this.minIndexHeight = 30,
   });
 
@@ -106,7 +106,7 @@ class _SectionIndexState extends State<SectionIndex> {
     if (positions[listIndex] != _selectedIndex) {
       setState(() {
         _selectedIndex = positions[listIndex];
-        widget.callback(_selectedIndex);
+        widget.onIndexSelected?.call(_selectedIndex);
       });
     }
   }
