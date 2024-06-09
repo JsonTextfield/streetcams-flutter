@@ -1,4 +1,9 @@
-part of 'camera_bloc.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:streetcams_flutter/entities/bilingual_object.dart';
+import 'package:streetcams_flutter/entities/camera.dart';
+import 'package:streetcams_flutter/entities/city.dart';
+
+part 'camera_state.freezed.dart';
 
 enum CameraStatus { initial, success, failure }
 
@@ -10,17 +15,22 @@ enum FilterMode { visible, hidden, favourite }
 
 enum ViewMode { list, map, gallery }
 
-class CameraState extends Equatable {
-  final List<Camera> allCameras;
-  final List<Camera> displayedCameras;
-  final CameraStatus status;
-  final SortMode sortMode;
-  final SearchMode searchMode;
-  final String searchText;
-  final FilterMode filterMode;
-  final ViewMode viewMode;
-  final int lastUpdated;
-  final City city;
+@freezed
+class CameraState with _$CameraState {
+  const CameraState._();
+
+  const factory CameraState({
+    @Default(<Camera>[]) List<Camera> allCameras,
+    @Default(<Camera>[]) List<Camera> displayedCameras,
+    @Default(CameraStatus.initial) CameraStatus status,
+    @Default(SortMode.name) SortMode sortMode,
+    @Default(SearchMode.none) SearchMode searchMode,
+    @Default('') String searchText,
+    @Default(FilterMode.visible) FilterMode filterMode,
+    @Default(ViewMode.gallery) ViewMode viewMode,
+    @Default(0) int lastUpdated,
+    @Default(City.ottawa) City city,
+  }) = _CameraState;
 
   List<Camera> get selectedCameras =>
       allCameras.where((camera) => camera.isSelected).toList();
@@ -49,59 +59,6 @@ class CameraState extends Equatable {
 
   List<String> get neighbourhoods =>
       allCameras.map((camera) => camera.neighbourhood).toSet().toList();
-
-  @override
-  List<Object?> get props => [
-        allCameras,
-        displayedCameras,
-        status,
-        sortMode,
-        searchText,
-        searchMode,
-        filterMode,
-        viewMode,
-        lastUpdated,
-        city,
-      ];
-
-  const CameraState({
-    this.allCameras = const <Camera>[],
-    this.displayedCameras = const <Camera>[],
-    this.status = CameraStatus.initial,
-    this.sortMode = SortMode.name,
-    this.searchMode = SearchMode.none,
-    this.searchText = '',
-    this.filterMode = FilterMode.visible,
-    this.viewMode = ViewMode.gallery,
-    this.lastUpdated = 0,
-    this.city = City.ottawa,
-  });
-
-  CameraState copyWith({
-    List<Camera>? allCameras,
-    List<Camera>? displayedCameras,
-    CameraStatus? status,
-    SortMode? sortMode,
-    SearchMode? searchMode,
-    String? searchText,
-    FilterMode? filterMode,
-    ViewMode? viewMode,
-    int? lastUpdated,
-    City? city,
-  }) {
-    return CameraState(
-      allCameras: allCameras ?? this.allCameras,
-      displayedCameras: displayedCameras ?? this.displayedCameras,
-      status: status ?? this.status,
-      sortMode: sortMode ?? this.sortMode,
-      searchMode: searchMode ?? this.searchMode,
-      searchText: searchText ?? this.searchText,
-      filterMode: filterMode ?? this.filterMode,
-      viewMode: viewMode ?? this.viewMode,
-      lastUpdated: lastUpdated ?? this.lastUpdated,
-      city: city ?? this.city,
-    );
-  }
 
   bool Function(Camera) _getSearchPredicate(
     SearchMode searchMode,

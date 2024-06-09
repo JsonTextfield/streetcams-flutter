@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
+import 'package:streetcams_flutter/blocs/camera_state.dart';
 
 class MockLocaleListener extends Mock implements LocaleListener {}
 

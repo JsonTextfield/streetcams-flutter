@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl_standalone.dart'
     if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
@@ -12,7 +13,6 @@ import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
 
 part 'camera_event.dart';
-part 'camera_state.dart';
 
 class LocaleListener with WidgetsBindingObserver {
   final void Function() callback;
