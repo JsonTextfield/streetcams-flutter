@@ -3,8 +3,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../../constants.dart';
-
 class SectionIndex extends StatefulWidget {
   final List<String> data;
   final void Function(int)? onIndexSelected;
@@ -115,11 +113,13 @@ class _SectionIndexState extends State<SectionIndex> {
 class SectionIndexItem extends StatelessWidget {
   final bool selected;
   final String title;
+  final Color? accentColour;
 
   const SectionIndexItem({
     super.key,
     required this.selected,
     required this.title,
+    this.accentColour,
   });
 
   @override
@@ -133,7 +133,9 @@ class SectionIndexItem extends StatelessWidget {
           title,
           style: TextStyle(
             fontSize: 10,
-            color: selected ? Constants.accentColour : null,
+            color: selected
+                ? accentColour ?? Theme.of(context).colorScheme.primary
+                : null,
           ),
         ),
       ),

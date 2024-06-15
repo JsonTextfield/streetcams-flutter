@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
+import 'package:streetcams_flutter/ui/widgets/camera_error_widget.dart';
 
 import '../../blocs/camera_bloc.dart';
 import '../../constants.dart';
@@ -27,7 +28,11 @@ class CameraGalleryWidget extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          const DecoratedBox(decoration: BoxDecoration(color: Colors.grey)),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondaryContainer,
+            ),
+          ),
           if (camera.city == City.quebec)
             FutureBuilder(
               future: DownloadService.getVideoFrame(camera.preview),
@@ -51,7 +56,7 @@ class CameraGalleryWidget extends StatelessWidget {
                   );
                 }
                 if (snapshot.hasError) {
-                  return const Center(child: Icon(Icons.videocam_off_rounded));
+                  return const CameraErrorWidget();
                 }
                 return const SizedBox();
               },
@@ -62,7 +67,7 @@ class CameraGalleryWidget extends StatelessWidget {
                   camera.city == City.vancouver ? otherUrl : camera.preview,
               fit: BoxFit.cover,
               errorWidget: (context, exception, stackTrace) {
-                return const Center(child: Icon(Icons.videocam_off_rounded));
+                return const CameraErrorWidget();
               },
             ),
           Align(

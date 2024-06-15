@@ -6,7 +6,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/blocs/camera_state.dart';
-import 'package:streetcams_flutter/constants.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
@@ -64,10 +63,10 @@ class HomePage extends StatelessWidget {
                   )
                 : null,
             actions: const [ActionBar()],
-            backgroundColor: state.selectedCameras.isEmpty
-                ? Theme.of(context).appBarTheme.backgroundColor
-                : Constants.accentColour,
-            titleSpacing: 0.0,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            surfaceTintColor: Theme.of(context).colorScheme.surface,
+            shadowColor: Theme.of(context).colorScheme.shadow,
+            elevation: 5.0,
             title: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
                 if (state.selectedCameras.isEmpty) {

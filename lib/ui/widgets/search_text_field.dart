@@ -45,18 +45,21 @@ class SearchTextField extends StatelessWidget {
           TextScroll(
             hintText,
             intervalSpaces: 10,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 14,
+            ),
             delayBefore: const Duration(milliseconds: 2000),
             pauseBetween: const Duration(milliseconds: 2000),
             velocity: const Velocity(pixelsPerSecond: Offset(30, 0)),
           ),
         TextField(
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
             fontWeight: FontWeight.normal,
           ),
-          cursorColor: Colors.white,
+          cursorColor: Theme.of(context).colorScheme.primary,
           focusNode: focusNode,
           controller: controller,
           //textAlignVertical: TextAlignVertical.center,
@@ -65,7 +68,8 @@ class SearchTextField extends StatelessWidget {
           decoration: InputDecoration(
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
-                    icon: const Icon(Icons.clear_rounded, color: Colors.white),
+                    icon: Icon(Icons.clear_rounded,
+                        color: Theme.of(context).colorScheme.onSurface),
                     onPressed: clear,
                     tooltip: context.translation.clear,
                   )

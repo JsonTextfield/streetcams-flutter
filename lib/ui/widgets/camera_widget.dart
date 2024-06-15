@@ -58,8 +58,12 @@ class CameraWidget extends StatelessWidget {
               errorBuilder: (context, exception, stackTrace) {
                 return Container(
                   constraints: const BoxConstraints(maxHeight: 200),
-                  child: const Center(
-                    child: Icon(Icons.videocam_off_rounded, size: 50),
+                  child: Center(
+                    child: Icon(
+                      Icons.videocam_off_rounded,
+                      size: 50,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 );
               },
