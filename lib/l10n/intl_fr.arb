@@ -96,7 +96,7 @@
       }
     }
   },
-  "getCity": "{city, select, ottawa{Ottawa} montreal{Montréal} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} britishColumbia{Colombie-Britannique} saskatchewan{Saskatchewan} novaScotia{Nouvelle-Écosse} manitoba{Manitoba} newBrunswick{Nouveau-Brunswick} newfoundland{Terre-Neuve-et-Labrador} princeEdwardIsland{Île-du-Prince-Édouard} quebec{Québec} yukon{Yukon} other{Ottawa}}",
+  "getCity": "{city, select, ottawa{Ottawa} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} britishColumbia{Colombie-Britannique} saskatchewan{Saskatchewan} novaScotia{Nouvelle-Écosse} manitoba{Manitoba} newBrunswick{Nouveau-Brunswick} newfoundland{Terre-Neuve-et-Labrador} princeEdwardIsland{Île-du-Prince-Édouard} quebec{Québec} yukon{Yukon} other{Ottawa}}",
   "@getCity": {
     "description": "City type",
     "placeholders": {

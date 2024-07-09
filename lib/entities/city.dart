@@ -3,7 +3,6 @@ enum City {
   britishColumbia,
   calgary,
   manitoba,
-  montreal,
   newBrunswick,
   newfoundland,
   novaScotia,

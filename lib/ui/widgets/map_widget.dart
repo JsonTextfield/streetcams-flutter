@@ -42,7 +42,6 @@ class MapWidget extends StatelessWidget {
               zoom: switch (city) {
                 City.ottawa ||
                 City.toronto ||
-                City.montreal ||
                 City.calgary ||
                 City.vancouver ||
                 City.surrey =>
