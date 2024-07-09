@@ -111,7 +111,6 @@ class HomePage extends StatelessWidget {
                       double minZoom = switch (state.city) {
                         City.ottawa ||
                         City.toronto ||
-                        City.montreal ||
                         City.calgary ||
                         City.vancouver ||
                         City.surrey =>
