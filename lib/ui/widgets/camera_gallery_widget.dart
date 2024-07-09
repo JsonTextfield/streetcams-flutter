@@ -5,7 +5,6 @@ import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_error_widget.dart';
 
 import '../../blocs/camera_bloc.dart';
-import '../../constants.dart';
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
 
@@ -93,8 +92,10 @@ class CameraGalleryWidget extends StatelessWidget {
               child: Icon(Icons.star_rounded, color: Colors.yellow),
             ),
           if (context.read<CameraBloc>().state.selectedCameras.contains(camera))
-            const DecoratedBox(
-              decoration: BoxDecoration(color: Constants.selectedColour),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withAlpha(0x88),
+              ),
             ),
         ],
       ),

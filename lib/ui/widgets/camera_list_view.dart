@@ -42,11 +42,6 @@ class CameraListView extends StatelessWidget {
         Camera cam = cameras[index];
 
         hide() {
-          if (state.displayedCameras.contains(cam)) {
-            state.displayedCameras.remove(cam);
-          } else {
-            state.displayedCameras.insert(index, cam);
-          }
           context.read<CameraBloc>().add(HideCameras([cam]));
         }
 
@@ -74,8 +69,8 @@ class CameraListView extends StatelessWidget {
           background: DismissibleBackground(cam.isVisible),
           child: ListTile(
             selected: state.selectedCameras.contains(cam),
-            selectedTileColor: Theme.of(context).colorScheme.primary,
-            selectedColor: Theme.of(context).colorScheme.onPrimary,
+            selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+            selectedColor: Theme.of(context).colorScheme.onPrimaryContainer,
             title: Text(cam.name, style: const TextStyle(fontSize: 16)),
             subtitle:
                 cam.neighbourhood.isNotEmpty ? Text(cam.neighbourhood) : null,
@@ -109,10 +104,10 @@ class DismissibleBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     Icon icon = Icon(
       isVisible ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-      color: Theme.of(context).colorScheme.onSecondary,
+      color: Theme.of(context).colorScheme.onSecondaryContainer,
     );
     return Container(
-      color: Theme.of(context).colorScheme.secondary,
+      color: Theme.of(context).colorScheme.secondaryContainer,
       child: Center(
         child: ListTile(
           leading: icon,
@@ -120,7 +115,9 @@ class DismissibleBackground extends StatelessWidget {
           title: Text(
             isVisible ? context.translation.hide : context.translation.unhide,
             textAlign: TextAlign.center,
-            style: TextStyle(color: Theme.of(context).colorScheme.onSecondary),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
+            ),
           ),
         ),
       ),
