@@ -76,7 +76,10 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                     cameras[shuffle ? Random().nextInt(cameras.length) : index];
                 if (camera.city == City.vancouver) {
                   return FutureBuilder<List<String>>(
-                    future: DownloadService.getHtmlImages(camera.url),
+                    future: DownloadService.getHtmlImages(
+                      camera.url,
+                      includeTime: true,
+                    ),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return Column(

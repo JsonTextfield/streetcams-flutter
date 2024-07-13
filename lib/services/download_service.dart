@@ -15,13 +15,15 @@ class DownloadService {
     );
   }
 
-  static Future<List<String>> getHtmlImages(String url) async {
+  static Future<List<String>> getHtmlImages(String url,
+      {bool includeTime = false}) async {
     String data = await http.read(Uri.parse(url));
     RegExp regex = RegExp('cameraimages/.*?"');
     return regex.allMatches(data).map((RegExpMatch match) {
       String str = match.group(0)!.replaceAll('"', '');
-      int time = DateTime.now().millisecondsSinceEpoch;
-      return 'https://trafficcams.vancouver.ca/$str?timems=$time';
+      String time =
+          includeTime ? '?timems=${DateTime.now().millisecondsSinceEpoch}' : '';
+      return 'https://trafficcams.vancouver.ca/$str$time';
     }).toList();
   }
 
