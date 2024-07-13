@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
-import 'package:streetcams_flutter/constants.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 
 class FlutterMapWidget extends StatelessWidget {
@@ -86,7 +85,7 @@ class FlutterMapWidget extends StatelessWidget {
                         .state
                         .selectedCameras
                         .contains(camera)
-                    ? Constants.accentColour
+                    ? Theme.of(context).colorScheme.primary
                     : camera.isFavourite
                         ? Colors.yellow
                         : Colors.red,

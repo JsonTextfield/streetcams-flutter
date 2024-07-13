@@ -53,7 +53,7 @@ class Camera with EquatableMixin {
   }
 
   String get sortableName {
-    if (city != City.montreal && city != City.quebec) {
+    if (city != City.quebec) {
       return _name.sortableName;
     }
     int startIndex = ['Avenue ', 'Boulevard ', 'Chemin ', 'Rue ', 'Place ']

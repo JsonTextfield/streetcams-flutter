@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:streetcams_flutter/constants.dart';
 
 import '../blocs/camera_bloc.dart';
-import '../constants.dart';
 import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
 
@@ -24,55 +23,12 @@ class StreetCamsApp extends StatelessWidget {
       },
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: const ColorScheme.light(
-          secondary: Constants.accentColour,
-          primary: Constants.primaryColour,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Constants.accentColour,
-          foregroundColor: Colors.white,
-          systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: Constants.accentColour,
-          ),
-        ),
-        popupMenuTheme: const PopupMenuThemeData(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-        ),
-        menuTheme: const MenuThemeData(
-          style: MenuStyle(
-            shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            )),
-          ),
-        ),
+        colorSchemeSeed: Constants.accentColour,
       ),
       darkTheme: ThemeData(
-        useMaterial3: true,
         brightness: Brightness.dark,
-        colorScheme: const ColorScheme.dark(
-          secondary: Constants.accentColour,
-          primary: Constants.primaryColour,
-        ),
-        appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
-        scaffoldBackgroundColor: Colors.black,
-        popupMenuTheme: const PopupMenuThemeData(
-          color: Constants.darkMenuColour,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-        ),
-        menuTheme: const MenuThemeData(
-          style: MenuStyle(
-            shape: MaterialStatePropertyAll(RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            )),
-            backgroundColor:
-                MaterialStatePropertyAll<Color>(Constants.darkMenuColour),
-          ),
-        ),
-        dialogBackgroundColor: Constants.darkMenuColour,
+        useMaterial3: true,
+        colorSchemeSeed: Constants.accentColour,
       ),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: const [

@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/blocs/camera_state.dart';
-import 'package:streetcams_flutter/constants.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 
@@ -43,11 +42,6 @@ class CameraListView extends StatelessWidget {
         Camera cam = cameras[index];
 
         hide() {
-          if (state.displayedCameras.contains(cam)) {
-            state.displayedCameras.remove(cam);
-          } else {
-            state.displayedCameras.insert(index, cam);
-          }
           context.read<CameraBloc>().add(HideCameras([cam]));
         }
 
@@ -75,12 +69,8 @@ class CameraListView extends StatelessWidget {
           background: DismissibleBackground(cam.isVisible),
           child: ListTile(
             selected: state.selectedCameras.contains(cam),
-            selectedTileColor: Constants.accentColour,
-            selectedColor: Colors.white,
-            dense: true,
-            contentPadding: const EdgeInsets.only(left: 5),
-            minLeadingWidth: 0,
-            visualDensity: const VisualDensity(vertical: -2),
+            selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
+            selectedColor: Theme.of(context).colorScheme.onPrimaryContainer,
             title: Text(cam.name, style: const TextStyle(fontSize: 16)),
             subtitle:
                 cam.neighbourhood.isNotEmpty ? Text(cam.neighbourhood) : null,
@@ -114,23 +104,22 @@ class DismissibleBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     Icon icon = Icon(
       isVisible ? Icons.visibility_off_rounded : Icons.visibility_rounded,
-      color: Colors.white,
+      color: Theme.of(context).colorScheme.onSecondaryContainer,
     );
     return Container(
-      color: Constants.accentColour,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        children: [
-          icon,
-          Expanded(
-            child: Text(
-              isVisible ? context.translation.hide : context.translation.unhide,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white),
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Center(
+        child: ListTile(
+          leading: icon,
+          trailing: icon,
+          title: Text(
+            isVisible ? context.translation.hide : context.translation.unhide,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
             ),
           ),
-          icon,
-        ],
+        ),
       ),
     );
   }
