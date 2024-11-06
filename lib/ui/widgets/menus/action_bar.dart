@@ -102,6 +102,10 @@ class ActionBar extends StatelessWidget {
       cameraBloc.add(ChangeCity(city));
     }
 
+    void changeTheme(ThemeMode theme) {
+      cameraBloc.add(ChangeTheme(theme: theme));
+    }
+
     void hideSelectedCameras() {
       cameraBloc.add(HideCameras(cameraState.selectedCameras));
     }
@@ -216,6 +220,19 @@ class ActionBar extends StatelessWidget {
       }).toList(),
     );
 
+    Action theme = Action(
+      icon: Icons.brightness_medium_rounded,
+      tooltip: context.translation.theme,
+      children: ThemeMode.values.map((ThemeMode theme) {
+        return RadioMenuButton<ThemeMode>(
+          value: theme,
+          groupValue: cameraState.theme,
+          onChanged: (_) => changeTheme(theme),
+          child: Text(context.translation.getTheme(theme.name)),
+        );
+      }).toList(),
+    );
+
     Action favourites = Action(
       isVisible: cameraState.status == CameraStatus.success,
       icon: Icons.star_rounded,
@@ -267,6 +284,7 @@ class ActionBar extends StatelessWidget {
         hidden,
         random,
         shuffle,
+        theme,
         about,
       ];
     }

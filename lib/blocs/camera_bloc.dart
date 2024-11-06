@@ -90,6 +90,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       return emit(state.copyWith(viewMode: event.viewMode));
     });
 
+    on<ChangeTheme>((event, emit) async {
+      prefs?.setString('theme', event.theme.name);
+      return emit(state.copyWith(theme: event.theme));
+    });
+
     on<SortCameras>((event, emit) async {
       if (event.sortMode == SortMode.distance) {
         var position = await LocationService.getCurrentLocation();

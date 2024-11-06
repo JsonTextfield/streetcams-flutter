@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
@@ -30,6 +31,7 @@ class CameraState with _$CameraState {
     @Default(ViewMode.gallery) ViewMode viewMode,
     @Default(0) int lastUpdated,
     @Default(City.ottawa) City city,
+    @Default(ThemeMode.system) ThemeMode theme,
   }) = _CameraState;
 
   List<Camera> get selectedCameras =>

@@ -18,6 +18,15 @@ class ChangeViewMode extends CameraEvent {
   List<Object?> get props => [viewMode];
 }
 
+class ChangeTheme extends CameraEvent {
+  final ThemeMode theme;
+
+  ChangeTheme({this.theme = ThemeMode.system});
+
+  @override
+  List<Object?> get props => [theme];
+}
+
 class HideCameras extends CameraEvent {
   final List<Camera> cameras;
 
