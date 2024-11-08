@@ -61,6 +61,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         (ViewMode v) => v.name == prefs?.getString('viewMode'),
         orElse: () => ViewMode.gallery,
       );
+      ThemeMode theme = ThemeMode.values.firstWhere(
+        (ThemeMode t) => t.name == prefs?.getString('theme'),
+        orElse: () => ThemeMode.system,
+      );
       List<Camera> allCameras = [];
       try {
         allCameras = await DownloadService.getCameras(city);
@@ -82,6 +86,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         searchText: '',
         city: city,
         viewMode: viewMode,
+        theme: theme,
       ));
     });
 
