@@ -6,7 +6,7 @@ import 'package:streetcams_flutter/entities/city.dart';
 
 part 'camera_state.freezed.dart';
 
-enum CameraStatus { initial, success, failure }
+enum UIState { initial, loading, success, failure }
 
 enum SearchMode { none, camera, neighbourhood }
 
@@ -23,7 +23,7 @@ class CameraState with _$CameraState {
   const factory CameraState({
     @Default(<Camera>[]) List<Camera> allCameras,
     @Default(<Camera>[]) List<Camera> displayedCameras,
-    @Default(CameraStatus.initial) CameraStatus status,
+    @Default(UIState.initial) UIState uiState,
     @Default(SortMode.name) SortMode sortMode,
     @Default(SearchMode.none) SearchMode searchMode,
     @Default('') String searchText,
@@ -53,7 +53,7 @@ class CameraState with _$CameraState {
       viewMode == ViewMode.list;
 
   bool get showSearchNeighbourhood =>
-      status == CameraStatus.success && searchMode != SearchMode.neighbourhood;
+      uiState == UIState.success && searchMode != SearchMode.neighbourhood;
 
   bool get showBackButton =>
       (filterMode != FilterMode.visible || searchMode != SearchMode.none) &&
