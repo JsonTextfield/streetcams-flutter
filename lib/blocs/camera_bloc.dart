@@ -43,16 +43,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<CameraLoading>((event, emit) async {
       BilingualObject.locale = await intl.findSystemLocale();
       prefs ??= await SharedPreferences.getInstance();
-      return emit(state.copyWith(
-        status: CameraStatus.initial,
-        searchMode: SearchMode.none,
-        filterMode: FilterMode.visible,
-      ));
-    });
-
-    on<CameraLoaded>((event, emit) async {
-      BilingualObject.locale = await intl.findSystemLocale();
-      prefs ??= await SharedPreferences.getInstance();
       City city = City.values.firstWhere(
         (City c) => c.name == prefs?.getString('city'),
         orElse: () => City.ottawa,
@@ -65,12 +55,18 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         (ThemeMode t) => t.name == prefs?.getString('theme'),
         orElse: () => ThemeMode.system,
       );
+      emit(state.copyWith(
+        uiState: UIState.loading,
+        city: city,
+        viewMode: viewMode,
+        theme: theme,
+      ));
       List<Camera> allCameras = [];
       try {
         allCameras = await DownloadService.getCameras(city);
         allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
       } on Exception catch (_) {
-        return emit(state.copyWith(status: CameraStatus.failure));
+        return emit(state.copyWith(uiState: UIState.failure));
       }
       for (Camera c in allCameras) {
         c.isFavourite = prefs?.getBool('${c.cameraId}.isFavourite') ?? false;
@@ -79,14 +75,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
         allCameras: allCameras,
-        status: CameraStatus.success,
+        uiState: UIState.success,
         sortMode: SortMode.name,
         filterMode: FilterMode.visible,
         searchMode: SearchMode.none,
         searchText: '',
-        city: city,
-        viewMode: viewMode,
-        theme: theme,
       ));
     });
 
@@ -98,6 +91,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     on<ChangeTheme>((event, emit) async {
       prefs?.setString('theme', event.theme.name);
       return emit(state.copyWith(theme: event.theme));
+    });
+
+    on<ChangeCity>((event, emit) async {
+      prefs?.setString('city', event.city.name);
+      add(CameraLoading());
     });
 
     on<SortCameras>((event, emit) async {
@@ -185,12 +183,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         searchMode: SearchMode.none,
         filterMode: FilterMode.visible,
       ));
-    });
-
-    on<ChangeCity>((event, emit) async {
-      add(CameraLoading());
-      prefs?.setString('city', event.city.name);
-      add(CameraLoaded());
     });
   }
 }

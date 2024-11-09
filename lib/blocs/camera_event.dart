@@ -7,8 +7,6 @@ abstract class CameraEvent extends Equatable {
 
 class CameraLoading extends CameraEvent {}
 
-class CameraLoaded extends CameraEvent {}
-
 class ChangeViewMode extends CameraEvent {
   final ViewMode viewMode;
 

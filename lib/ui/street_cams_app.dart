@@ -15,7 +15,7 @@ class StreetCamsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CameraBloc()..add(CameraLoaded()),
+      create: (_) => CameraBloc()..add(CameraLoading()),
       child: BlocBuilder<CameraBloc, CameraState>(
         builder: (context, state) {
           return MaterialApp(
