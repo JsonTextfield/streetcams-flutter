@@ -1,6 +1,5 @@
 enum City {
   alberta,
-  britishColumbia,
   calgary,
   manitoba,
   newBrunswick,
