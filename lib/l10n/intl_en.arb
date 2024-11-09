@@ -99,6 +99,16 @@
       }
     }
   },
+  "theme": "Theme",
+  "getTheme": "{theme, select, system{Default} dark{Dark} light{Light} other{Default}}",
+  "@getTheme": {
+    "description": "Theme type",
+    "placeholders": {
+      "theme": {
+        "type": "String"
+      }
+    }
+  },
   "getCity": "{city, select, ottawa{Ottawa} toronto{Toronto} calgary{Calgary} vancouver{Vancouver} alberta{Alberta} ontario{Ontario} surrey{Surrey} britishColumbia{British Columbia} saskatchewan{Saskatchewan} novaScotia{Nova Scotia} manitoba{Manitoba} newBrunswick{New Brunswick} newfoundland{Newfoundland \nand Labrador} princeEdwardIsland{Prince Edward \nIsland} quebec{Quebec} yukon{Yukon} other{Ottawa}}",
   "@getCity": {
     "description": "City type",
@@ -108,7 +118,7 @@
       }
     }
   },
-  "developedBy" : "Developed in Canada by JsonTextfield",
-  "close" : "Close",
-  "licences" : "Licences"
+  "developedBy": "Developed in Canada by JsonTextfield",
+  "close": "Close",
+  "licences": "Licences"
 }

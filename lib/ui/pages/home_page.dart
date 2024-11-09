@@ -149,12 +149,12 @@ class HomePage extends StatelessWidget {
           ),
           body: BlocBuilder<CameraBloc, CameraState>(
             builder: (context, state) {
-              switch (state.status) {
-                case CameraStatus.failure:
+              switch (state.uiState) {
+                case UIState.failure:
                   return Center(
                     child: Text(context.translation.error),
                   );
-                case CameraStatus.success:
+                case UIState.success:
                   onClick(Camera camera) {
                     if (state.selectedCameras.isEmpty) {
                       showCameras([camera]);
@@ -216,7 +216,7 @@ class HomePage extends StatelessWidget {
                         ),
                       ]);
                   }
-                case CameraStatus.initial:
+                case UIState.loading:
                 default:
                   return const Center(child: CircularProgressIndicator());
               }

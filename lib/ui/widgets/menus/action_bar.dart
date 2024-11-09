@@ -102,6 +102,10 @@ class ActionBar extends StatelessWidget {
       cameraBloc.add(ChangeCity(city));
     }
 
+    void changeTheme(ThemeMode theme) {
+      cameraBloc.add(ChangeTheme(theme: theme));
+    }
+
     void hideSelectedCameras() {
       cameraBloc.add(HideCameras(cameraState.selectedCameras));
     }
@@ -149,7 +153,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action search = Action(
-      isVisible: cameraState.status == CameraStatus.success &&
+      isVisible: cameraState.uiState == UIState.success &&
           cameraState.searchMode != SearchMode.camera,
       icon: Icons.search_rounded,
       tooltip: context.translation.search,
@@ -172,7 +176,7 @@ class ActionBar extends StatelessWidget {
     }
 
     Action switchView = Action(
-      isVisible: cameraState.status == CameraStatus.success,
+      isVisible: cameraState.uiState == UIState.success,
       icon: getIcon(cameraState.viewMode),
       tooltip: context.translation.getViewMode(cameraState.viewMode.name),
       children: ViewMode.values.map((ViewMode viewMode) {
@@ -188,7 +192,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action sort = Action(
-      isVisible: cameraState.status == CameraStatus.success &&
+      isVisible: cameraState.uiState == UIState.success &&
           cameraState.viewMode != ViewMode.map,
       icon: Icons.sort_rounded,
       tooltip: context.translation.sort,
@@ -216,8 +220,21 @@ class ActionBar extends StatelessWidget {
       }).toList(),
     );
 
+    Action theme = Action(
+      icon: Icons.brightness_medium_rounded,
+      tooltip: context.translation.theme,
+      children: ThemeMode.values.map((ThemeMode theme) {
+        return RadioMenuButton<ThemeMode>(
+          value: theme,
+          groupValue: cameraState.theme,
+          onChanged: (_) => changeTheme(theme),
+          child: Text(context.translation.getTheme(theme.name)),
+        );
+      }).toList(),
+    );
+
     Action favourites = Action(
-      isVisible: cameraState.status == CameraStatus.success,
+      isVisible: cameraState.uiState == UIState.success,
       icon: Icons.star_rounded,
       tooltip: context.translation.favourites,
       isChecked: cameraState.filterMode == FilterMode.favourite,
@@ -225,7 +242,7 @@ class ActionBar extends StatelessWidget {
     );
 
     Action hidden = Action(
-      isVisible: cameraState.status == CameraStatus.success,
+      isVisible: cameraState.uiState == UIState.success,
       icon: Icons.visibility_off_rounded,
       tooltip: context.translation.hidden,
       isChecked: cameraState.filterMode == FilterMode.hidden,
@@ -233,14 +250,14 @@ class ActionBar extends StatelessWidget {
     );
 
     Action random = Action(
-      isVisible: cameraState.status == CameraStatus.success,
+      isVisible: cameraState.uiState == UIState.success,
       icon: Icons.casino_rounded,
       tooltip: context.translation.random,
       onClick: () => _showRandomCamera(context),
     );
 
     Action shuffle = Action(
-      isVisible: cameraState.status == CameraStatus.success,
+      isVisible: cameraState.uiState == UIState.success,
       icon: Icons.shuffle_rounded,
       tooltip: context.translation.shuffle,
       onClick: () => _showCameras(
@@ -267,6 +284,7 @@ class ActionBar extends StatelessWidget {
         hidden,
         random,
         shuffle,
+        theme,
         about,
       ];
     }

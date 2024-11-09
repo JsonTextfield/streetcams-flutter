@@ -47,3 +47,4 @@ app.*.map.json
 /local.properties
 /lib/generated/
 /assets/api_key.txt
+/.firebase/

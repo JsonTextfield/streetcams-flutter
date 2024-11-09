@@ -17,7 +17,7 @@ void main() {
     expect(state.city, City.ottawa);
     expect(state.searchMode, SearchMode.none);
     expect(state.searchText, '');
-    expect(state.status, CameraStatus.initial);
+    expect(state.uiState, UIState.initial);
     expect(state.allCameras, <Camera>[]);
     expect(state.displayedCameras, <Camera>[]);
 
@@ -35,7 +35,7 @@ void main() {
   test('test copyWith', () {
     CameraState state1 = const CameraState();
     CameraState state2 = state1.copyWith(
-      status: CameraStatus.failure,
+      uiState: UIState.failure,
       searchMode: SearchMode.camera,
       searchText: 'hello world',
       viewMode: ViewMode.map,
@@ -47,7 +47,7 @@ void main() {
     expect(state2 == state1, false);
     expect(state2.allCameras, <Camera>[]);
     expect(state2.displayedCameras, <Camera>[]);
-    expect(state2.status, CameraStatus.failure);
+    expect(state2.uiState, UIState.failure);
     expect(state2.sortMode, SortMode.distance);
     expect(state2.searchMode, SearchMode.camera);
     expect(state2.searchText, 'hello world');

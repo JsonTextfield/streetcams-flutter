@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
+import 'package:get_thumbnail_video/index.dart';
+import 'package:get_thumbnail_video/video_thumbnail.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../entities/camera.dart';
 import '../entities/city.dart';

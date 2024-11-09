@@ -87,11 +87,21 @@
       }
     }
   },
+  "theme": "Thème",
   "getViewMode": "{viewMode, select, list{Liste} map{Carte} gallery{Galerie} other{Gallery}}",
   "@getViewMode": {
     "description": "View mode type",
     "placeholders": {
       "viewMode": {
+        "type": "String"
+      }
+    }
+  },
+  "getTheme": "{theme, select, system{Défaut} dark{Sombre} light{Lumière} other{Défaut}}",
+  "@getTheme": {
+    "description": "Theme type",
+    "placeholders": {
+      "theme": {
         "type": "String"
       }
     }

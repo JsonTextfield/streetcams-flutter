@@ -7,8 +7,6 @@ abstract class CameraEvent extends Equatable {
 
 class CameraLoading extends CameraEvent {}
 
-class CameraLoaded extends CameraEvent {}
-
 class ChangeViewMode extends CameraEvent {
   final ViewMode viewMode;
 
@@ -16,6 +14,15 @@ class ChangeViewMode extends CameraEvent {
 
   @override
   List<Object?> get props => [viewMode];
+}
+
+class ChangeTheme extends CameraEvent {
+  final ThemeMode theme;
+
+  ChangeTheme({this.theme = ThemeMode.system});
+
+  @override
+  List<Object?> get props => [theme];
 }
 
 class HideCameras extends CameraEvent {
