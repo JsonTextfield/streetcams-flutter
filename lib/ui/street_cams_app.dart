@@ -9,7 +9,8 @@ import 'pages/camera_page.dart';
 import 'pages/home_page.dart';
 
 class StreetCamsApp extends StatelessWidget {
-  const StreetCamsApp({super.key});
+  final TextEditingController controller = TextEditingController();
+  StreetCamsApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -19,7 +20,7 @@ class StreetCamsApp extends StatelessWidget {
       child: BlocBuilder<CameraBloc, CameraState>(
         builder: (context, state) {
           return MaterialApp(
-            home: HomePage(),
+            home: HomePage(textEditingController: controller),
             routes: {
               CameraPage.routeName: (context) => const CameraPage(),
             },

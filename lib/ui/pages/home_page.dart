@@ -23,11 +23,14 @@ import 'camera_page.dart';
 class HomePage extends StatelessWidget {
   final ItemScrollController itemScrollController = ItemScrollController();
   final ScrollController scrollController = ScrollController();
-  final TextEditingController textEditingController = TextEditingController();
+  final TextEditingController textEditingController;
   final MapController flutterMapController = MapController();
   late final GoogleMapController mapController;
 
-  HomePage({super.key});
+  HomePage({
+    super.key,
+    required this.textEditingController,
+  });
 
   void _moveToListPosition(int index) {
     itemScrollController.jumpTo(index: index);
