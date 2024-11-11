@@ -48,3 +48,4 @@ app.*.map.json
 /lib/generated/
 /assets/api_key.txt
 /.firebase/
+/lib/blocs/*.freezed.dart
