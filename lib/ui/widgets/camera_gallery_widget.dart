@@ -91,7 +91,7 @@ class CameraGalleryWidget extends StatelessWidget {
               right: 0,
               child: Icon(Icons.star_rounded, color: Colors.yellow),
             ),
-          if (context.read<CameraBloc>().state.selectedCameras.contains(camera))
+          if (camera.isSelected)
             DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary.withAlpha(0x88),
