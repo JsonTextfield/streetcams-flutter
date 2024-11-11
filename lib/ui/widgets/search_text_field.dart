@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:text_scroll/text_scroll.dart';
 
-import '../../blocs/camera_bloc.dart';
 
 class SearchTextField extends StatelessWidget {
   final String hintText;
