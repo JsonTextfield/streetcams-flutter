@@ -1,10 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/ui/widgets/camera_error_widget.dart';
 
-import '../../blocs/camera_bloc.dart';
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
 
