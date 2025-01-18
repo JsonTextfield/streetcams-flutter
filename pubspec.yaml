@@ -49,7 +49,7 @@ dependencies:
   quiver: ^3.2.1
   change_case: ^2.0.1
   bloc_test: ^9.1.6
-  mockito: ^5.4.4
+  #mockito: ^5.4.4
   supabase_flutter: ^2.3.3
   video_player: ^2.8.2
   get_thumbnail_video: ^0.7.2
