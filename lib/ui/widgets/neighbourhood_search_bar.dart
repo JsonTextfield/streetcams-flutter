@@ -1,46 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
 
-import '../../blocs/camera_bloc.dart';
 
 class NeighbourhoodSearchBar extends StatelessWidget {
   final String hintText;
+  final List<String> data;
+  final void Function() onClear;
+  final void Function(String) onTextChanged;
 
-  const NeighbourhoodSearchBar({super.key, this.hintText = ''});
+  const NeighbourhoodSearchBar({
+    super.key,
+    this.hintText = '',
+    this.data = const [],
+    required this.onClear,
+    required this.onTextChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     debugPrint('building neighbourhood search bar');
-    List<String> neighbourhoods =
-        context.read<CameraBloc>().state.neighbourhoods;
     return Autocomplete<String>(
-      onSelected: (value) => context.read<CameraBloc>().add(
-            SearchCameras(
-              searchMode: SearchMode.neighbourhood,
-              searchText: value,
-            ),
-          ),
-      optionsBuilder: (value) => getAutoCompleteOptions(value, neighbourhoods),
+      onSelected: onTextChanged,
+      optionsBuilder: (value) {
+        return value.text.isEmpty
+            ? []
+            : data.where((String s) => s.containsIgnoreCase(value.text.trim()));
+      },
       fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
         return SearchTextField(
           focusNode: focusNode,
           controller: controller,
           hintText: hintText,
-          searchMode: SearchMode.neighbourhood,
+          onClear: () {
+            controller.clear();
+            onClear();
+          },
+          onTextChanged: onTextChanged,
         );
       },
     );
-  }
-
-  Iterable<String> getAutoCompleteOptions(
-    TextEditingValue value,
-    List<String> options,
-  ) {
-    return value.text.isEmpty
-        ? []
-        : options.where((String s) => s.containsIgnoreCase(value.text.trim()));
   }
 }

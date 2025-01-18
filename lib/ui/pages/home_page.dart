@@ -50,6 +50,20 @@ class HomePage extends StatelessWidget {
       }
     }
 
+    void onClear(SearchMode searchMode) {
+      textEditingController.clear();
+      context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
+    }
+
+    void onTextChanged(String value, SearchMode searchMode) {
+      context.read<CameraBloc>().add(
+        SearchCameras(
+          searchMode: searchMode,
+          searchText: value,
+        ),
+      );
+    }
+
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
         return Scaffold(
@@ -79,7 +93,8 @@ class HomePage extends StatelessWidget {
                         controller: textEditingController,
                         hintText: context.translation
                             .searchCameras(state.displayedCameras.length),
-                        searchMode: SearchMode.camera,
+                        onClear: () => onClear(SearchMode.camera),
+                        onTextChanged: (value) => onTextChanged(value, SearchMode.camera),
                       );
                     case SearchMode.neighbourhood:
                       return NeighbourhoodSearchBar(
@@ -87,6 +102,8 @@ class HomePage extends StatelessWidget {
                             ? context.translation.searchNeighbourhoods(
                                 state.neighbourhoods.length)
                             : '',
+                        onClear: () => onClear(SearchMode.neighbourhood),
+                        onTextChanged: (value) => onTextChanged(value, SearchMode.neighbourhood),
                       );
                     case SearchMode.none:
                     default:

@@ -1,41 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:text_scroll/text_scroll.dart';
 
-import '../../blocs/camera_bloc.dart';
 
 class SearchTextField extends StatelessWidget {
   final String hintText;
   final TextEditingController controller;
   final FocusNode? focusNode;
-  final SearchMode searchMode;
+  final void Function() onClear;
+  final void Function(String) onTextChanged;
 
   const SearchTextField({
     super.key,
     this.hintText = '',
     required this.controller,
-    required this.searchMode,
     this.focusNode,
+    required this.onClear,
+    required this.onTextChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     debugPrint('building search bar');
-    clear() {
-      controller.clear();
-      context.read<CameraBloc>().add(SearchCameras(searchMode: searchMode));
-    }
-
-    search(value) {
-      context.read<CameraBloc>().add(
-            SearchCameras(
-              searchMode: searchMode,
-              searchText: value,
-            ),
-          );
-    }
 
     return Stack(
       alignment: Alignment.centerLeft,
@@ -64,13 +50,13 @@ class SearchTextField extends StatelessWidget {
           controller: controller,
           //textAlignVertical: TextAlignVertical.center,
           textInputAction: TextInputAction.done,
-          onChanged: search,
+          onChanged: onTextChanged,
           decoration: InputDecoration(
             suffixIcon: controller.text.isNotEmpty
                 ? IconButton(
                     icon: Icon(Icons.clear_rounded,
                         color: Theme.of(context).colorScheme.onSurface),
-                    onPressed: clear,
+                    onPressed: onClear,
                     tooltip: context.translation.clear,
                   )
                 : null,
