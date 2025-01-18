@@ -3,56 +3,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl_standalone.dart'
     if (dart.library.html) 'package:intl/intl_browser.dart' as intl;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/blocs/camera_state.dart';
+import 'package:streetcams_flutter/data/camera_repository.dart';
+import 'package:streetcams_flutter/data/local_storage_data_source.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/latlon.dart';
-import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:streetcams_flutter/services/location_service.dart';
 
 part 'camera_event.dart';
 
-class LocaleListener with WidgetsBindingObserver {
-  final void Function() callback;
+class CameraBloc extends Bloc<CameraEvent, CameraState>
+    with WidgetsBindingObserver {
+  final ILocalStorageDataSource _prefs;
+  final ICameraRepository _cameraRepository;
 
-  LocaleListener({required this.callback}) {
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void didChangeLocales(List<Locale>? locales) {
-    super.didChangeLocales(locales);
-    BilingualObject.locale =
-        locales?.first.languageCode ?? BilingualObject.locale;
-    callback();
-  }
-}
-
-class CameraBloc extends Bloc<CameraEvent, CameraState> {
-  LocaleListener? localeListener;
-  SharedPreferences? prefs;
-
-  CameraBloc({
-    this.localeListener,
-    this.prefs,
-  }) : super(const CameraState()) {
-    localeListener ??= LocaleListener(callback: () => add(ChangeViewMode()));
-
+  CameraBloc(
+    this._prefs,
+    this._cameraRepository,
+  ) : super(const CameraState()) {
     on<CameraLoading>((event, emit) async {
-      BilingualObject.locale = await intl.findSystemLocale();
-      prefs ??= await SharedPreferences.getInstance();
+      String? savedCity = await _prefs.getString('city');
       City city = City.values.firstWhere(
-        (City c) => c.name == prefs?.getString('city'),
+        (City c) => c.name == savedCity,
         orElse: () => City.ottawa,
       );
+      String? savedViewMode = await _prefs.getString('viewMode');
       ViewMode viewMode = ViewMode.values.firstWhere(
-        (ViewMode v) => v.name == prefs?.getString('viewMode'),
+        (ViewMode v) => v.name == savedViewMode,
         orElse: () => ViewMode.gallery,
       );
+      String? savedThemeMode = await _prefs.getString('theme');
       ThemeMode theme = ThemeMode.values.firstWhere(
-        (ThemeMode t) => t.name == prefs?.getString('theme'),
+        (ThemeMode t) => t.name == savedThemeMode,
         orElse: () => ThemeMode.system,
       );
       emit(state.copyWith(
@@ -61,16 +45,18 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         viewMode: viewMode,
         theme: theme,
       ));
+      BilingualObject.locale = await intl.findSystemLocale();
       List<Camera> allCameras = [];
       try {
-        allCameras = await DownloadService.getCameras(city);
+        allCameras = await _cameraRepository.getCameras(city);
         allCameras.sort((a, b) => a.sortableName.compareTo(b.sortableName));
       } on Exception catch (_) {
         return emit(state.copyWith(uiState: UIState.failure));
       }
       for (Camera c in allCameras) {
-        c.isFavourite = prefs?.getBool('${c.cameraId}.isFavourite') ?? false;
-        c.isVisible = prefs?.getBool('${c.cameraId}.isVisible') ?? true;
+        c.isFavourite =
+            await _prefs.getBool('${c.cameraId}.isFavourite') ?? false;
+        c.isVisible = await _prefs.getBool('${c.cameraId}.isVisible') ?? true;
       }
       return emit(state.copyWith(
         displayedCameras: allCameras.where((cam) => cam.isVisible).toList(),
@@ -84,17 +70,17 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     });
 
     on<ChangeViewMode>((event, emit) async {
-      prefs?.setString('viewMode', event.viewMode.name);
+      _prefs.setString('viewMode', event.viewMode.name);
       return emit(state.copyWith(viewMode: event.viewMode));
     });
 
     on<ChangeTheme>((event, emit) async {
-      prefs?.setString('theme', event.theme.name);
+      _prefs.setString('theme', event.theme.name);
       return emit(state.copyWith(theme: event.theme));
     });
 
     on<ChangeCity>((event, emit) async {
-      prefs?.setString('city', event.city.name);
+      _prefs.setString('city', event.city.name);
       add(CameraLoading());
     });
 
@@ -137,7 +123,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       bool anyVisible = event.cameras.any((cam) => cam.isVisible);
       state.allCameras.where(event.cameras.contains).forEach((camera) {
         camera.isVisible = !anyVisible;
-        prefs?.setBool('${camera.cameraId}.isVisible', !anyVisible);
+        _prefs.setBool('${camera.cameraId}.isVisible', !anyVisible);
       });
       return emit(state.copyWith(
         displayedCameras: state.getDisplayedCameras(),
@@ -149,7 +135,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       bool allFavourite = event.cameras.every((cam) => cam.isFavourite);
       state.allCameras.where(event.cameras.contains).forEach((camera) {
         camera.isFavourite = !allFavourite;
-        prefs?.setBool('${camera.cameraId}.isFavourite', !allFavourite);
+        _prefs.setBool('${camera.cameraId}.isFavourite', !allFavourite);
       });
       return emit(state.copyWith(
         lastUpdated: DateTime.now().millisecondsSinceEpoch,
@@ -184,5 +170,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         filterMode: FilterMode.visible,
       ));
     });
+  }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) {
+    super.didChangeLocales(locales);
+    BilingualObject.locale =
+        locales?.firstOrNull?.languageCode ?? BilingualObject.locale;
+    add(ChangeViewMode());
   }
 }
