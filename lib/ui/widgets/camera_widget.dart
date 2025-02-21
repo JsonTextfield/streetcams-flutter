@@ -9,7 +9,6 @@ import 'package:intl/intl.dart' as intl;
 import 'package:streetcams_flutter/l10n/translation.dart';
 
 import '../../entities/camera.dart';
-import '../../entities/city.dart';
 
 class CameraWidget extends StatelessWidget {
   // Widget for an individual camera feed
@@ -44,7 +43,7 @@ class CameraWidget extends StatelessWidget {
                 tileMode: TileMode.decal,
               ),
               child: Image.network(
-                camera.city == City.vancouver ? otherUrl : camera.url,
+                otherUrl.isNotEmpty ? otherUrl : camera.url,
                 fit: BoxFit.fitWidth,
                 gaplessPlayback: true,
                 width: MediaQuery.sizeOf(context).width,
@@ -54,7 +53,7 @@ class CameraWidget extends StatelessWidget {
               ),
             ),
             Image.network(
-              camera.city == City.vancouver ? otherUrl : camera.url,
+              otherUrl.isNotEmpty ? otherUrl : camera.url,
               errorBuilder: (context, exception, stackTrace) {
                 return Container(
                   constraints: const BoxConstraints(maxHeight: 200),
