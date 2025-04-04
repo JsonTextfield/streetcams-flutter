@@ -2,48 +2,30 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/entities/city.dart';
 
-class MockLocaleListener extends Mock implements LocaleListener {}
-
-class MockSharedPrefs extends Mock implements SharedPreferences {
-  @override
-  Future<bool> setString(String k, String v) async {
-    return false;
-  }
-
-  @override
-  Future<bool> setInt(String k, int v) async {
-    return false;
-  }
-
-  @override
-  Future<bool> setBool(String k, bool v) async {
-    return false;
-  }
-}
+import 'fake_camera_repository.dart';
+import 'fake_local_storage_data_source.dart';
 
 void main() {
-  MockLocaleListener? localeListener;
-  MockSharedPrefs? sharedPrefs;
+  late FakeLocalStorageDataSource sharedPrefs;
+  late FakeCameraRepository cameraRepository;
 
   TestWidgetsFlutterBinding.ensureInitialized();
 
   setUp(() {
     EquatableConfig.stringify = true;
-    localeListener = MockLocaleListener();
-    sharedPrefs = MockSharedPrefs();
+    sharedPrefs = FakeLocalStorageDataSource();
+    cameraRepository = FakeCameraRepository();
   });
 
   blocTest(
     'emits [] when nothing is added',
     build: () => CameraBloc(
-      localeListener: localeListener,
-      prefs: sharedPrefs,
+      sharedPrefs,
+      cameraRepository,
     ),
     expect: () => [],
   );
@@ -51,8 +33,8 @@ void main() {
   blocTest(
     'emits 2 states (loading, loaded) when CameraLoading is added',
     build: () => CameraBloc(
-      localeListener: localeListener,
-      prefs: sharedPrefs,
+      sharedPrefs,
+      cameraRepository,
     ),
     seed: () => const CameraState(),
     act: (CameraBloc bloc) => bloc.add(CameraLoading()),
@@ -63,8 +45,8 @@ void main() {
   blocTest(
     'test ChangeViewMode sets the state\'s view mode',
     build: () => CameraBloc(
-      localeListener: localeListener,
-      prefs: sharedPrefs,
+      sharedPrefs,
+      cameraRepository,
     ),
     seed: () => const CameraState(viewMode: ViewMode.map),
     act: (CameraBloc bloc) {
@@ -80,8 +62,8 @@ void main() {
   blocTest(
     'test ChangeTheme sets the state\'s theme',
     build: () => CameraBloc(
-      localeListener: localeListener,
-      prefs: sharedPrefs,
+      sharedPrefs,
+      cameraRepository,
     ),
     seed: () => const CameraState(theme: ThemeMode.dark),
     act: (CameraBloc bloc) {
@@ -97,8 +79,8 @@ void main() {
   blocTest(
     'test SortCameras sets the state\'s sort mode',
     build: () => CameraBloc(
-      localeListener: localeListener,
-      prefs: sharedPrefs,
+      sharedPrefs,
+      cameraRepository,
     ),
     seed: () => const CameraState(sortMode: SortMode.distance),
     act: (CameraBloc bloc) {
@@ -113,8 +95,8 @@ void main() {
   blocTest(
     'test ChangeCity sets the state\'s city',
     build: () => CameraBloc(
-      localeListener: localeListener,
-      prefs: sharedPrefs,
+      sharedPrefs,
+      cameraRepository,
     ),
     seed: () => const CameraState(city: City.toronto),
     act: (CameraBloc bloc) {

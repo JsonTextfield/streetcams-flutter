@@ -21,31 +21,41 @@ class ActionBar extends StatelessWidget {
     return BlocBuilder<CameraBloc, CameraState>(
       builder: (context, state) {
         // the number of 48-width buttons that can fit in 1/3 the width of the window
-        int maxActions = (MediaQuery.sizeOf(context).width / 3 / 48).floor();
+        int screenWidth = MediaQuery.of(context).size.width.toInt();
+        int maxActions;
+        if (screenWidth < 400) {
+          maxActions = (screenWidth / 4 / 48).floor();
+        } else if (screenWidth < 600) {
+          maxActions = (screenWidth / 3 / 48).floor();
+        } else if (screenWidth < 800) {
+          maxActions = (screenWidth / 2 / 48).floor();
+        } else {
+          maxActions = (screenWidth * 2 / 3 / 48).floor();
+        }
 
         var visibleActions = _getActions(context).where((a) => a.isVisible);
         List<Action> toolbarActions = visibleActions.take(maxActions).toList();
         List<Action> overflowActions = visibleActions.skip(maxActions).toList();
 
         if (overflowActions.isNotEmpty) {
-          List<Widget> overflowMenuItems = overflowActions.map(
-            (action) {
-              return action.children != null
-                  ? SubmenuButton(
+          List<Widget> overflowMenuItems =
+              overflowActions.map((action) {
+                return action.children != null
+                    ? SubmenuButton(
                       menuChildren: action.children ?? [],
                       leadingIcon: Icon(action.icon),
                       child: Text(action.tooltip),
                     )
-                  : MenuItemButton(
+                    : MenuItemButton(
                       leadingIcon: Icon(action.icon),
-                      trailingIcon: action.isChecked
-                          ? const Icon(Icons.check_rounded)
-                          : null,
+                      trailingIcon:
+                          action.isChecked
+                              ? const Icon(Icons.check_rounded)
+                              : null,
                       onPressed: action.onClick,
                       child: Text(action.tooltip),
                     );
-            },
-          ).toList();
+              }).toList();
 
           Action more = Action(
             tooltip: context.translation.more,
@@ -56,23 +66,23 @@ class ActionBar extends StatelessWidget {
         }
 
         return Row(
-          children: toolbarActions.map(
-            (action) {
-              if (action.children != null) {
-                return MenuAnchor(
-                  builder: (context, menu, child) {
-                    return IconButton(
-                      onPressed: () => menu.isOpen ? menu.close() : menu.open(),
-                      tooltip: action.tooltip,
-                      icon: Icon(action.icon),
-                    );
-                  },
-                  menuChildren: action.children ?? [],
-                );
-              }
-              return ToolbarAction(action: action);
-            },
-          ).toList(),
+          children:
+              toolbarActions.map((action) {
+                if (action.children != null) {
+                  return MenuAnchor(
+                    builder: (context, menu, child) {
+                      return IconButton(
+                        onPressed:
+                            () => menu.isOpen ? menu.close() : menu.open(),
+                        tooltip: action.tooltip,
+                        icon: Icon(action.icon),
+                      );
+                    },
+                    menuChildren: action.children ?? [],
+                  );
+                }
+                return ToolbarAction(action: action);
+              }).toList(),
         );
       },
     );
@@ -132,9 +142,10 @@ class ActionBar extends StatelessWidget {
     bool allFav = selectedCameras.every((cam) => cam.isFavourite);
     Action favourite = Action(
       icon: allFav ? Icons.star_border_rounded : Icons.star_rounded,
-      tooltip: allFav
-          ? context.translation.unfavourite
-          : context.translation.favourite,
+      tooltip:
+          allFav
+              ? context.translation.unfavourite
+              : context.translation.favourite,
       onClick: favouriteSelectedCameras,
     );
 
@@ -153,7 +164,8 @@ class ActionBar extends StatelessWidget {
     );
 
     Action search = Action(
-      isVisible: cameraState.uiState == UIState.success &&
+      isVisible:
+          cameraState.uiState == UIState.success &&
           cameraState.searchMode != SearchMode.camera,
       icon: Icons.search_rounded,
       tooltip: context.translation.search,
@@ -171,7 +183,7 @@ class ActionBar extends StatelessWidget {
       return switch (viewMode) {
         ViewMode.map => Icons.place,
         ViewMode.gallery => Icons.grid_view_rounded,
-        ViewMode.list => Icons.list_rounded
+        ViewMode.list => Icons.list_rounded,
       };
     }
 
@@ -179,58 +191,61 @@ class ActionBar extends StatelessWidget {
       isVisible: cameraState.uiState == UIState.success,
       icon: getIcon(cameraState.viewMode),
       tooltip: context.translation.getViewMode(cameraState.viewMode.name),
-      children: ViewMode.values.map((ViewMode viewMode) {
-        return RadioMenuButton<ViewMode>(
-          value: viewMode,
-          groupValue: cameraState.viewMode,
-          onChanged: (_) => changeViewMode(viewMode),
-          child: Text(
-            context.translation.getViewMode(viewMode.name),
-          ),
-        );
-      }).toList(),
+      children:
+          ViewMode.values.map((ViewMode viewMode) {
+            return RadioMenuButton<ViewMode>(
+              value: viewMode,
+              groupValue: cameraState.viewMode,
+              onChanged: (_) => changeViewMode(viewMode),
+              child: Text(context.translation.getViewMode(viewMode.name)),
+            );
+          }).toList(),
     );
 
     Action sort = Action(
-      isVisible: cameraState.uiState == UIState.success &&
+      isVisible:
+          cameraState.uiState == UIState.success &&
           cameraState.viewMode != ViewMode.map,
       icon: Icons.sort_rounded,
       tooltip: context.translation.sort,
-      children: SortMode.values.map((SortMode sortMode) {
-        return RadioMenuButton<SortMode>(
-          value: sortMode,
-          groupValue: cameraState.sortMode,
-          onChanged: (_) => changeSortMode(sortMode),
-          child: Text(context.translation.getSortMode(sortMode.name)),
-        );
-      }).toList(),
+      children:
+          SortMode.values.map((SortMode sortMode) {
+            return RadioMenuButton<SortMode>(
+              value: sortMode,
+              groupValue: cameraState.sortMode,
+              onChanged: (_) => changeSortMode(sortMode),
+              child: Text(context.translation.getSortMode(sortMode.name)),
+            );
+          }).toList(),
     );
 
     Action city = Action(
       isVisible: cameraState.searchMode == SearchMode.none,
       icon: Icons.location_city_rounded,
       tooltip: context.translation.location,
-      children: City.values.map((City city) {
-        return RadioMenuButton<City>(
-          value: city,
-          groupValue: cameraState.city,
-          onChanged: (_) => changeCity(city),
-          child: Text(context.translation.getCity(city.name)),
-        );
-      }).toList(),
+      children:
+          City.values.map((City city) {
+            return RadioMenuButton<City>(
+              value: city,
+              groupValue: cameraState.city,
+              onChanged: (_) => changeCity(city),
+              child: Text(context.translation.getCity(city.name)),
+            );
+          }).toList(),
     );
 
     Action theme = Action(
       icon: Icons.brightness_medium_rounded,
       tooltip: context.translation.theme,
-      children: ThemeMode.values.map((ThemeMode theme) {
-        return RadioMenuButton<ThemeMode>(
-          value: theme,
-          groupValue: cameraState.theme,
-          onChanged: (_) => changeTheme(theme),
-          child: Text(context.translation.getTheme(theme.name)),
-        );
-      }).toList(),
+      children:
+          ThemeMode.values.map((ThemeMode theme) {
+            return RadioMenuButton<ThemeMode>(
+              value: theme,
+              groupValue: cameraState.theme,
+              onChanged: (_) => changeTheme(theme),
+              child: Text(context.translation.getTheme(theme.name)),
+            );
+          }).toList(),
     );
 
     Action favourites = Action(
@@ -260,11 +275,9 @@ class ActionBar extends StatelessWidget {
       isVisible: cameraState.uiState == UIState.success,
       icon: Icons.shuffle_rounded,
       tooltip: context.translation.shuffle,
-      onClick: () => _showCameras(
-        context,
-        cameraState.visibleCameras,
-        shuffle: true,
-      ),
+      onClick:
+          () =>
+              _showCameras(context, cameraState.visibleCameras, shuffle: true),
     );
 
     Action about = Action(
@@ -288,23 +301,16 @@ class ActionBar extends StatelessWidget {
         about,
       ];
     }
-    return [
-      clear,
-      view,
-      favourite,
-      hide,
-      selectAll,
-    ];
+    return [clear, view, favourite, hide, selectAll];
   }
 
   void _showRandomCamera(BuildContext context) {
     List<Camera> visibleCameras =
         context.read<CameraBloc>().state.visibleCameras;
     if (visibleCameras.isNotEmpty) {
-      _showCameras(
-        context,
-        [visibleCameras[Random().nextInt(visibleCameras.length)]],
-      );
+      _showCameras(context, [
+        visibleCameras[Random().nextInt(visibleCameras.length)],
+      ]);
     }
   }
 
