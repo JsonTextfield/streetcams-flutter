@@ -8,6 +8,7 @@ class FakeCameraRepository implements ICameraRepository {
   Future<List<Camera>> getCameras(City city) async {
     return List.generate(5, (i) {
       return Camera(
+        id: '$i',
         location: const LatLon(lat: 43.0, lon: -79.0),
         city: city,
       );

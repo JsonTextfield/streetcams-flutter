@@ -98,6 +98,12 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                   VideoPlayerController vpc =
                       VideoPlayerController.networkUrl(Uri.parse(camera.url));
                   return CameraVideoWidget(camera: camera, controller: vpc);
+                } else if (camera.url.contains(' ')) {
+                  return Column(
+                    children: camera.url.split(' ').map((url) {
+                      return CameraWidget(camera, otherUrl: url);
+                    }).toList(),
+                  );
                 }
                 return CameraWidget(camera);
               },

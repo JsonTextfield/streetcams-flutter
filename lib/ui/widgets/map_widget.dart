@@ -44,16 +44,16 @@ class MapWidget extends StatelessWidget {
                 City.toronto ||
                 City.calgary ||
                 City.vancouver ||
-                City.surrey =>
-                  10,
+                City.surrey => 10,
                 _ => 5,
               },
             ),
             minMaxZoomPreference: const MinMaxZoomPreference(5, 16),
             markers: markers,
-            style: Theme.of(context).brightness == Brightness.dark
-                ? data.data
-                : '',
+            style:
+                Theme.of(context).brightness == Brightness.dark
+                    ? data.data
+                    : '',
             onMapCreated: (controller) {
               onMapCreated?.call(controller);
             },
@@ -88,7 +88,7 @@ class MapWidget extends StatelessWidget {
     return cameras.map((camera) {
       return Marker(
         icon: _getMarkerIcon(context, camera),
-        markerId: MarkerId(camera.cameraId),
+        markerId: MarkerId(camera.id),
         position: LatLng(camera.location.lat, camera.location.lon),
         infoWindow: InfoWindow(
           title: camera.name,
@@ -116,7 +116,7 @@ class MapWidget extends StatelessWidget {
 
 extension Centre on LatLngBounds {
   LatLng get centre => LatLng(
-        (northeast.latitude + southwest.latitude) / 2,
-        (northeast.longitude + southwest.longitude) / 2,
-      );
+    (northeast.latitude + southwest.latitude) / 2,
+    (northeast.longitude + southwest.longitude) / 2,
+  );
 }

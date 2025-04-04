@@ -1,69 +1,32 @@
-import 'package:equatable/equatable.dart';
+import 'package:dart_mappable/dart_mappable.dart';
+import 'package:uuid/uuid.dart';
 
 import 'bilingual_object.dart';
 import 'city.dart';
 import 'latlon.dart';
 
-class Camera with EquatableMixin {
-  double distance = -1;
-  bool isVisible = true;
-  bool isFavourite = false;
-  bool isSelected = false;
+part 'camera.mapper.dart';
 
+@MappableClass()
+class Camera with CameraMappable {
+  final String id;
   final City city;
   final LatLon location;
 
-  late final BilingualObject _name;
+  final double distance;
+  final bool isVisible;
+  final bool isFavourite;
+  final bool isSelected;
+
+  final BilingualObject _name;
+
   String get name => _name.name;
 
-  late final BilingualObject _neighbourhood;
+  final BilingualObject _neighbourhood;
+
   String get neighbourhood => _neighbourhood.name;
 
-  String _url = '';
-
-  Camera({
-    required this.location,
-    required this.city,
-    name = const BilingualObject(en: '', fr: ''),
-    neighbourhood = const BilingualObject(en: '', fr: ''),
-    url = '',
-  }) {
-    _name = name;
-    _neighbourhood = neighbourhood;
-    _url = url;
-  }
-
-  factory Camera.fromJson(Map<String, dynamic> json) {
-    return Camera(
-      name: BilingualObject(
-        en: json['nameEn'] ?? '',
-        fr: json['nameFr'] ?? '',
-      ),
-      neighbourhood: BilingualObject(
-        en: json['neighbourhoodEn'] ?? '',
-        fr: json['neighbourhoodFr'] ?? '',
-      ),
-      location: LatLon.fromMap(json['location'] ?? {}),
-      url: json['url'] ?? '',
-      city: City.values.firstWhere(
-        (city) => city.name == json['city'],
-        orElse: () => City.ottawa,
-      ),
-    );
-  }
-
-  String get sortableName {
-    if (city != City.quebec) {
-      return _name.sortableName;
-    }
-    int startIndex = ['Avenue ', 'Boulevard ', 'Chemin ', 'Rue ', 'Place ']
-        .firstWhere(name.startsWith, orElse: () => '')
-        .length;
-    String sortableName = name.substring(startIndex);
-    return sortableName
-        .substring(sortableName.indexOf(RegExp('[0-9A-ZÀ-Ö]')))
-        .toUpperCase();
-  }
+  final String _url;
 
   String get url {
     if (city == City.ottawa || city == City.quebec) {
@@ -94,8 +57,58 @@ class Camera with EquatableMixin {
     return '${distance.round()}\nm';
   }
 
-  @override
-  List<Object?> get props => [_name.en, _name.fr, location, city];
+  String get sortableName {
+    if (city != City.quebec) {
+      return _name.sortableName;
+    }
+    int startIndex =
+        [
+          'Avenue ',
+          'Boulevard ',
+          'Chemin ',
+          'Rue ',
+          'Place ',
+        ].firstWhere(name.startsWith, orElse: () => '').length;
+    String sortableName = name.substring(startIndex);
+    return sortableName
+        .substring(sortableName.indexOf(RegExp('[0-9A-ZÀ-Ö]')))
+        .toUpperCase();
+  }
 
-  String get cameraId => props.join();
+  Camera({
+    required this.id,
+    required this.location,
+    required this.city,
+    name = const BilingualObject(),
+    neighbourhood = const BilingualObject(),
+    url = '',
+    this.isFavourite = false,
+    this.isVisible = true,
+    this.isSelected = false,
+    this.distance = -1,
+  }) : _name = name,
+       _neighbourhood = neighbourhood,
+       _url = url;
+
+  factory Camera.fromJson(Map<String, dynamic> json) {
+    return Camera(
+      id: json['id'] ?? const Uuid().v4(),
+      name: BilingualObject(en: json['nameEn'] ?? '', fr: json['nameFr'] ?? ''),
+      neighbourhood: BilingualObject(
+        en: json['neighbourhoodEn'] ?? '',
+        fr: json['neighbourhoodFr'] ?? '',
+      ),
+      location: LatLon.fromMap(json['location'] ?? {}),
+      url: json['url'] ?? '',
+      city: City.values.firstWhere(
+        (city) => city.name == json['city'],
+        orElse: () => City.ottawa,
+      ),
+    );
+  }
+
+  @override
+  String toString() {
+    return name;
+  }
 }

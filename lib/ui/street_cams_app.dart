@@ -33,7 +33,7 @@ class StreetCamsApp extends StatelessWidget {
                 return MaterialApp(
                   home: HomePage(textEditingController: controller),
                   routes: {
-                    CameraPage.routeName: (context) => const CameraPage(),
+                    CameraPage.routeName: (_) => const CameraPage(),
                   },
                   themeMode: state.theme,
                   theme: ThemeData(
@@ -57,7 +57,7 @@ class StreetCamsApp extends StatelessWidget {
             ),
           );
         }
-        return const Center(child: CircularProgressIndicator());
+        return const SizedBox.shrink();
       },
     );
   }

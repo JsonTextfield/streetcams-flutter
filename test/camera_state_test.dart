@@ -53,37 +53,41 @@ void main() {
     expect(state2.searchText, 'hello world');
     expect(state2.filterMode, FilterMode.favourite);
     expect(state2.viewMode, ViewMode.map);
-    expect(state2.lastUpdated, 0);
     expect(state2.city, City.vancouver);
   });
 
   test('test getDisplayedCameras', () {
     List<Camera> cameras = List.generate(100, (i) {
       return Camera(
+        id: i.toString(),
         location: LatLon(
           lat: Random().nextDouble() * 90,
           lon: Random().nextDouble() * 180 - 90,
         ),
         city: City.vancouver,
         name: BilingualObject(
-            en: i % 3 == 0
-                ? 'hello'
-                : i % 3 == 1
-                    ? 'there'
-                    : 'world'),
+          en:
+              i % 3 == 0
+                  ? 'hello'
+                  : i % 3 == 1
+                  ? 'there'
+                  : 'world',
+        ),
         neighbourhood: BilingualObject(
-            en: i % 3 == 0
-                ? 'town'
-                : i % 3 == 1
-                    ? 'borough'
-                    : 'city'),
-      )
-        ..isVisible = Random().nextBool()
-        ..isFavourite = Random().nextBool();
+          en:
+              i % 3 == 0
+                  ? 'town'
+                  : i % 3 == 1
+                  ? 'borough'
+                  : 'city',
+        ),
+        isVisible: Random().nextBool(),
+        isFavourite: Random().nextBool(),
+      );
     });
     CameraState state = CameraState(allCameras: cameras);
     expect(
-      state.getDisplayedCameras(),
+      state.displayedCameras,
       cameras.where((camera) => camera.isVisible).toList()
         ..sort((a, b) => a.sortableName.compareTo(b.sortableName)),
     );
@@ -95,16 +99,17 @@ void main() {
       sortMode: SortMode.neighbourhood,
     );
     expect(
-        state.getDisplayedCameras(),
-        cameras
-            .where((camera) => camera.isFavourite)
-            .where((camera) => camera.name.trim().containsIgnoreCase('l'))
-            .toList()
-          ..sort((a, b) {
-            int result = a.neighbourhood.compareTo(b.neighbourhood);
-            return result == 0
-                ? a.sortableName.compareTo(b.sortableName)
-                : result;
-          }));
+      state.displayedCameras,
+      cameras
+          .where((camera) => camera.isFavourite)
+          .where((camera) => camera.name.trim().containsIgnoreCase('l'))
+          .toList()
+        ..sort((a, b) {
+          int result = a.neighbourhood.compareTo(b.neighbourhood);
+          return result == 0
+              ? a.sortableName.compareTo(b.sortableName)
+              : result;
+        }),
+    );
   });
 }
