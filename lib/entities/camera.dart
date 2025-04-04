@@ -1,11 +1,14 @@
-import 'package:equatable/equatable.dart';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:uuid/uuid.dart';
 
 import 'bilingual_object.dart';
 import 'city.dart';
 import 'latlon.dart';
 
-class Camera with EquatableMixin {
+part 'camera.mapper.dart';
+
+@MappableClass()
+class Camera with CameraMappable {
   final String id;
   final City city;
   final LatLon location;
@@ -103,46 +106,6 @@ class Camera with EquatableMixin {
       ),
     );
   }
-
-  Camera copyWith({
-    String? id,
-    City? city,
-    LatLon? location,
-    BilingualObject? name,
-    BilingualObject? neighbourhood,
-    String? url,
-    double? distance,
-    bool? isVisible,
-    bool? isFavourite,
-    bool? isSelected,
-  }) {
-    return Camera(
-      id: id ?? this.id,
-      location: location ?? this.location,
-      city: city ?? this.city,
-      name: name ?? _name,
-      neighbourhood: neighbourhood ?? _neighbourhood,
-      url: url ?? _url,
-      distance: distance ?? this.distance,
-      isVisible: isVisible ?? this.isVisible,
-      isFavourite: isFavourite ?? this.isFavourite,
-      isSelected: isSelected ?? this.isSelected,
-    );
-  }
-
-  @override
-  List<Object?> get props => [
-    id,
-    city,
-    location,
-    _name,
-    _neighbourhood,
-    _url,
-    distance,
-    isVisible,
-    isFavourite,
-    isSelected,
-  ];
 
   @override
   String toString() {
