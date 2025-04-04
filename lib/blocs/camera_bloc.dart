@@ -110,12 +110,12 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
     });
 
     on<HideCameras>((event, emit) async {
-      bool anyVisible = event.cameras.any((cam) => cam.isVisible);
-      await _prefs.setVisibility(
-        event.cameras.map((cam) => cam.id).toList(),
-        !anyVisible,
-      );
       List<String> hidden = await _prefs.getHidden();
+      await _prefs.setVisibility(
+        event.cameras.map((camera) => camera.id).toList(),
+        hidden.contains(event.cameras.first.id),
+      );
+      hidden = await _prefs.getHidden();
       return emit(
         state.copyWith(
           allCameras:
@@ -127,9 +127,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
     });
 
     on<FavouriteCameras>((event, emit) async {
-      bool allFavourite = event.cameras.every((cam) => cam.isFavourite);
+      bool allFavourite = event.cameras.every((camera) => camera.isFavourite);
       await _prefs.favourite(
-        event.cameras.map((cam) => cam.id).toList(),
+        event.cameras.map((camera) => camera.id).toList(),
         !allFavourite,
       );
       List<String> favourites = await _prefs.getFavourites();

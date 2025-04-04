@@ -4,11 +4,11 @@ import '../blocs/camera_state.dart';
 import '../entities/city.dart';
 
 abstract class IPreferencesDataSource {
-  Future<void> favourite(List<String> ids, bool value);
+  Future<void> favourite(Iterable<String> ids, bool value);
 
   Future<List<String>> getFavourites();
 
-  Future<void> setVisibility(List<String> ids, bool value);
+  Future<void> setVisibility(Iterable<String> ids, bool value);
 
   Future<List<String>> getHidden();
 

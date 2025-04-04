@@ -11,14 +11,14 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   SharedPreferencesDataSource(this._prefs);
 
   @override
-  Future<void> favourite(List<String> ids, bool value) async {
+  Future<void> favourite(Iterable<String> ids, bool value) async {
     String key = 'favourites';
     List<String> currentFavourites = await getFavourites();
     List<String> newFavourites;
     if (value) {
-      newFavourites = currentFavourites + ids;
+      newFavourites = currentFavourites + ids.toSet().toList();
     } else {
-      newFavourites = (currentFavourites - ids).toList();
+      newFavourites = (currentFavourites - ids.toSet()).toList();
     }
     _prefs.setStringList(key, newFavourites);
   }
@@ -29,16 +29,16 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   }
 
   @override
-  Future<void> setVisibility(List<String> ids, bool value) async {
+  Future<void> setVisibility(Iterable<String> ids, bool value) async {
     String key = 'hidden';
     List<String> currentHidden = await getHidden();
     List<String> newHidden;
-    if (value) {
-      newHidden = currentHidden + ids;
+    if (!value) {
+      newHidden = currentHidden + ids.toList();
     } else {
       newHidden = (currentHidden - ids).toList();
     }
-    _prefs.setStringList(key, newHidden);
+    _prefs.setStringList(key, newHidden.toSet().toList());
   }
 
   @override

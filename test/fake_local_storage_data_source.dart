@@ -8,9 +8,11 @@ class FakeLocalStorageDataSource implements IPreferencesDataSource {
   final Map<String, Object> map = {};
 
   @override
-  Future<void> favourite(List<String> ids, bool value) async {
+  Future<void> favourite(Iterable<String> ids, bool value) async {
     map['favourites'] =
-        value ? map['favourites'] ?? [] + ids : map['favourites'] ?? [] - ids;
+        value
+            ? map['favourites'] ?? [] + ids.toList()
+            : map['favourites'] ?? [] - ids;
   }
 
   @override
@@ -19,9 +21,9 @@ class FakeLocalStorageDataSource implements IPreferencesDataSource {
   }
 
   @override
-  Future<void> setVisibility(List<String> ids, bool value) async {
+  Future<void> setVisibility(Iterable<String> ids, bool value) async {
     map['hidden'] =
-        value ? map['hidden'] ?? [] + ids : map['hidden'] ?? [] - ids;
+        value ? map['hidden'] ?? [] + ids.toList() : map['hidden'] ?? [] - ids;
   }
 
   @override
