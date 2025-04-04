@@ -1,4 +1,4 @@
-import 'package:flutter/src/material/app.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/data/local_storage_data_source.dart';
@@ -11,7 +11,7 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   SharedPreferencesDataSource(this._prefs);
 
   @override
-  void favourite(List<String> ids, bool value) async {
+  Future<void> favourite(List<String> ids, bool value) async {
     String key = 'favourites';
     List<String> currentFavourites = await getFavourites();
     List<String> newFavourites;
@@ -29,7 +29,7 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   }
 
   @override
-  void setVisibility(List<String> ids, bool value) async {
+  Future<void> setVisibility(List<String> ids, bool value) async {
     String key = 'hidden';
     List<String> currentHidden = await getHidden();
     List<String> newHidden;
@@ -47,7 +47,7 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   }
 
   @override
-  void setTheme(ThemeMode theme) async {
+  Future<void> setTheme(ThemeMode theme) async {
     _prefs.setInt('theme', theme.index);
   }
 
@@ -57,7 +57,7 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   }
 
   @override
-  void setViewMode(ViewMode viewMode) async {
+  Future<void> setViewMode(ViewMode viewMode) async {
     _prefs.setInt('viewMode', viewMode.index);
   }
 
@@ -67,7 +67,7 @@ class SharedPreferencesDataSource implements IPreferencesDataSource {
   }
 
   @override
-  void setCity(City city) async {
+  Future<void> setCity(City city) async {
     _prefs.setInt('city', city.index);
   }
 

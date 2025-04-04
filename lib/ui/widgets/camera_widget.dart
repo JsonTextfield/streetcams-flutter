@@ -21,16 +21,20 @@ class CameraWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     debugPrint('building camera widget');
     return GestureDetector(
-      onLongPress: () => _saveImage(camera).then((bool result) {
-        if (result) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(context.translation.imageSaved(camera.name)),
-          ));
-        }
-      }),
+      onLongPress:
+          () => _saveImage(camera).then((bool result) {
+            if (result) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.translation.imageSaved(camera.name)),
+                ),
+              );
+            }
+          }),
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height -
+          maxHeight:
+              MediaQuery.sizeOf(context).height -
               MediaQueryData.fromView(View.of(context)).padding.top,
         ),
         child: Stack(

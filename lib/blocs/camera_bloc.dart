@@ -41,8 +41,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
         allCameras =
             (await _cameraRepository.getCameras(city)).map((cam) {
               return cam.copyWith(
-                isFavourite: favourites.contains(cam.cameraId),
-                isVisible: !(hidden.contains(cam.cameraId)),
+                isFavourite: favourites.contains(cam.id),
+                isVisible: !(hidden.contains(cam.id)),
               );
             }).toList();
       } on Exception catch (_) {
@@ -111,8 +111,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
 
     on<HideCameras>((event, emit) async {
       bool anyVisible = event.cameras.any((cam) => cam.isVisible);
-      _prefs.setVisibility(
-        event.cameras.map((cam) => cam.cameraId).toList(),
+      await _prefs.setVisibility(
+        event.cameras.map((cam) => cam.id).toList(),
         !anyVisible,
       );
       List<String> hidden = await _prefs.getHidden();
@@ -120,9 +120,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
         state.copyWith(
           allCameras:
               state.allCameras.map((camera) {
-                return camera.copyWith(
-                  isVisible: !hidden.contains(camera.cameraId),
-                );
+                return camera.copyWith(isVisible: !hidden.contains(camera.id));
               }).toList(),
         ),
       );
@@ -130,8 +128,8 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
 
     on<FavouriteCameras>((event, emit) async {
       bool allFavourite = event.cameras.every((cam) => cam.isFavourite);
-      _prefs.favourite(
-        event.cameras.map((cam) => cam.cameraId).toList(),
+      await _prefs.favourite(
+        event.cameras.map((cam) => cam.id).toList(),
         !allFavourite,
       );
       List<String> favourites = await _prefs.getFavourites();
@@ -140,7 +138,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
           allCameras:
               state.allCameras.map((camera) {
                 return camera.copyWith(
-                  isFavourite: favourites.contains(camera.cameraId),
+                  isFavourite: favourites.contains(camera.id),
                 );
               }).toList(),
         ),
@@ -163,9 +161,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState>
 
     on<SelectAll>((event, emit) async {
       List<Camera> displayedCameras = state.displayedCameras;
-      state.allCameras
-          .where(state.displayedCameras.contains)
-          .forEach((camera) => camera.isSelected = event.select);
       return emit(
         state.copyWith(
           allCameras:
