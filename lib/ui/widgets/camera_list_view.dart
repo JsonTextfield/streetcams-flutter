@@ -25,6 +25,7 @@ class CameraListView extends StatelessWidget {
     debugPrint('building camera listview');
     CameraState state = context.read<CameraBloc>().state;
     return ScrollablePositionedList.builder(
+      padding: const EdgeInsets.only(bottom: 100),
       itemScrollController: itemScrollController,
       itemCount: cameras.length + 1,
       itemBuilder: (context, index) {
@@ -47,24 +48,27 @@ class CameraListView extends StatelessWidget {
 
         dismissed() {
           hide();
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text(
-              cam.isVisible
-                  ? context.translation.hiddenCamera(cam.name)
-                  : context.translation.unhiddenCamera(cam.name),
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                cam.isVisible
+                    ? context.translation.hiddenCamera(cam.name)
+                    : context.translation.unhiddenCamera(cam.name),
+              ),
+              action: SnackBarAction(
+                label: context.translation.undo,
+                onPressed: hide,
+              ),
             ),
-            action: SnackBarAction(
-              label: context.translation.undo,
-              onPressed: hide,
-            ),
-          ));
+          );
         }
 
         return Dismissible(
           key: UniqueKey(),
-          direction: state.filterMode == FilterMode.favourite
-              ? DismissDirection.none
-              : DismissDirection.horizontal,
+          direction:
+              state.filterMode == FilterMode.favourite
+                  ? DismissDirection.none
+                  : DismissDirection.horizontal,
           onDismissed: (direction) => dismissed(),
           background: DismissibleBackground(cam.isVisible),
           child: ListTile(
@@ -74,13 +78,16 @@ class CameraListView extends StatelessWidget {
             title: Text(cam.name, style: const TextStyle(fontSize: 16)),
             subtitle:
                 cam.neighbourhood.isNotEmpty ? Text(cam.neighbourhood) : null,
-            leading: state.sortMode == SortMode.distance
-                ? Text(cam.distanceString, textAlign: TextAlign.center)
-                : null,
+            leading:
+                state.sortMode == SortMode.distance
+                    ? Text(cam.distanceString, textAlign: TextAlign.center)
+                    : null,
             trailing: IconButton(
-              icon: Icon(cam.isFavourite
-                  ? Icons.star_rounded
-                  : Icons.star_border_rounded),
+              icon: Icon(
+                cam.isFavourite
+                    ? Icons.star_rounded
+                    : Icons.star_border_rounded,
+              ),
               color: cam.isFavourite ? Colors.yellow : null,
               onPressed: () {
                 context.read<CameraBloc>().add(FavouriteCameras([cam]));

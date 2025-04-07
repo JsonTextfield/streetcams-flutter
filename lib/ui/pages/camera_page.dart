@@ -58,57 +58,62 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
     }
     timer ??= Timer.periodic(
       Duration(
-          seconds: shuffle
-              ? 6
-              : cameras.first.city == City.quebec
-                  ? 30
-                  : 3),
+        seconds:
+            shuffle
+                ? 6
+                : cameras.first.city == City.quebec
+                ? 30
+                : 3,
+      ),
       (t) => setState(() {}),
     );
     return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            ListView.builder(
-              itemCount: shuffle ? 1 : cameras.length,
-              itemBuilder: (context, index) {
-                Camera camera =
-                    cameras[shuffle ? Random().nextInt(cameras.length) : index];
-                if (camera.city == City.vancouver) {
-                  return FutureBuilder<List<String>>(
-                    future: DownloadService.getHtmlImages(
-                      camera.url,
-                      includeTime: true,
-                    ),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Column(
-                          children: snapshot.requireData.map((url) {
-                            return CameraWidget(camera, otherUrl: url);
-                          }).toList(),
-                        );
-                      } else if (snapshot.hasError) {
-                        return CameraWidget(camera);
-                      }
-                      return const SizedBox();
-                    },
-                  );
-                } //
-                else if (camera.city == City.quebec) {
-                  VideoPlayerController vpc =
-                      VideoPlayerController.networkUrl(Uri.parse(camera.url));
-                  return CameraVideoWidget(camera: camera, controller: vpc);
-                } else if (camera.url.contains(' ')) {
-                  return Column(
-                    children: camera.url.split(' ').map((url) {
-                      return CameraWidget(camera, otherUrl: url);
-                    }).toList(),
-                  );
-                }
-                return CameraWidget(camera);
-              },
-            ),
-            Container(
+      body: Stack(
+        children: [
+          ListView.builder(
+            itemCount: shuffle ? 1 : cameras.length,
+            itemBuilder: (context, index) {
+              Camera camera =
+                  cameras[shuffle ? Random().nextInt(cameras.length) : index];
+              if (camera.city == City.vancouver) {
+                return FutureBuilder<List<String>>(
+                  future: DownloadService.getHtmlImages(
+                    camera.url,
+                    includeTime: true,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Column(
+                        children:
+                            snapshot.requireData.map((url) {
+                              return CameraWidget(camera, otherUrl: url);
+                            }).toList(),
+                      );
+                    } else if (snapshot.hasError) {
+                      return CameraWidget(camera);
+                    }
+                    return const SizedBox();
+                  },
+                );
+              } //
+              else if (camera.city == City.quebec) {
+                VideoPlayerController vpc = VideoPlayerController.networkUrl(
+                  Uri.parse(camera.url),
+                );
+                return CameraVideoWidget(camera: camera, controller: vpc);
+              } else if (camera.url.contains(' ')) {
+                return Column(
+                  children:
+                      camera.url.split(' ').map((url) {
+                        return CameraWidget(camera, otherUrl: url);
+                      }).toList(),
+                );
+              }
+              return CameraWidget(camera);
+            },
+          ),
+          SafeArea(
+            child: Container(
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(10)),
                 color: Colors.white54,
@@ -121,8 +126,17 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                 onPressed: () => Navigator.of(context).pop(),
               ),
             ),
-          ],
-        ),
+          ),
+          Container(
+            height: MediaQuery.of(context).padding.top,
+            decoration: BoxDecoration(
+              color:
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black.withValues(alpha: 0.5)
+                      : Colors.white.withValues(alpha: 0.5),
+            ),
+          ),
+        ],
       ),
     );
   }

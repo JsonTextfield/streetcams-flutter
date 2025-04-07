@@ -27,10 +27,7 @@ class HomePage extends StatelessWidget {
   final MapController flutterMapController = MapController();
   late final GoogleMapController mapController;
 
-  HomePage({
-    super.key,
-    required this.textEditingController,
-  });
+  HomePage({super.key, required this.textEditingController});
 
   void _moveToListPosition(int index) {
     itemScrollController.jumpTo(index: index);
@@ -57,10 +54,7 @@ class HomePage extends StatelessWidget {
 
     void onTextChanged(String value, SearchMode searchMode) {
       context.read<CameraBloc>().add(
-        SearchCameras(
-          searchMode: searchMode,
-          searchText: value,
-        ),
+        SearchCameras(searchMode: searchMode, searchText: value),
       );
     }
 
@@ -69,16 +63,17 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
-            leading: state.showBackButton
-                ? IconButton(
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    onPressed: () {
-                      context.read<CameraBloc>().add(ResetFilters());
-                    },
-                    tooltip: context.translation.back,
-                  )
-                : null,
+            leading:
+                state.showBackButton
+                    ? IconButton(
+                      constraints: const BoxConstraints(),
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      onPressed: () {
+                        context.read<CameraBloc>().add(ResetFilters());
+                      },
+                      tooltip: context.translation.back,
+                    )
+                    : null,
             actions: const [ActionBar()],
             backgroundColor: Theme.of(context).colorScheme.surface,
             surfaceTintColor: Theme.of(context).colorScheme.surface,
@@ -91,19 +86,25 @@ class HomePage extends StatelessWidget {
                     case SearchMode.camera:
                       return SearchTextField(
                         controller: textEditingController,
-                        hintText: context.translation
-                            .searchCameras(state.displayedCameras.length),
+                        hintText: context.translation.searchCameras(
+                          state.displayedCameras.length,
+                        ),
                         onClear: () => onClear(SearchMode.camera),
-                        onTextChanged: (value) => onTextChanged(value, SearchMode.camera),
+                        onTextChanged:
+                            (value) => onTextChanged(value, SearchMode.camera),
                       );
                     case SearchMode.neighbourhood:
                       return NeighbourhoodSearchBar(
-                        hintText: textEditingController.text.isEmpty
-                            ? context.translation.searchNeighbourhoods(
-                                state.neighbourhoods.length)
-                            : '',
+                        hintText:
+                            textEditingController.text.isEmpty
+                                ? context.translation.searchNeighbourhoods(
+                                  state.neighbourhoods.length,
+                                )
+                                : '',
                         onClear: () => onClear(SearchMode.neighbourhood),
-                        onTextChanged: (value) => onTextChanged(value, SearchMode.neighbourhood),
+                        onTextChanged:
+                            (value) =>
+                                onTextChanged(value, SearchMode.neighbourhood),
                       );
                     case SearchMode.none:
                     default:
@@ -111,14 +112,17 @@ class HomePage extends StatelessWidget {
                   }
                 }
 
-                String title = state.selectedCameras.isNotEmpty
-                    ? context.translation
-                        .selectedCameras(state.selectedCameras.length)
-                    : switch (state.filterMode) {
-                        FilterMode.favourite => context.translation.favourites,
-                        FilterMode.hidden => context.translation.hidden,
-                        FilterMode.visible => context.translation.appName,
-                      };
+                String title =
+                    state.selectedCameras.isNotEmpty
+                        ? context.translation.selectedCameras(
+                          state.selectedCameras.length,
+                        )
+                        : switch (state.filterMode) {
+                          FilterMode.favourite =>
+                            context.translation.favourites,
+                          FilterMode.hidden => context.translation.hidden,
+                          FilterMode.visible => context.translation.appName,
+                        };
                 titleTapped() async {
                   switch (state.viewMode) {
                     case ViewMode.list:
@@ -133,8 +137,7 @@ class HomePage extends StatelessWidget {
                         City.toronto ||
                         City.calgary ||
                         City.vancouver ||
-                        City.surrey =>
-                          10,
+                        City.surrey => 10,
                         _ => 5,
                       };
                       if (defaultTargetPlatform == TargetPlatform.windows) {
@@ -171,23 +174,21 @@ class HomePage extends StatelessWidget {
             builder: (context, state) {
               switch (state.uiState) {
                 case UIState.failure:
-                  return Center(
-                    child: Text(context.translation.error),
-                  );
+                  return Center(child: Text(context.translation.error));
                 case UIState.success:
                   onClick(Camera camera) {
                     if (state.selectedCameras.isEmpty) {
                       showCameras([camera]);
                     } else {
-                      context
-                          .read<CameraBloc>()
-                          .add(SelectCamera(camera: camera));
+                      context.read<CameraBloc>().add(
+                        SelectCamera(camera: camera),
+                      );
                     }
                   }
                   onLongClick(Camera camera) {
-                    context
-                        .read<CameraBloc>()
-                        .add(SelectCamera(camera: camera));
+                    context.read<CameraBloc>().add(
+                      SelectCamera(camera: camera),
+                    );
                   }
                   switch (state.viewMode) {
                     case ViewMode.map:
@@ -215,26 +216,31 @@ class HomePage extends StatelessWidget {
                       );
                     case ViewMode.list:
                     default:
-                      return Row(children: [
-                        if (state.showSectionIndex)
-                          Flexible(
-                            flex: 0,
-                            child: SectionIndex(
-                              data: state.displayedCameras
-                                  .map((cam) => cam.sortableName[0])
-                                  .toList(),
-                              onIndexSelected: _moveToListPosition,
+                      return Row(
+                        children: [
+                          if (state.showSectionIndex)
+                            Flexible(
+                              flex: 0,
+                              child: SafeArea(
+                                child: SectionIndex(
+                                  data:
+                                      state.displayedCameras
+                                          .map((cam) => cam.sortableName[0])
+                                          .toList(),
+                                  onIndexSelected: _moveToListPosition,
+                                ),
+                              ),
+                            ),
+                          Expanded(
+                            child: CameraListView(
+                              itemScrollController: itemScrollController,
+                              cameras: state.displayedCameras,
+                              onItemClick: onClick,
+                              onItemLongClick: onLongClick,
                             ),
                           ),
-                        Expanded(
-                          child: CameraListView(
-                            itemScrollController: itemScrollController,
-                            cameras: state.displayedCameras,
-                            onItemClick: onClick,
-                            onItemLongClick: onLongClick,
-                          ),
-                        ),
-                      ]);
+                        ],
+                      );
                   }
                 case UIState.loading:
                 default:
