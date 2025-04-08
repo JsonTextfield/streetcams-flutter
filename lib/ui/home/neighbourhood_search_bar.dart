@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:streetcams_flutter/entities/bilingual_object.dart';
-import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
-
+import 'package:streetcams_flutter/ui/home/search_text_field.dart';
 
 class NeighbourhoodSearchBar extends StatelessWidget {
   final String hintText;

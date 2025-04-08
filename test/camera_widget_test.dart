@@ -11,7 +11,7 @@ import 'package:streetcams_flutter/entities/bilingual_object.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/entities/latlon.dart';
-import 'package:streetcams_flutter/ui/widgets/camera_widget.dart';
+import 'package:streetcams_flutter/ui/camera/camera_widget.dart';
 
 void main() {
   testWidgets('test camera widget', (WidgetTester tester) async {

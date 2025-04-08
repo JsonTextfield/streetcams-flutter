@@ -9,8 +9,8 @@ import 'package:video_player/video_player.dart';
 import '../../entities/bilingual_object.dart';
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
-import '../widgets/camera_video_widget.dart';
-import '../widgets/camera_widget.dart';
+import 'camera_video_widget.dart';
+import 'camera_widget.dart';
 
 class CameraPage extends StatefulWidget {
   static const routeName = '/cameraPage';

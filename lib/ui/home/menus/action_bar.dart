@@ -8,9 +8,10 @@ import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
-import 'package:streetcams_flutter/ui/pages/camera_page.dart';
-import 'package:streetcams_flutter/ui/widgets/menus/action.dart';
-import 'package:streetcams_flutter/ui/widgets/menus/toolbar_action.dart';
+import 'package:streetcams_flutter/ui/camera/camera_page.dart';
+import 'package:streetcams_flutter/ui/home/menus/toolbar_action.dart';
+
+import 'action.dart';
 
 class ActionBar extends StatelessWidget {
   const ActionBar({super.key});

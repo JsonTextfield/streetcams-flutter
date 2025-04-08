@@ -8,8 +8,8 @@ import 'package:streetcams_flutter/data/shared_preferences_data_source.dart';
 
 import '../blocs/camera_bloc.dart';
 import '../blocs/camera_state.dart';
-import 'pages/camera_page.dart';
-import 'pages/home_page.dart';
+import 'camera/camera_page.dart';
+import 'home/home_page.dart';
 
 class StreetCamsApp extends StatelessWidget {
   final TextEditingController controller = TextEditingController();
@@ -24,17 +24,16 @@ class StreetCamsApp extends StatelessWidget {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return BlocProvider(
-            create: (_) => CameraBloc(
-              SharedPreferencesDataSource(snapshot.requireData),
-              CameraRepository(),
-            )..add(CameraLoading()),
+            create:
+                (_) => CameraBloc(
+                  SharedPreferencesDataSource(snapshot.requireData),
+                  CameraRepository(),
+                )..add(CameraLoading()),
             child: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
                 return MaterialApp(
                   home: HomePage(textEditingController: controller),
-                  routes: {
-                    CameraPage.routeName: (_) => const CameraPage(),
-                  },
+                  routes: {CameraPage.routeName: (_) => const CameraPage()},
                   themeMode: state.theme,
                   theme: ThemeData(
                     useMaterial3: true,

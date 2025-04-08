@@ -9,16 +9,16 @@ import 'package:streetcams_flutter/blocs/camera_state.dart';
 import 'package:streetcams_flutter/entities/camera.dart';
 import 'package:streetcams_flutter/entities/city.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
-import 'package:streetcams_flutter/ui/widgets/camera_gallery_view.dart';
-import 'package:streetcams_flutter/ui/widgets/camera_list_view.dart';
-import 'package:streetcams_flutter/ui/widgets/flutter_map_widget.dart';
-import 'package:streetcams_flutter/ui/widgets/map_widget.dart';
-import 'package:streetcams_flutter/ui/widgets/menus/action_bar.dart';
-import 'package:streetcams_flutter/ui/widgets/neighbourhood_search_bar.dart';
-import 'package:streetcams_flutter/ui/widgets/search_text_field.dart';
-import 'package:streetcams_flutter/ui/widgets/section_index.dart';
+import 'package:streetcams_flutter/ui/home/camera_gallery_view.dart';
+import 'package:streetcams_flutter/ui/home/camera_list_view.dart';
+import 'package:streetcams_flutter/ui/home/map_widget.dart';
+import 'package:streetcams_flutter/ui/home/search_text_field.dart';
+import 'package:streetcams_flutter/ui/home/section_index.dart';
 
-import 'camera_page.dart';
+import '../camera/camera_page.dart';
+import 'flutter_map_widget.dart';
+import 'menus/action_bar.dart';
+import 'neighbourhood_search_bar.dart';
 
 class HomePage extends StatelessWidget {
   final ItemScrollController itemScrollController = ItemScrollController();

@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
-import 'package:streetcams_flutter/ui/widgets/camera_error_widget.dart';
+import 'package:streetcams_flutter/ui/camera_error_widget.dart';
 
 import '../../entities/camera.dart';
 import '../../entities/city.dart';
@@ -38,8 +38,12 @@ class CameraGalleryWidget extends StatelessWidget {
                   return Image.memory(
                     snapshot.data!,
                     fit: BoxFit.cover,
-                    frameBuilder: (BuildContext context, Widget child,
-                        int? frame, bool wasSynchronouslyLoaded) {
+                    frameBuilder: (
+                      BuildContext context,
+                      Widget child,
+                      int? frame,
+                      bool wasSynchronouslyLoaded,
+                    ) {
                       if (wasSynchronouslyLoaded) {
                         return child;
                       }
