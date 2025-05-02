@@ -192,20 +192,28 @@ class HomePage extends StatelessWidget {
                   }
                   switch (state.viewMode) {
                     case ViewMode.map:
-                      if (defaultTargetPlatform == TargetPlatform.windows &&
-                          !kIsWeb) {
-                        return FlutterMapWidget(
-                          cameras: state.displayedCameras,
-                          onItemClick: onClick,
-                          onItemLongClick: onLongClick,
-                          controller: flutterMapController,
-                        );
-                      }
-                      return MapWidget(
-                        cameras: state.displayedCameras,
-                        onItemClick: onClick,
-                        onItemLongClick: onLongClick,
-                        onMapCreated: (gmc) => mapController = gmc,
+                      return Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: SafeArea(
+                          maintainBottomViewPadding: true,
+                          left: false,
+                          child:
+                              (defaultTargetPlatform ==
+                                          TargetPlatform.windows &&
+                                      !kIsWeb)
+                                  ? FlutterMapWidget(
+                                    cameras: state.displayedCameras,
+                                    onItemClick: onClick,
+                                    onItemLongClick: onLongClick,
+                                    controller: flutterMapController,
+                                  )
+                                  : MapWidget(
+                                    cameras: state.displayedCameras,
+                                    onItemClick: onClick,
+                                    onItemLongClick: onLongClick,
+                                    onMapCreated: (gmc) => mapController = gmc,
+                                  ),
+                        ),
                       );
                     case ViewMode.gallery:
                       return CameraGalleryView(
@@ -216,30 +224,34 @@ class HomePage extends StatelessWidget {
                       );
                     case ViewMode.list:
                     default:
-                      return Row(
-                        children: [
-                          if (state.showSectionIndex)
-                            Flexible(
-                              flex: 0,
-                              child: SafeArea(
-                                child: SectionIndex(
+                      return Directionality(
+                        textDirection: TextDirection.ltr,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            left: MediaQuery.of(context).viewPadding.left,
+                            right: MediaQuery.of(context).viewInsets.right,
+                          ),
+                          child: Row(
+                            children: [
+                              if (state.showSectionIndex)
+                                SectionIndex(
                                   data:
                                       state.displayedCameras
                                           .map((cam) => cam.sortableName[0])
                                           .toList(),
                                   onIndexSelected: _moveToListPosition,
                                 ),
+                              Expanded(
+                                child: CameraListView(
+                                  itemScrollController: itemScrollController,
+                                  cameras: state.displayedCameras,
+                                  onItemClick: onClick,
+                                  onItemLongClick: onLongClick,
+                                ),
                               ),
-                            ),
-                          Expanded(
-                            child: CameraListView(
-                              itemScrollController: itemScrollController,
-                              cameras: state.displayedCameras,
-                              onItemClick: onClick,
-                              onItemLongClick: onLongClick,
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       );
                   }
                 case UIState.loading:
