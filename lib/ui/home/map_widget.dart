@@ -36,6 +36,11 @@ class MapWidget extends StatelessWidget {
           Set<Marker> markers = _getMapMarkers(context);
 
           return GoogleMap(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewPadding.bottom,
+              right: MediaQuery.of(context).viewPadding.right,
+              left: MediaQuery.of(context).viewPadding.left,
+            ),
             cameraTargetBounds: CameraTargetBounds(bounds),
             initialCameraPosition: CameraPosition(
               target: initCamPos,

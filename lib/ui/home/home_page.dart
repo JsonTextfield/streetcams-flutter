@@ -63,6 +63,7 @@ class HomePage extends StatelessWidget {
         return Scaffold(
           resizeToAvoidBottomInset: false,
           appBar: AppBar(
+            centerTitle: false,
             leading:
                 state.showBackButton
                     ? IconButton(
@@ -107,7 +108,6 @@ class HomePage extends StatelessWidget {
                                 onTextChanged(value, SearchMode.neighbourhood),
                       );
                     case SearchMode.none:
-                    default:
                       break;
                   }
                 }
@@ -194,26 +194,21 @@ class HomePage extends StatelessWidget {
                     case ViewMode.map:
                       return Directionality(
                         textDirection: TextDirection.ltr,
-                        child: SafeArea(
-                          maintainBottomViewPadding: true,
-                          left: false,
-                          child:
-                              (defaultTargetPlatform ==
-                                          TargetPlatform.windows &&
-                                      !kIsWeb)
-                                  ? FlutterMapWidget(
-                                    cameras: state.displayedCameras,
-                                    onItemClick: onClick,
-                                    onItemLongClick: onLongClick,
-                                    controller: flutterMapController,
-                                  )
-                                  : MapWidget(
-                                    cameras: state.displayedCameras,
-                                    onItemClick: onClick,
-                                    onItemLongClick: onLongClick,
-                                    onMapCreated: (gmc) => mapController = gmc,
-                                  ),
-                        ),
+                        child:
+                            (defaultTargetPlatform == TargetPlatform.windows &&
+                                    !kIsWeb)
+                                ? FlutterMapWidget(
+                                  cameras: state.displayedCameras,
+                                  onItemClick: onClick,
+                                  onItemLongClick: onLongClick,
+                                  controller: flutterMapController,
+                                )
+                                : MapWidget(
+                                  cameras: state.displayedCameras,
+                                  onItemClick: onClick,
+                                  onItemLongClick: onLongClick,
+                                  onMapCreated: (gmc) => mapController = gmc,
+                                ),
                       );
                     case ViewMode.gallery:
                       return CameraGalleryView(
@@ -223,7 +218,6 @@ class HomePage extends StatelessWidget {
                         onItemLongClick: onLongClick,
                       );
                     case ViewMode.list:
-                    default:
                       return Directionality(
                         textDirection: TextDirection.ltr,
                         child: Padding(

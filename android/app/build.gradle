@@ -57,13 +57,13 @@ android {
     signingConfigs {
         release {
             def keystoreProperties = new Properties()
-            def keystorePropertiesFile = rootProject.file('C:/Users/jason/.gradle/gradle.properties')
+            def keystorePropertiesFile = rootProject.file('/Users/jasonbromfield/.android/release.keystore')
             if (keystorePropertiesFile.exists()) {
                 keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
             }
             keyAlias keystoreProperties['releaseKeyAlias']
             keyPassword keystoreProperties['releaseKeyPassword']
-            storeFile file("C:/Users/jason/.android/release.keystore")
+            storeFile file("/Users/jasonbromfield/.android/release.keystore")
             storePassword keystoreProperties['releaseStorePassword']
         }
     }

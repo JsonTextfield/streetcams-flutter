@@ -33,7 +33,14 @@ class CameraGalleryView extends StatelessWidget {
       interactive: true,
       child: GridView.builder(
         controller: scrollController,
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.all(5).add(
+          EdgeInsets.only(
+            left: MediaQuery.of(context).viewPadding.left,
+            right: MediaQuery.of(context).viewPadding.right,
+            bottom: MediaQuery.of(context).viewPadding.bottom,
+            top: MediaQuery.of(context).viewPadding.top,
+          ),
+        ),
         itemCount: cameras.length + 1,
         itemBuilder: (context, index) {
           if (index == cameras.length) {
