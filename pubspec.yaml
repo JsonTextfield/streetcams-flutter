@@ -92,7 +92,6 @@ flutter:
   assets:
     - assets/dark_mode.json
     - assets/surrey_city_boundary.json
-    - assets/api_key.txt
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

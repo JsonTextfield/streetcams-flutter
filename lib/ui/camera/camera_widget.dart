@@ -1,42 +1,42 @@
-import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:change_case/change_case.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
-import 'package:intl/intl.dart' as intl;
 import 'package:streetcams_flutter/l10n/translation.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../entities/camera.dart';
+import '../../entities/city.dart';
+import '../../services/download_service.dart';
+import 'camera_video_widget.dart';
 
 class CameraWidget extends StatelessWidget {
   // Widget for an individual camera feed
   final Camera camera;
-  final String otherUrl;
 
-  const CameraWidget(this.camera, {super.key, this.otherUrl = ''});
+  const CameraWidget(this.camera, {super.key});
 
   @override
   Widget build(BuildContext context) {
     debugPrint('building camera widget');
-    return GestureDetector(
-      onLongPress:
-          () => _saveImage(camera).then((bool result) {
-            if (result) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(context.translation.imageSaved(camera.name)),
-                ),
-              );
-            }
-          }),
-      child: Container(
-        constraints: BoxConstraints(
-          maxHeight:
-              MediaQuery.sizeOf(context).height -
-              MediaQueryData.fromView(View.of(context)).padding.top,
-        ),
+    if (camera.city == City.quebec) {
+      VideoPlayerController vpc = VideoPlayerController.networkUrl(
+        Uri.parse(camera.url),
+      );
+      return CameraVideoWidget(camera: camera, controller: vpc);
+    }
+    return Container(
+      constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
+      child: InkWell(
+        onLongPress: () async {
+          bool result = await DownloadService.saveImage(camera);
+          if (result) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.translation.imageSaved(camera.name)),
+              ),
+            );
+          }
+        },
         child: Stack(
           textDirection: TextDirection.ltr,
           children: [
@@ -47,7 +47,7 @@ class CameraWidget extends StatelessWidget {
                 tileMode: TileMode.decal,
               ),
               child: Image.network(
-                otherUrl.isNotEmpty ? otherUrl : camera.url,
+                camera.url,
                 fit: BoxFit.fitWidth,
                 gaplessPlayback: true,
                 width: MediaQuery.sizeOf(context).width,
@@ -57,7 +57,7 @@ class CameraWidget extends StatelessWidget {
               ),
             ),
             Image.network(
-              otherUrl.isNotEmpty ? otherUrl : camera.url,
+              camera.url,
               errorBuilder: (context, exception, stackTrace) {
                 return Container(
                   constraints: const BoxConstraints(maxHeight: 200),
@@ -78,23 +78,7 @@ class CameraWidget extends StatelessWidget {
             Positioned.fill(
               child: Align(
                 alignment: Alignment.bottomCenter,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  margin: const EdgeInsets.all(2),
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 5,
-                    horizontal: 10,
-                  ),
-                  child: Text(
-                    camera.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 12),
-                    textAlign: TextAlign.center,
-                    textDirection: TextDirection.ltr,
-                  ),
-                ),
+                child: CameraLabel(camera.name),
               ),
             ),
           ],
@@ -102,17 +86,28 @@ class CameraWidget extends StatelessWidget {
       ),
     );
   }
+}
 
-  Future<bool> _saveImage(Camera camera) async {
-    try {
-      Uri url = Uri.parse(otherUrl.isNotEmpty ? otherUrl : camera.url);
-      Uint8List bytes = await http.readBytes(url);
-      String fileName =
-          '${camera.name.toPascalCase()}${intl.DateFormat('_yyyy_MM_dd_kk_mm_ss').format(DateTime.now())}.jpg';
-      await ImageGallerySaverPlus.saveImage(bytes, name: fileName);
-      return true;
-    } on Exception catch (_) {
-      return false;
-    }
+class CameraLabel extends StatelessWidget {
+  final String title;
+
+  const CameraLabel(this.title, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      margin: const EdgeInsets.all(2),
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+      child: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 12),
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      ),
+    );
   }
 }

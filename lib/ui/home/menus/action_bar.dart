@@ -353,14 +353,12 @@ class ActionBar extends StatelessWidget {
     bool shuffle = false,
   }) {
     if (cameras.isNotEmpty) {
-      Navigator.pushNamed(
+      Navigator.push(
         context,
-        CameraPage.routeName,
-        arguments: [
-          cameras,
-          shuffle,
-          context.read<CameraBloc>().state.displayedCameras,
-        ],
+        MaterialPageRoute(
+          builder:
+              (context) => CameraPage(cameras: cameras, isShuffling: shuffle),
+        ),
       );
     }
   }

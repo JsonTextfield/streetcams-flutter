@@ -61,7 +61,7 @@ class CameraGalleryView extends StatelessWidget {
           Camera camera = cameras[index];
           if (camera.city == City.vancouver) {
             return FutureBuilder<List<String>>(
-              future: DownloadService.getHtmlImages(camera.url),
+              future: DownloadService.getVancouverImages(camera.url),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return GestureDetector(

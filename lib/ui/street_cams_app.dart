@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:streetcams_flutter/constants.dart';
+import 'package:streetcams_flutter/data/camera_data_source.dart';
 import 'package:streetcams_flutter/data/camera_repository.dart';
 import 'package:streetcams_flutter/data/shared_preferences_data_source.dart';
+import 'package:streetcams_flutter/services/api_key.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../blocs/camera_bloc.dart';
 import '../blocs/camera_state.dart';
-import 'camera/camera_page.dart';
 import 'home/home_page.dart';
 
 class StreetCamsApp extends StatelessWidget {
@@ -27,13 +29,19 @@ class StreetCamsApp extends StatelessWidget {
             create:
                 (_) => CameraBloc(
                   SharedPreferencesDataSource(snapshot.requireData),
-                  CameraRepository(),
+                  CameraRepository(
+                    SupabaseCameraDataSource(
+                      SupabaseClient(
+                        'https://nacudfxzbqaesoyjfluh.supabase.co',
+                        API_KEY,
+                      ),
+                    ),
+                  ),
                 )..add(CameraLoading()),
             child: BlocBuilder<CameraBloc, CameraState>(
               builder: (context, state) {
                 return MaterialApp(
                   home: HomePage(textEditingController: controller),
-                  routes: {CameraPage.routeName: (_) => const CameraPage()},
                   themeMode: state.theme,
                   theme: ThemeData(
                     useMaterial3: true,

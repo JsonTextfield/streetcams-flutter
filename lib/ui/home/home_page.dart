@@ -39,10 +39,12 @@ class HomePage extends StatelessWidget {
 
     void showCameras(List<Camera> cameras, {shuffle = false}) {
       if (cameras.isNotEmpty) {
-        Navigator.pushNamed(
+        Navigator.push(
           context,
-          CameraPage.routeName,
-          arguments: [cameras, shuffle],
+          MaterialPageRoute(
+            builder:
+                (context) => CameraPage(cameras: cameras, isShuffling: shuffle),
+          ),
         );
       }
     }

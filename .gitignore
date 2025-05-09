@@ -48,7 +48,7 @@ app.*.map.json
 /android/app/release
 /local.properties
 /lib/generated/
-/assets/api_key.txt
 /.firebase/
 /lib/blocs/*.freezed.dart
 /ios/ApiKey.swift
+/lib/services/api_key.dart

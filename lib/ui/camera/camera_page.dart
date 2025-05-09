@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:streetcams_flutter/blocs/camera_bloc.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/services/download_service.dart';
 import 'package:video_player/video_player.dart';
@@ -14,8 +16,14 @@ import 'camera_widget.dart';
 
 class CameraPage extends StatefulWidget {
   static const routeName = '/cameraPage';
+  final bool isShuffling;
+  final List<Camera> cameras;
 
-  const CameraPage({super.key});
+  const CameraPage({
+    super.key,
+    required this.isShuffling,
+    required this.cameras,
+  });
 
   @override
   State<CameraPage> createState() => _CameraState();
@@ -23,7 +31,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
   Timer? timer;
-  List<Camera> cameras = [];
+  PageController? controller;
 
   @override
   void initState() {
@@ -47,21 +55,28 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    var arguments = ModalRoute.of(context)!.settings.arguments as List;
-
-    bool shuffle = arguments[1] as bool;
-    if (cameras.isEmpty) {
-      cameras = arguments[0] as List<Camera>;
-      if (shuffle) {
-        cameras.shuffle();
-      }
+    controller =
+        controller ??
+        PageController(
+          initialPage: context
+              .read<CameraBloc>()
+              .state
+              .displayedCameras
+              .indexWhere((camera) {
+                return camera.id == widget.cameras.first.id;
+              }),
+          keepPage: true,
+        );
+    bool shuffle = widget.isShuffling;
+    if (shuffle) {
+      widget.cameras.shuffle();
     }
     timer ??= Timer.periodic(
       Duration(
         seconds:
             shuffle
                 ? 6
-                : cameras.first.city == City.quebec
+                : widget.cameras.first.city == City.quebec
                 ? 30
                 : 3,
       ),
@@ -70,73 +85,89 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
     return Scaffold(
       body: Stack(
         children: [
-          ListView.builder(
-            itemCount: shuffle ? 1 : cameras.length,
-            itemBuilder: (context, index) {
-              Camera camera =
-                  cameras[shuffle ? Random().nextInt(cameras.length) : index];
-              if (camera.city == City.vancouver) {
-                return FutureBuilder<List<String>>(
-                  future: DownloadService.getHtmlImages(
-                    camera.url,
-                    includeTime: true,
-                  ),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return Column(
-                        children:
-                            snapshot.requireData.map((url) {
-                              return CameraWidget(camera, otherUrl: url);
-                            }).toList(),
-                      );
-                    } else if (snapshot.hasError) {
-                      return CameraWidget(camera);
-                    }
-                    return const SizedBox();
-                  },
+          FutureBuilder<List<Camera>>(
+            future: Future(() async {
+              if (widget.cameras.isNotEmpty &&
+                  widget.cameras.first.city == City.vancouver) {
+                return await DownloadService.getVancouverCameras(
+                  widget.cameras,
                 );
-              } //
-              else if (camera.city == City.quebec) {
-                VideoPlayerController vpc = VideoPlayerController.networkUrl(
-                  Uri.parse(camera.url),
-                );
-                return CameraVideoWidget(camera: camera, controller: vpc);
-              } else if (camera.url.contains(' ')) {
-                return Column(
+              }
+              return widget.cameras;
+            }),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              List<Camera> cameras = snapshot.requireData;
+              if (cameras.length == 1 && !shuffle) {
+                return PageView(
+                  controller: controller,
                   children:
-                      camera.url.split(' ').map((url) {
-                        return CameraWidget(camera, otherUrl: url);
+                      context.read<CameraBloc>().state.displayedCameras.map((
+                        camera,
+                      ) {
+                        return ListView(
+                          children: [
+                            camera.city == City.quebec
+                                ? CameraVideoWidget(
+                                  camera: camera,
+                                  controller: VideoPlayerController.networkUrl(
+                                    Uri.parse(camera.url),
+                                  ),
+                                )
+                                : CameraWidget(camera),
+                          ],
+                        );
                       }).toList(),
                 );
               }
-              return CameraWidget(camera);
+              return ListView(
+                children:
+                    shuffle
+                        ? [
+                          CameraWidget(
+                            cameras[Random().nextInt(cameras.length)],
+                          ),
+                        ]
+                        : cameras
+                            .map((camera) => CameraWidget(camera))
+                            .toList(),
+              );
             },
           ),
-          SafeArea(
-            child: Container(
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(10)),
-                color: Colors.white54,
-              ),
-              margin: const EdgeInsets.all(5),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                tooltip: context.translation.back,
-                color: Colors.black,
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-          ),
+          const SafeArea(child: BackButton()),
           Container(
             height: MediaQuery.of(context).padding.top,
             decoration: BoxDecoration(
               color:
                   Theme.of(context).brightness == Brightness.dark
-                      ? Colors.black.withValues(alpha: 0.5)
-                      : Colors.white.withValues(alpha: 0.5),
+                      ? Colors.black.withAlpha(128)
+                      : Colors.white.withAlpha(128),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class BackButton extends StatelessWidget {
+  const BackButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+        color: Colors.white54,
+      ),
+      margin: const EdgeInsets.all(5),
+      child: IconButton(
+        icon: const Icon(Icons.arrow_back_rounded),
+        tooltip: context.translation.back,
+        color: Colors.black,
+        onPressed: () => Navigator.of(context).pop(),
       ),
     );
   }
