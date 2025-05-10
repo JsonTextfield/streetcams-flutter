@@ -52,3 +52,6 @@ app.*.map.json
 /lib/blocs/*.freezed.dart
 /ios/ApiKey.swift
 /lib/services/api_key.dart
+/ios/Runner/AppIcons/
+/android/app/.cxx/
+/lib/entities/camera.mapper.dart
