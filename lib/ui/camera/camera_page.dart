@@ -108,6 +108,7 @@ class _CameraState extends State<CameraPage> with WidgetsBindingObserver {
                         camera,
                       ) {
                         return ListView(
+                          padding: EdgeInsets.zero,
                           children: [
                             camera.city == City.quebec
                                 ? CameraVideoWidget(
