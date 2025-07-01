@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:video_player/video_player.dart';
@@ -28,13 +29,15 @@ class CameraWidget extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height),
       child: InkWell(
         onLongPress: () async {
-          bool result = await DownloadService.saveImage(camera);
-          if (result) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(context.translation.imageSaved(camera.name)),
-              ),
-            );
+          if (defaultTargetPlatform != TargetPlatform.iOS) {
+            bool result = await DownloadService.saveImage(camera);
+            if (result) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(context.translation.imageSaved(camera.name)),
+                ),
+              );
+            }
           }
         },
         child: Stack(
