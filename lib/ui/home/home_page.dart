@@ -12,12 +12,12 @@ import 'package:streetcams_flutter/l10n/translation.dart';
 import 'package:streetcams_flutter/ui/home/camera_gallery_view.dart';
 import 'package:streetcams_flutter/ui/home/camera_list_view.dart';
 import 'package:streetcams_flutter/ui/home/map_widget.dart';
+import 'package:streetcams_flutter/ui/home/menus/action_bar.dart';
 import 'package:streetcams_flutter/ui/home/search_text_field.dart';
 import 'package:streetcams_flutter/ui/home/section_index.dart';
 
 import '../camera/camera_page.dart';
 import 'flutter_map_widget.dart';
-import 'menus/action_bar.dart';
 import 'neighbourhood_search_bar.dart';
 
 class HomePage extends StatelessWidget {
@@ -77,7 +77,7 @@ class HomePage extends StatelessWidget {
                       tooltip: context.translation.back,
                     )
                     : null,
-            actions: const [ActionBar()],
+            actions: [ActionBar(actions: getActions(context))],
             backgroundColor: Theme.of(context).colorScheme.surface,
             surfaceTintColor: Theme.of(context).colorScheme.surface,
             shadowColor: Theme.of(context).colorScheme.shadow,

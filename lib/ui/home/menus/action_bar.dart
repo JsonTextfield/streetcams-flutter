@@ -14,7 +14,9 @@ import 'package:streetcams_flutter/ui/home/menus/toolbar_action.dart';
 import 'action.dart';
 
 class ActionBar extends StatelessWidget {
-  const ActionBar({super.key});
+  final List<Action> actions;
+
+  const ActionBar({super.key, required this.actions});
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +36,8 @@ class ActionBar extends StatelessWidget {
           maxActions = (screenWidth * 2 / 3 / 48).floor();
         }
 
-        var visibleActions = _getActions(context).where((a) => a.isVisible);
-        List<Action> toolbarActions = visibleActions.take(maxActions).toList();
-        List<Action> overflowActions = visibleActions.skip(maxActions).toList();
+        List<Action> toolbarActions = actions.take(maxActions).toList();
+        List<Action> overflowActions = actions.skip(maxActions).toList();
 
         if (overflowActions.isNotEmpty) {
           List<Widget> overflowMenuItems =
@@ -88,278 +89,274 @@ class ActionBar extends StatelessWidget {
       },
     );
   }
+}
 
-  List<Action> _getActions(BuildContext context) {
-    CameraBloc cameraBloc = context.read<CameraBloc>();
-    CameraState cameraState = cameraBloc.state;
-
-    void changeFilterMode(FilterMode filterMode) {
-      cameraBloc.add(FilterCamera(filterMode: filterMode));
-    }
-
-    void changeSearchMode(SearchMode searchMode) {
-      cameraBloc.add(SearchCameras(searchMode: searchMode));
-    }
-
-    void changeViewMode(ViewMode viewMode) {
-      cameraBloc.add(ChangeViewMode(viewMode: viewMode));
-    }
-
-    void changeSortMode(SortMode sortMode) {
-      cameraBloc.add(SortCameras(sortMode: sortMode));
-    }
-
-    void changeCity(City city) {
-      cameraBloc.add(ChangeCity(city));
-    }
-
-    void changeTheme(ThemeMode theme) {
-      cameraBloc.add(ChangeTheme(theme: theme));
-    }
-
-    void hideSelectedCameras() {
-      cameraBloc.add(HideCameras(cameraState.selectedCameras));
-    }
-
-    void favouriteSelectedCameras() {
-      cameraBloc.add(FavouriteCameras(cameraState.selectedCameras));
-    }
-
-    List<Camera> selectedCameras = cameraState.selectedCameras;
-
-    Action clear = Action(
-      icon: Icons.clear_rounded,
-      tooltip: context.translation.clear,
-      onClick: () => cameraBloc.add(SelectAll(select: false)),
-    );
-
-    Action view = Action(
-      isVisible: selectedCameras.length <= 8,
-      icon: Icons.camera_alt_rounded,
-      tooltip: context.translation.showCameras,
-      onClick: () => _showCameras(context, selectedCameras),
-    );
-
-    bool allFav = selectedCameras.every((cam) => cam.isFavourite);
-    Action favourite = Action(
-      icon: allFav ? Icons.star_border_rounded : Icons.star_rounded,
-      tooltip:
-          allFav
-              ? context.translation.unfavourite
-              : context.translation.favourite,
-      onClick: favouriteSelectedCameras,
-    );
-
-    bool allHid = selectedCameras.every((cam) => !cam.isVisible);
-    Action hide = Action(
-      icon: allHid ? Icons.visibility_rounded : Icons.visibility_off_rounded,
-      tooltip: allHid ? context.translation.unhide : context.translation.hide,
-      onClick: hideSelectedCameras,
-    );
-
-    Action selectAll = Action(
-      isVisible: selectedCameras.length < cameraState.displayedCameras.length,
-      icon: Icons.select_all_rounded,
-      tooltip: context.translation.selectAll,
-      onClick: () => cameraBloc.add(SelectAll()),
-    );
-
-    Action search = Action(
-      isVisible:
-          cameraState.uiState == UIState.success &&
-          cameraState.searchMode != SearchMode.camera,
-      icon: Icons.search_rounded,
-      tooltip: context.translation.search,
-      onClick: () => changeSearchMode(SearchMode.camera),
-    );
-
-    Action searchNeighbourhood = Action(
-      isVisible: cameraState.showSearchNeighbourhood,
-      icon: Icons.travel_explore_rounded,
-      tooltip: context.translation.searchNeighbourhood,
-      onClick: () => changeSearchMode(SearchMode.neighbourhood),
-    );
-
-    IconData getIcon(ViewMode viewMode) {
-      return switch (viewMode) {
-        ViewMode.map => Icons.place,
-        ViewMode.gallery => Icons.grid_view_rounded,
-        ViewMode.list => Icons.list_rounded,
-      };
-    }
-
-    Action switchView = Action(
-      isVisible: cameraState.uiState == UIState.success,
-      icon: getIcon(cameraState.viewMode),
-      tooltip: context.translation.getViewMode(cameraState.viewMode.name),
-      children:
-          ViewMode.values.map((ViewMode viewMode) {
-            return RadioMenuButton<ViewMode>(
-              value: viewMode,
-              groupValue: cameraState.viewMode,
-              onChanged: (_) => changeViewMode(viewMode),
-              child: Text(context.translation.getViewMode(viewMode.name)),
-            );
-          }).toList(),
-    );
-
-    Action sort = Action(
-      isVisible:
-          cameraState.uiState == UIState.success &&
-          cameraState.viewMode != ViewMode.map,
-      icon: Icons.sort_rounded,
-      tooltip: context.translation.sort,
-      children:
-          SortMode.values.map((SortMode sortMode) {
-            return RadioMenuButton<SortMode>(
-              value: sortMode,
-              groupValue: cameraState.sortMode,
-              onChanged: (_) => changeSortMode(sortMode),
-              child: Text(context.translation.getSortMode(sortMode.name)),
-            );
-          }).toList(),
-    );
-
-    Action city = Action(
-      isVisible: cameraState.searchMode == SearchMode.none,
-      icon: Icons.location_city_rounded,
-      tooltip: context.translation.location,
-      children:
-          City.values.map((City city) {
-            return RadioMenuButton<City>(
-              value: city,
-              groupValue: cameraState.city,
-              onChanged: (_) => changeCity(city),
-              child: Text(context.translation.getCity(city.name)),
-            );
-          }).toList(),
-    );
-
-    Action theme = Action(
-      icon: Icons.brightness_medium_rounded,
-      tooltip: context.translation.theme,
-      children:
-          ThemeMode.values.map((ThemeMode theme) {
-            return RadioMenuButton<ThemeMode>(
-              value: theme,
-              groupValue: cameraState.theme,
-              onChanged: (_) => changeTheme(theme),
-              child: Text(context.translation.getTheme(theme.name)),
-            );
-          }).toList(),
-    );
-
-    Action favourites = Action(
-      isVisible: cameraState.uiState == UIState.success,
-      icon: Icons.star_rounded,
-      tooltip: context.translation.favourites,
-      isChecked: cameraState.filterMode == FilterMode.favourite,
-      onClick: () => changeFilterMode(FilterMode.favourite),
-    );
-
-    Action hidden = Action(
-      isVisible: cameraState.uiState == UIState.success,
-      icon: Icons.visibility_off_rounded,
-      tooltip: context.translation.hidden,
-      isChecked: cameraState.filterMode == FilterMode.hidden,
-      onClick: () => changeFilterMode(FilterMode.hidden),
-    );
-
-    Action random = Action(
-      isVisible: cameraState.uiState == UIState.success,
-      icon: Icons.casino_rounded,
-      tooltip: context.translation.random,
-      onClick: () => _showRandomCamera(context),
-    );
-
-    Action shuffle = Action(
-      isVisible: cameraState.uiState == UIState.success,
-      icon: Icons.shuffle_rounded,
-      tooltip: context.translation.shuffle,
-      onClick:
-          () =>
-              _showCameras(context, cameraState.visibleCameras, shuffle: true),
-    );
-
-    Action about = Action(
-      tooltip: context.translation.about,
-      icon: Icons.info_rounded,
-      onClick: () => _showAbout(context),
-    );
-
-    if (selectedCameras.isEmpty) {
-      return [
-        switchView,
-        sort,
-        city,
-        search,
-        searchNeighbourhood,
-        favourites,
-        hidden,
-        random,
-        shuffle,
-        theme,
-        about,
-      ];
-    }
-    return [clear, view, favourite, hide, selectAll];
-  }
-
-  void _showRandomCamera(BuildContext context) {
-    List<Camera> visibleCameras =
-        context.read<CameraBloc>().state.visibleCameras;
-    if (visibleCameras.isNotEmpty) {
-      _showCameras(context, [
-        visibleCameras[Random().nextInt(visibleCameras.length)],
-      ]);
-    }
-  }
-
-  void _showAbout(BuildContext context) async {
-    var packageInfo = await PackageInfo.fromPlatform();
-    if (context.mounted) {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(context.translation.appName),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Version ${packageInfo.version}'),
-                Text(context.translation.developedBy),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => showLicensePage(context: context),
-                child: Text(context.translation.licences),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(context.translation.close),
-              ),
+void _showAbout(BuildContext context) async {
+  var packageInfo = await PackageInfo.fromPlatform();
+  if (context.mounted) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(context.translation.appName),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Version ${packageInfo.version}'),
+              Text(context.translation.developedBy),
             ],
-          );
-        },
-      );
-    }
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => showLicensePage(context: context),
+              child: Text(context.translation.licences),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(context.translation.close),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+void _showCameras(
+  BuildContext context,
+  List<Camera> cameras, {
+  bool shuffle = false,
+}) {
+  if (cameras.isNotEmpty) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CameraPage(cameras: cameras, isShuffling: shuffle),
+      ),
+    );
+  }
+}
+
+List<Action> getActions(BuildContext context) {
+  CameraBloc cameraBloc = context.read<CameraBloc>();
+  CameraState cameraState = cameraBloc.state;
+
+  void changeFilterMode(FilterMode filterMode) {
+    cameraBloc.add(FilterCamera(filterMode: filterMode));
   }
 
-  void _showCameras(
-    BuildContext context,
-    List<Camera> cameras, {
-    bool shuffle = false,
-  }) {
-    if (cameras.isNotEmpty) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => CameraPage(cameras: cameras, isShuffling: shuffle),
-        ),
-      );
-    }
+  void changeSearchMode(SearchMode searchMode) {
+    cameraBloc.add(SearchCameras(searchMode: searchMode));
   }
+
+  void changeViewMode(ViewMode viewMode) {
+    cameraBloc.add(ChangeViewMode(viewMode: viewMode));
+  }
+
+  void changeSortMode(SortMode sortMode) {
+    cameraBloc.add(SortCameras(sortMode: sortMode));
+  }
+
+  void changeCity(City city) {
+    cameraBloc.add(ChangeCity(city));
+  }
+
+  void changeTheme(ThemeMode theme) {
+    cameraBloc.add(ChangeTheme(theme: theme));
+  }
+
+  void hideSelectedCameras() {
+    cameraBloc.add(HideCameras(cameraState.selectedCameras));
+  }
+
+  void favouriteSelectedCameras() {
+    cameraBloc.add(FavouriteCameras(cameraState.selectedCameras));
+  }
+
+  List<Camera> selectedCameras = cameraState.selectedCameras;
+
+  Action clear = Action(
+    icon: Icons.clear_rounded,
+    tooltip: context.translation.clear,
+    onClick: () => cameraBloc.add(SelectAll(select: false)),
+  );
+
+  Action view = Action(
+    isVisible: selectedCameras.length <= 8,
+    icon: Icons.camera_alt_rounded,
+    tooltip: context.translation.showCameras,
+    onClick: () => _showCameras(context, selectedCameras),
+  );
+
+  bool allFav = selectedCameras.every((cam) => cam.isFavourite);
+  Action favourite = Action(
+    icon: allFav ? Icons.star_border_rounded : Icons.star_rounded,
+    tooltip:
+        allFav
+            ? context.translation.unfavourite
+            : context.translation.favourite,
+    onClick: favouriteSelectedCameras,
+  );
+
+  bool allHid = selectedCameras.every((cam) => !cam.isVisible);
+  Action hide = Action(
+    icon: allHid ? Icons.visibility_rounded : Icons.visibility_off_rounded,
+    tooltip: allHid ? context.translation.unhide : context.translation.hide,
+    onClick: hideSelectedCameras,
+  );
+
+  Action selectAll = Action(
+    isVisible: selectedCameras.length < cameraState.displayedCameras.length,
+    icon: Icons.select_all_rounded,
+    tooltip: context.translation.selectAll,
+    onClick: () => cameraBloc.add(SelectAll()),
+  );
+
+  Action search = Action(
+    isVisible:
+        cameraState.uiState == UIState.success &&
+        cameraState.searchMode != SearchMode.camera,
+    icon: Icons.search_rounded,
+    tooltip: context.translation.search,
+    onClick: () => changeSearchMode(SearchMode.camera),
+  );
+
+  Action searchNeighbourhood = Action(
+    isVisible: cameraState.showSearchNeighbourhood,
+    icon: Icons.travel_explore_rounded,
+    tooltip: context.translation.searchNeighbourhood,
+    onClick: () => changeSearchMode(SearchMode.neighbourhood),
+  );
+
+  IconData getIcon(ViewMode viewMode) {
+    return switch (viewMode) {
+      ViewMode.map => Icons.place,
+      ViewMode.gallery => Icons.grid_view_rounded,
+      ViewMode.list => Icons.list_rounded,
+    };
+  }
+
+  Action switchView = Action(
+    isVisible: cameraState.uiState == UIState.success,
+    icon: getIcon(cameraState.viewMode),
+    tooltip: context.translation.getViewMode(cameraState.viewMode.name),
+    children:
+        ViewMode.values.map((ViewMode viewMode) {
+          return RadioMenuButton<ViewMode>(
+            value: viewMode,
+            groupValue: cameraState.viewMode,
+            onChanged: (_) => changeViewMode(viewMode),
+            child: Text(context.translation.getViewMode(viewMode.name)),
+          );
+        }).toList(),
+  );
+
+  Action sort = Action(
+    isVisible:
+        cameraState.uiState == UIState.success &&
+        cameraState.viewMode != ViewMode.map,
+    icon: Icons.sort_rounded,
+    tooltip: context.translation.sort,
+    children:
+        SortMode.values.map((SortMode sortMode) {
+          return RadioMenuButton<SortMode>(
+            value: sortMode,
+            groupValue: cameraState.sortMode,
+            onChanged: (_) => changeSortMode(sortMode),
+            child: Text(context.translation.getSortMode(sortMode.name)),
+          );
+        }).toList(),
+  );
+
+  Action city = Action(
+    isVisible: cameraState.searchMode == SearchMode.none,
+    icon: Icons.location_city_rounded,
+    tooltip: context.translation.location,
+    children:
+        City.values.map((City city) {
+          return RadioMenuButton<City>(
+            value: city,
+            groupValue: cameraState.city,
+            onChanged: (_) => changeCity(city),
+            child: Text(context.translation.getCity(city.name)),
+          );
+        }).toList(),
+  );
+
+  Action theme = Action(
+    icon: Icons.brightness_medium_rounded,
+    tooltip: context.translation.theme,
+    children:
+        ThemeMode.values.map((ThemeMode theme) {
+          return RadioMenuButton<ThemeMode>(
+            value: theme,
+            groupValue: cameraState.theme,
+            onChanged: (_) => changeTheme(theme),
+            child: Text(context.translation.getTheme(theme.name)),
+          );
+        }).toList(),
+  );
+
+  Action favourites = Action(
+    isVisible: cameraState.uiState == UIState.success,
+    icon: Icons.star_rounded,
+    tooltip: context.translation.favourites,
+    isChecked: cameraState.filterMode == FilterMode.favourite,
+    onClick: () => changeFilterMode(FilterMode.favourite),
+  );
+
+  Action hidden = Action(
+    isVisible: cameraState.uiState == UIState.success,
+    icon: Icons.visibility_off_rounded,
+    tooltip: context.translation.hidden,
+    isChecked: cameraState.filterMode == FilterMode.hidden,
+    onClick: () => changeFilterMode(FilterMode.hidden),
+  );
+
+  Action random = Action(
+    isVisible: cameraState.uiState == UIState.success,
+    icon: Icons.casino_rounded,
+    tooltip: context.translation.random,
+    onClick: () {
+      List<Camera> visibleCameras =
+          context.read<CameraBloc>().state.visibleCameras;
+      if (visibleCameras.isNotEmpty) {
+        _showCameras(context, [
+          visibleCameras[Random().nextInt(visibleCameras.length)],
+        ]);
+      }
+    },
+  );
+
+  Action shuffle = Action(
+    isVisible: cameraState.uiState == UIState.success,
+    icon: Icons.shuffle_rounded,
+    tooltip: context.translation.shuffle,
+    onClick:
+        () => _showCameras(context, cameraState.visibleCameras, shuffle: true),
+  );
+
+  Action about = Action(
+    tooltip: context.translation.about,
+    icon: Icons.info_rounded,
+    onClick: () => _showAbout(context),
+  );
+
+  if (selectedCameras.isEmpty) {
+    return [
+      switchView,
+      sort,
+      city,
+      search,
+      searchNeighbourhood,
+      favourites,
+      hidden,
+      random,
+      shuffle,
+      theme,
+      about,
+    ];
+  }
+  return [clear, view, favourite, hide, selectAll];
 }
